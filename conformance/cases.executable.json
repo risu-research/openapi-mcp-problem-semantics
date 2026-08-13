@@ -1,0 +1,181 @@
+{
+  "profile": "OpenAPI-to-MCP Problem-Semantics Preservation Profile",
+  "version": "phase2-oracle-v0.1",
+  "cases": [
+    {
+      "id": "P01-explicit-type",
+      "expected_scope": "IN_SCOPE",
+      "checks": [
+        {
+          "kind": "problem_type",
+          "value": "https://example.test/problems/out-of-credit"
+        }
+      ]
+    },
+    {
+      "id": "P02-default-about-blank",
+      "expected_scope": "IN_SCOPE",
+      "checks": [
+        {
+          "kind": "effective_problem_type",
+          "value": "about:blank"
+        }
+      ],
+      "forbid": [
+        "custom_problem_type"
+      ]
+    },
+    {
+      "id": "P03-same-status-different-type",
+      "expected_scope": "IN_SCOPE",
+      "checks": [
+        {
+          "kind": "pair_distinct_problem_types",
+          "values": [
+            "https://example.test/problems/out-of-credit",
+            "https://example.test/problems/account-suspended"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P04-instance",
+      "expected_scope": "IN_SCOPE",
+      "checks": [
+        {
+          "kind": "instance",
+          "value": "/problems/occurrences/abc-123"
+        }
+      ]
+    },
+    {
+      "id": "P05-media-type-gate",
+      "expected_scope": "NOT_APPLICABLE",
+      "forbid": [
+        "rfc9457_recognition"
+      ]
+    },
+    {
+      "id": "P06-scalar-extension",
+      "expected_scope": "IN_SCOPE",
+      "checks": [
+        {
+          "kind": "extension_path",
+          "path": [
+            "code"
+          ],
+          "value": "invalid-body-property"
+        }
+      ]
+    },
+    {
+      "id": "P07-nested-validation-extension",
+      "expected_scope": "IN_SCOPE",
+      "checks": [
+        {
+          "kind": "extension_path",
+          "path": [
+            "errors"
+          ],
+          "value": [
+            {
+              "detail": "must be a positive integer",
+              "pointer": "#/age"
+            },
+            {
+              "detail": "must be green, red, or blue",
+              "pointer": "#/profile/color"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P08-unknown-future-extension",
+      "expected_scope": "IN_SCOPE",
+      "checks": [
+        {
+          "kind": "extension_path",
+          "path": [
+            "remediation"
+          ],
+          "value": {
+            "actions": [
+              {
+                "rel": "refresh",
+                "href": "/state/42"
+              },
+              {
+                "rel": "retry",
+                "after": "state-refresh"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "P09-localized-human-text",
+      "expected_scope": "IN_SCOPE",
+      "checks": [
+        {
+          "kind": "pair_same_problem_type",
+          "value": "https://example.test/problems/out-of-credit"
+        }
+      ]
+    },
+    {
+      "id": "P10-no-prose-mining",
+      "expected_scope": "IN_SCOPE",
+      "checks": [
+        {
+          "kind": "problem_type",
+          "value": "https://example.test/problems/quota-exceeded"
+        },
+        {
+          "kind": "detail",
+          "value": "Please try again in 30 seconds."
+        }
+      ],
+      "forbid": [
+        "retry_after_from_prose"
+      ]
+    },
+    {
+      "id": "P11-origin-status-survives-intermediary",
+      "expected_scope": "IN_SCOPE",
+      "checks": [
+        {
+          "kind": "body_status",
+          "value": 503
+        },
+        {
+          "kind": "observed_status",
+          "value": 502
+        },
+        {
+          "kind": "statuses_distinct"
+        }
+      ]
+    },
+    {
+      "id": "P12-no-retryability-invention",
+      "expected_scope": "IN_SCOPE",
+      "checks": [
+        {
+          "kind": "problem_type",
+          "value": "https://example.test/problems/service-unavailable"
+        },
+        {
+          "kind": "observed_status",
+          "value": 503
+        }
+      ],
+      "forbid": [
+        "retryable_true",
+        "safe_to_retry_true",
+        "idempotent_retry"
+      ]
+    }
+  ]
+}

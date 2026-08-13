@@ -1,0 +1,653 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "RISU Problem Semantics Fixture API",
+    "version": "0.1.0"
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8765"
+    }
+  ],
+  "paths": {
+    "/P01-explicit-type": {
+      "get": {
+        "operationId": "fixture_P01_explicit_type",
+        "summary": "Fixture P01-explicit-type",
+        "responses": {
+          "200": {
+            "description": "Synthetic success response used to keep each operation contract realistic; conformance fixture calls intentionally return the declared problem response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "probe": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Fixture response for P01-explicit-type",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/P02-default-about-blank": {
+      "get": {
+        "operationId": "fixture_P02_default_about_blank",
+        "summary": "Fixture P02-default-about-blank",
+        "responses": {
+          "200": {
+            "description": "Synthetic success response used to keep each operation contract realistic; conformance fixture calls intentionally return the declared problem response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "probe": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Fixture response for P02-default-about-blank",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/P03-same-status-different-type/1": {
+      "get": {
+        "operationId": "fixture_P03_same_status_different_type_1",
+        "summary": "Fixture P03-same-status-different-type",
+        "responses": {
+          "200": {
+            "description": "Synthetic success response used to keep each operation contract realistic; conformance fixture calls intentionally return the declared problem response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "probe": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Fixture response for P03-same-status-different-type",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/P03-same-status-different-type/2": {
+      "get": {
+        "operationId": "fixture_P03_same_status_different_type_2",
+        "summary": "Fixture P03-same-status-different-type",
+        "responses": {
+          "200": {
+            "description": "Synthetic success response used to keep each operation contract realistic; conformance fixture calls intentionally return the declared problem response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "probe": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Fixture response for P03-same-status-different-type",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/P04-instance": {
+      "get": {
+        "operationId": "fixture_P04_instance",
+        "summary": "Fixture P04-instance",
+        "responses": {
+          "200": {
+            "description": "Synthetic success response used to keep each operation contract realistic; conformance fixture calls intentionally return the declared problem response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "probe": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Fixture response for P04-instance",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/P05-media-type-gate": {
+      "get": {
+        "operationId": "fixture_P05_media_type_gate",
+        "summary": "Fixture P05-media-type-gate",
+        "responses": {
+          "200": {
+            "description": "Synthetic success response used to keep each operation contract realistic; conformance fixture calls intentionally return the declared problem response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "probe": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Fixture response for P05-media-type-gate",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/P06-scalar-extension": {
+      "get": {
+        "operationId": "fixture_P06_scalar_extension",
+        "summary": "Fixture P06-scalar-extension",
+        "responses": {
+          "200": {
+            "description": "Synthetic success response used to keep each operation contract realistic; conformance fixture calls intentionally return the declared problem response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "probe": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Fixture response for P06-scalar-extension",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/P07-nested-validation-extension": {
+      "get": {
+        "operationId": "fixture_P07_nested_validation_extension",
+        "summary": "Fixture P07-nested-validation-extension",
+        "responses": {
+          "200": {
+            "description": "Synthetic success response used to keep each operation contract realistic; conformance fixture calls intentionally return the declared problem response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "probe": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Fixture response for P07-nested-validation-extension",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/P08-unknown-future-extension": {
+      "get": {
+        "operationId": "fixture_P08_unknown_future_extension",
+        "summary": "Fixture P08-unknown-future-extension",
+        "responses": {
+          "200": {
+            "description": "Synthetic success response used to keep each operation contract realistic; conformance fixture calls intentionally return the declared problem response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "probe": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ]
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Fixture response for P08-unknown-future-extension",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/P09-localized-human-text/1": {
+      "get": {
+        "operationId": "fixture_P09_localized_human_text_1",
+        "summary": "Fixture P09-localized-human-text",
+        "responses": {
+          "200": {
+            "description": "Synthetic success response used to keep each operation contract realistic; conformance fixture calls intentionally return the declared problem response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "probe": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Fixture response for P09-localized-human-text",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/P09-localized-human-text/2": {
+      "get": {
+        "operationId": "fixture_P09_localized_human_text_2",
+        "summary": "Fixture P09-localized-human-text",
+        "responses": {
+          "200": {
+            "description": "Synthetic success response used to keep each operation contract realistic; conformance fixture calls intentionally return the declared problem response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "probe": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Fixture response for P09-localized-human-text",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/P10-no-prose-mining": {
+      "get": {
+        "operationId": "fixture_P10_no_prose_mining",
+        "summary": "Fixture P10-no-prose-mining",
+        "responses": {
+          "200": {
+            "description": "Synthetic success response used to keep each operation contract realistic; conformance fixture calls intentionally return the declared problem response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "probe": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Fixture response for P10-no-prose-mining",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/P11-origin-status-survives-intermediary": {
+      "get": {
+        "operationId": "fixture_P11_origin_status_survives_intermediary",
+        "summary": "Fixture P11-origin-status-survives-intermediary",
+        "responses": {
+          "200": {
+            "description": "Synthetic success response used to keep each operation contract realistic; conformance fixture calls intentionally return the declared problem response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "probe": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ]
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Fixture response for P11-origin-status-survives-intermediary",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/P12-no-retryability-invention": {
+      "get": {
+        "operationId": "fixture_P12_no_retryability_invention",
+        "summary": "Fixture P12-no-retryability-invention",
+        "responses": {
+          "200": {
+            "description": "Synthetic success response used to keep each operation contract realistic; conformance fixture calls intentionally return the declared problem response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "probe": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Fixture response for P12-no-retryability-invention",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/S00-asymmetry": {
+      "get": {
+        "operationId": "fixture_S00_asymmetry",
+        "summary": "Same-tool success/error representation asymmetry control",
+        "parameters": [
+          {
+            "name": "outcome",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "success",
+                "problem"
+              ]
+            },
+            "description": "Select a 200 JSON success or 403 RFC 9457 Problem Details response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Structured success control",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "probe": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "probe"
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "RFC 9457 problem control",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "title",
+                    "status",
+                    "code"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

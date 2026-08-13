@@ -1,0 +1,901 @@
+{
+  "schema_version": "nihal-e6-results-v1",
+  "classification": "E6_LOSS_ONLY",
+  "target": {
+    "repo": "nihal1294/openapi-to-mcp",
+    "commit": "e5fbb3524384f7dd3367cec3b02b7982cddac614",
+    "default_branch": "master",
+    "version": "0.9.0",
+    "unmodified": true
+  },
+  "baseline_immutable": true,
+  "summary": {
+    "preserved": 0,
+    "loss": 11,
+    "invented": 0,
+    "not_applicable": 1
+  },
+  "same_operation_control": {
+    "generated_tool": "fixture_S00_asymmetry",
+    "calls": [
+      {
+        "outcome": "success",
+        "source": {
+          "http_status": 200,
+          "content_type": "application/json",
+          "body": {
+            "ok": true,
+            "probe": "same-tool"
+          }
+        },
+        "generated_tool": "fixture_S00_asymmetry",
+        "arguments": {
+          "outcome": "success"
+        },
+        "raw_call_tool_result": {
+          "_meta": null,
+          "content": [
+            {
+              "type": "text",
+              "text": "{\n  \"ok\": true,\n  \"probe\": \"same-tool\"\n}"
+            }
+          ],
+          "structuredContent": {
+            "ok": true,
+            "probe": "same-tool"
+          },
+          "meta": {
+            "requestId": "7b8fd055-c64f-4e59-9beb-516921b84c1e"
+          }
+        },
+        "normalized_observation": {
+          "machine": {},
+          "diagnostic": "{\n  \"ok\": true,\n  \"probe\": \"same-tool\"\n}",
+          "claims": {},
+          "_wire": {
+            "isError": null,
+            "structuredContent_present": true,
+            "meta_present": false,
+            "embedded_problem_resource_count": 0
+          }
+        },
+        "machine_addressable": true
+      },
+      {
+        "outcome": "problem",
+        "source": {
+          "http_status": 403,
+          "content_type": "application/problem+json",
+          "body": {
+            "type": "https://example.test/problems/asymmetry-probe",
+            "title": "Asymmetry probe failure",
+            "status": 403,
+            "detail": "The same generated MCP tool returned this RFC 9457 problem.",
+            "code": "probe-failed"
+          }
+        },
+        "generated_tool": "fixture_S00_asymmetry",
+        "arguments": {
+          "outcome": "problem"
+        },
+        "raw_call_tool_result": {
+          "_meta": null,
+          "content": [
+            {
+              "type": "text",
+              "text": "API authorization failed: The same generated MCP tool returned this RFC 9457 problem."
+            }
+          ],
+          "isError": true,
+          "meta": {
+            "requestId": "a277650c-2d57-4f19-9b78-04d7ccd7ef6d",
+            "error": {
+              "code": "api_authorization_failed",
+              "source": "upstream",
+              "retryable": false,
+              "httpStatus": 403
+            }
+          }
+        },
+        "normalized_observation": {
+          "machine": {},
+          "diagnostic": "API authorization failed: The same generated MCP tool returned this RFC 9457 problem.",
+          "claims": {},
+          "_wire": {
+            "isError": true,
+            "structuredContent_present": false,
+            "meta_present": false,
+            "embedded_problem_resource_count": 0
+          }
+        },
+        "machine_addressable": false
+      }
+    ]
+  },
+  "headline_observations": {
+    "same_tool_success_machine_addressable": true,
+    "same_tool_problem_rfc9457_machine_addressable": false,
+    "upstream_problem_body_observed": true,
+    "p12_wire_retryable_true": true,
+    "p12_retryable_location": "result.meta.error.retryable",
+    "p12_protocol_meta_present": false,
+    "p12_adapter_claims": {},
+    "p12_frozen_oracle_inventions": []
+  },
+  "cases": [
+    {
+      "id": "P01-explicit-type",
+      "calls": [
+        {
+          "source": {
+            "http_status": 403,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/out-of-credit",
+              "title": "Insufficient credit",
+              "detail": "The purchase cannot be completed."
+            }
+          },
+          "generated_tool": "fixture_P01_explicit_type",
+          "arguments": {},
+          "raw_call_tool_result": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API authorization failed: The purchase cannot be completed."
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "355d0f5c-e0ca-4d23-b745-d3d7ca178e01",
+              "error": {
+                "code": "api_authorization_failed",
+                "source": "upstream",
+                "retryable": false,
+                "httpStatus": 403
+              }
+            }
+          },
+          "normalized_observation": {
+            "machine": {},
+            "diagnostic": "API authorization failed: The purchase cannot be completed.",
+            "claims": {},
+            "_wire": {
+              "isError": true,
+              "structuredContent_present": false,
+              "meta_present": false,
+              "embedded_problem_resource_count": 0
+            }
+          }
+        }
+      ],
+      "oracle": {
+        "verdict": "LOSS",
+        "losses": [
+          "problem_type:https://example.test/problems/out-of-credit"
+        ],
+        "inventions": []
+      }
+    },
+    {
+      "id": "P02-default-about-blank",
+      "calls": [
+        {
+          "source": {
+            "http_status": 400,
+            "content_type": "application/problem+json",
+            "body": {
+              "title": "Bad Request",
+              "detail": "The request is invalid."
+            }
+          },
+          "generated_tool": "fixture_P02_default_about_blank",
+          "arguments": {},
+          "raw_call_tool_result": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API bad request: The request is invalid."
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "6cf206db-5fdc-4017-9080-2334bf49ebe0",
+              "error": {
+                "code": "api_bad_request",
+                "source": "upstream",
+                "retryable": false,
+                "httpStatus": 400
+              }
+            }
+          },
+          "normalized_observation": {
+            "machine": {},
+            "diagnostic": "API bad request: The request is invalid.",
+            "claims": {},
+            "_wire": {
+              "isError": true,
+              "structuredContent_present": false,
+              "meta_present": false,
+              "embedded_problem_resource_count": 0
+            }
+          }
+        }
+      ],
+      "oracle": {
+        "verdict": "LOSS",
+        "losses": [
+          "effective_problem_type:about:blank"
+        ],
+        "inventions": []
+      }
+    },
+    {
+      "id": "P03-same-status-different-type",
+      "calls": [
+        {
+          "source": {
+            "http_status": 403,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/out-of-credit",
+              "title": "Insufficient credit"
+            }
+          },
+          "generated_tool": "fixture_P03_same_status_different_type_1",
+          "arguments": {},
+          "raw_call_tool_result": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API authorization failed: Request failed with status code 403"
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "142de7b6-c707-4d24-aac1-1640927d230b",
+              "error": {
+                "code": "api_authorization_failed",
+                "source": "upstream",
+                "retryable": false,
+                "httpStatus": 403
+              }
+            }
+          },
+          "normalized_observation": {
+            "machine": {},
+            "diagnostic": "API authorization failed: Request failed with status code 403",
+            "claims": {},
+            "_wire": {
+              "isError": true,
+              "structuredContent_present": false,
+              "meta_present": false,
+              "embedded_problem_resource_count": 0
+            }
+          }
+        },
+        {
+          "source": {
+            "http_status": 403,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/account-suspended",
+              "title": "Account suspended"
+            }
+          },
+          "generated_tool": "fixture_P03_same_status_different_type_2",
+          "arguments": {},
+          "raw_call_tool_result": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API authorization failed: Request failed with status code 403"
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "440da267-738f-459b-8b78-881a406bc320",
+              "error": {
+                "code": "api_authorization_failed",
+                "source": "upstream",
+                "retryable": false,
+                "httpStatus": 403
+              }
+            }
+          },
+          "normalized_observation": {
+            "machine": {},
+            "diagnostic": "API authorization failed: Request failed with status code 403",
+            "claims": {},
+            "_wire": {
+              "isError": true,
+              "structuredContent_present": false,
+              "meta_present": false,
+              "embedded_problem_resource_count": 0
+            }
+          }
+        }
+      ],
+      "oracle": {
+        "verdict": "LOSS",
+        "losses": [
+          "pair_distinct_problem_types"
+        ],
+        "inventions": []
+      }
+    },
+    {
+      "id": "P04-instance",
+      "calls": [
+        {
+          "source": {
+            "http_status": 409,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/conflict",
+              "instance": "/problems/occurrences/abc-123",
+              "title": "Conflict"
+            }
+          },
+          "generated_tool": "fixture_P04_instance",
+          "arguments": {},
+          "raw_call_tool_result": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API request failed (409): Request failed with status code 409"
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "5c85bd4c-727a-4249-827b-4565140697b0",
+              "error": {
+                "code": "api_request_failed",
+                "source": "upstream",
+                "retryable": false,
+                "httpStatus": 409
+              }
+            }
+          },
+          "normalized_observation": {
+            "machine": {},
+            "diagnostic": "API request failed (409): Request failed with status code 409",
+            "claims": {},
+            "_wire": {
+              "isError": true,
+              "structuredContent_present": false,
+              "meta_present": false,
+              "embedded_problem_resource_count": 0
+            }
+          }
+        }
+      ],
+      "oracle": {
+        "verdict": "LOSS",
+        "losses": [
+          "instance:/problems/occurrences/abc-123"
+        ],
+        "inventions": []
+      }
+    },
+    {
+      "id": "P05-media-type-gate",
+      "calls": [
+        {
+          "source": {
+            "http_status": 400,
+            "content_type": "application/json",
+            "body": {
+              "type": "internal_code",
+              "title": "Bad input",
+              "detail": "Missing field"
+            }
+          },
+          "generated_tool": "fixture_P05_media_type_gate",
+          "arguments": {},
+          "raw_call_tool_result": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API bad request: Missing field"
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "167b1167-a8a3-4404-8886-06cf6b260702",
+              "error": {
+                "code": "api_bad_request",
+                "source": "upstream",
+                "retryable": false,
+                "httpStatus": 400
+              }
+            }
+          },
+          "normalized_observation": {
+            "machine": {},
+            "diagnostic": "API bad request: Missing field",
+            "claims": {},
+            "_wire": {
+              "isError": true,
+              "structuredContent_present": false,
+              "meta_present": false,
+              "embedded_problem_resource_count": 0
+            }
+          }
+        }
+      ],
+      "oracle": {
+        "verdict": "NOT_APPLICABLE",
+        "losses": [],
+        "inventions": []
+      }
+    },
+    {
+      "id": "P06-scalar-extension",
+      "calls": [
+        {
+          "source": {
+            "http_status": 400,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/invalid-body-property",
+              "title": "Invalid body property",
+              "code": "invalid-body-property"
+            }
+          },
+          "generated_tool": "fixture_P06_scalar_extension",
+          "arguments": {},
+          "raw_call_tool_result": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API bad request: Request failed with status code 400"
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "a98b2716-00da-494c-b15e-97d7471b6daf",
+              "error": {
+                "code": "api_bad_request",
+                "source": "upstream",
+                "retryable": false,
+                "httpStatus": 400
+              }
+            }
+          },
+          "normalized_observation": {
+            "machine": {},
+            "diagnostic": "API bad request: Request failed with status code 400",
+            "claims": {},
+            "_wire": {
+              "isError": true,
+              "structuredContent_present": false,
+              "meta_present": false,
+              "embedded_problem_resource_count": 0
+            }
+          }
+        }
+      ],
+      "oracle": {
+        "verdict": "LOSS",
+        "losses": [
+          "extension:code"
+        ],
+        "inventions": []
+      }
+    },
+    {
+      "id": "P07-nested-validation-extension",
+      "calls": [
+        {
+          "source": {
+            "http_status": 422,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/validation-error",
+              "title": "Validation failed",
+              "errors": [
+                {
+                  "detail": "must be a positive integer",
+                  "pointer": "#/age"
+                },
+                {
+                  "detail": "must be green, red, or blue",
+                  "pointer": "#/profile/color"
+                }
+              ]
+            }
+          },
+          "generated_tool": "fixture_P07_nested_validation_extension",
+          "arguments": {},
+          "raw_call_tool_result": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API request failed (422): Request failed with status code 422"
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "25de3117-7ae8-4168-be3f-0364d33a1d7d",
+              "error": {
+                "code": "api_request_failed",
+                "source": "upstream",
+                "retryable": false,
+                "httpStatus": 422
+              }
+            }
+          },
+          "normalized_observation": {
+            "machine": {},
+            "diagnostic": "API request failed (422): Request failed with status code 422",
+            "claims": {},
+            "_wire": {
+              "isError": true,
+              "structuredContent_present": false,
+              "meta_present": false,
+              "embedded_problem_resource_count": 0
+            }
+          }
+        }
+      ],
+      "oracle": {
+        "verdict": "LOSS",
+        "losses": [
+          "extension:errors"
+        ],
+        "inventions": []
+      }
+    },
+    {
+      "id": "P08-unknown-future-extension",
+      "calls": [
+        {
+          "source": {
+            "http_status": 409,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/state-conflict",
+              "title": "State conflict",
+              "remediation": {
+                "actions": [
+                  {
+                    "rel": "refresh",
+                    "href": "/state/42"
+                  },
+                  {
+                    "rel": "retry",
+                    "after": "state-refresh"
+                  }
+                ]
+              }
+            }
+          },
+          "generated_tool": "fixture_P08_unknown_future_extension",
+          "arguments": {},
+          "raw_call_tool_result": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API request failed (409): Request failed with status code 409"
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "9e3ae470-3a8b-4655-9e98-4d542f5d4d90",
+              "error": {
+                "code": "api_request_failed",
+                "source": "upstream",
+                "retryable": false,
+                "httpStatus": 409
+              }
+            }
+          },
+          "normalized_observation": {
+            "machine": {},
+            "diagnostic": "API request failed (409): Request failed with status code 409",
+            "claims": {},
+            "_wire": {
+              "isError": true,
+              "structuredContent_present": false,
+              "meta_present": false,
+              "embedded_problem_resource_count": 0
+            }
+          }
+        }
+      ],
+      "oracle": {
+        "verdict": "LOSS",
+        "losses": [
+          "extension:remediation"
+        ],
+        "inventions": []
+      }
+    },
+    {
+      "id": "P09-localized-human-text",
+      "calls": [
+        {
+          "source": {
+            "http_status": 403,
+            "content_type": "application/problem+json",
+            "content_language": "en",
+            "body": {
+              "type": "https://example.test/problems/out-of-credit",
+              "title": "Insufficient credit",
+              "detail": "Add funds."
+            }
+          },
+          "generated_tool": "fixture_P09_localized_human_text_1",
+          "arguments": {},
+          "raw_call_tool_result": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API authorization failed: Add funds."
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "609065e2-7afa-438f-bc2d-86c50e2e3a57",
+              "error": {
+                "code": "api_authorization_failed",
+                "source": "upstream",
+                "retryable": false,
+                "httpStatus": 403
+              }
+            }
+          },
+          "normalized_observation": {
+            "machine": {},
+            "diagnostic": "API authorization failed: Add funds.",
+            "claims": {},
+            "_wire": {
+              "isError": true,
+              "structuredContent_present": false,
+              "meta_present": false,
+              "embedded_problem_resource_count": 0
+            }
+          }
+        },
+        {
+          "source": {
+            "http_status": 403,
+            "content_type": "application/problem+json",
+            "content_language": "ko",
+            "body": {
+              "type": "https://example.test/problems/out-of-credit",
+              "title": "잔액 부족",
+              "detail": "잔액을 추가하세요."
+            }
+          },
+          "generated_tool": "fixture_P09_localized_human_text_2",
+          "arguments": {},
+          "raw_call_tool_result": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API authorization failed: 잔액을 추가하세요."
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "494a9f66-cf15-4c71-858b-337aeef70b62",
+              "error": {
+                "code": "api_authorization_failed",
+                "source": "upstream",
+                "retryable": false,
+                "httpStatus": 403
+              }
+            }
+          },
+          "normalized_observation": {
+            "machine": {},
+            "diagnostic": "API authorization failed: 잔액을 추가하세요.",
+            "claims": {},
+            "_wire": {
+              "isError": true,
+              "structuredContent_present": false,
+              "meta_present": false,
+              "embedded_problem_resource_count": 0
+            }
+          }
+        }
+      ],
+      "oracle": {
+        "verdict": "LOSS",
+        "losses": [
+          "pair_same_problem_type"
+        ],
+        "inventions": []
+      }
+    },
+    {
+      "id": "P10-no-prose-mining",
+      "calls": [
+        {
+          "source": {
+            "http_status": 429,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/quota-exceeded",
+              "title": "Quota exceeded",
+              "detail": "Please try again in 30 seconds."
+            }
+          },
+          "generated_tool": "fixture_P10_no_prose_mining",
+          "arguments": {},
+          "raw_call_tool_result": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API rate limit hit: Please try again in 30 seconds."
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "4d4c08d6-006c-4197-aabe-ca5cd03b858e",
+              "error": {
+                "code": "api_rate_limited",
+                "source": "upstream",
+                "retryable": true,
+                "httpStatus": 429
+              }
+            }
+          },
+          "normalized_observation": {
+            "machine": {},
+            "diagnostic": "API rate limit hit: Please try again in 30 seconds.",
+            "claims": {},
+            "_wire": {
+              "isError": true,
+              "structuredContent_present": false,
+              "meta_present": false,
+              "embedded_problem_resource_count": 0
+            }
+          }
+        }
+      ],
+      "oracle": {
+        "verdict": "LOSS",
+        "losses": [
+          "problem_type:https://example.test/problems/quota-exceeded",
+          "detail"
+        ],
+        "inventions": []
+      }
+    },
+    {
+      "id": "P11-origin-status-survives-intermediary",
+      "calls": [
+        {
+          "source": {
+            "http_status": 502,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/upstream-overloaded",
+              "status": 503,
+              "title": "Upstream overloaded"
+            }
+          },
+          "generated_tool": "fixture_P11_origin_status_survives_intermediary",
+          "arguments": {},
+          "raw_call_tool_result": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API server error (502): Request failed with status code 502"
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "743ad841-3a30-4327-9bd5-57765606daef",
+              "error": {
+                "code": "api_server_error",
+                "source": "upstream",
+                "retryable": true,
+                "httpStatus": 502
+              }
+            }
+          },
+          "normalized_observation": {
+            "machine": {},
+            "diagnostic": "API server error (502): Request failed with status code 502",
+            "claims": {},
+            "_wire": {
+              "isError": true,
+              "structuredContent_present": false,
+              "meta_present": false,
+              "embedded_problem_resource_count": 0
+            }
+          }
+        }
+      ],
+      "oracle": {
+        "verdict": "LOSS",
+        "losses": [
+          "body_status:503",
+          "observed_status:502",
+          "distinct_origin_and_observed_status"
+        ],
+        "inventions": []
+      }
+    },
+    {
+      "id": "P12-no-retryability-invention",
+      "calls": [
+        {
+          "source": {
+            "http_status": 503,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/service-unavailable",
+              "title": "Service unavailable"
+            }
+          },
+          "generated_tool": "fixture_P12_no_retryability_invention",
+          "arguments": {},
+          "raw_call_tool_result": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API server error (503): Request failed with status code 503"
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "07d9aed4-dd9c-429e-bac0-dc775a2fd82a",
+              "error": {
+                "code": "api_server_error",
+                "source": "upstream",
+                "retryable": true,
+                "httpStatus": 503
+              }
+            }
+          },
+          "normalized_observation": {
+            "machine": {},
+            "diagnostic": "API server error (503): Request failed with status code 503",
+            "claims": {},
+            "_wire": {
+              "isError": true,
+              "structuredContent_present": false,
+              "meta_present": false,
+              "embedded_problem_resource_count": 0
+            }
+          }
+        }
+      ],
+      "oracle": {
+        "verdict": "LOSS",
+        "losses": [
+          "problem_type:https://example.test/problems/service-unavailable",
+          "observed_status:503"
+        ],
+        "inventions": []
+      }
+    }
+  ],
+  "evidence_files": {
+    "raw_sdk_results": "e6-raw-mcp-results.json",
+    "exact_stdio_wire": "e6-mcp-wire.jsonl",
+    "upstream_observer": "e6-upstream-observer.jsonl",
+    "target_stderr_and_audit": "e6-generated-server-stderr.log",
+    "layer_boundaries": "E6_LAYER_BOUNDARY_EVIDENCE.json",
+    "post_observation_verifier": "verify_e6_saved_results.py"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "algorithm": "sha256",
+  "public_draft_sha256": "6cb3947ab8bff220f37b6f81707bc979d56f7cd63788ef0c94f2d1e90e7ac3f7",
+  "e7_bundle_sha256": "7a6c5a047f66cad20e4ca14b44af30e272646cf7dce72a61401aa24372651f92",
+  "handoff_zip_sha256": "016cfe6500ce721726c2437fba3cb6e3219af660250c269e130c0bc95358bb8a",
+  "cleanroom_prompt_sha256": "25306d70020f1fe381e88c667d7e7a16c3504f3298c84b61854fa133e29c7e02",
+  "captured_before_sequence": "before npm ci, TypeScript compilation, and fresh protocol replay",
+  "captured_after_utc": "2026-08-12T17:29:35Z",
+  "before": {
+    "cases.json": "2a34f7624b88905c6509a70ede7fe17508c0005129b815886c56c5372559255f",
+    "cases.executable.json": "3efc5079560f12faae1948bd6dbfb689e290b324b125f3e65d6a4b70d803a053",
+    "openapi.json": "8a1b643642143c8149f40b3d1b687776fb847b5069deca1d4a988c2b33ab98f1",
+    "oracle.py": "1f7c203280febcae0523131fa61a98cc741d47c177d193259ee345f2efa9e456",
+    "carrier_neutral_adapter_v02.py": "db8ad3dc9cf39b8bd9ad922696e47773530ee05741a95a17f0b38c5ad7a248e5",
+    "reference_mapping_model.py": "2e7c4211e1148b270db0fb06cd242e1d7810ea4ad77447abfacdf65cae5f9d6a",
+    "REFERENCE_MAPPING_E7.md": "5c6f4532a87541d624d61165bb0613d264bc3ac0bb29e7406b618513dcd6f091"
+  },
+  "after": {
+    "cases.json": "2a34f7624b88905c6509a70ede7fe17508c0005129b815886c56c5372559255f",
+    "cases.executable.json": "3efc5079560f12faae1948bd6dbfb689e290b324b125f3e65d6a4b70d803a053",
+    "openapi.json": "8a1b643642143c8149f40b3d1b687776fb847b5069deca1d4a988c2b33ab98f1",
+    "oracle.py": "1f7c203280febcae0523131fa61a98cc741d47c177d193259ee345f2efa9e456",
+    "carrier_neutral_adapter_v02.py": "db8ad3dc9cf39b8bd9ad922696e47773530ee05741a95a17f0b38c5ad7a248e5",
+    "reference_mapping_model.py": "2e7c4211e1148b270db0fb06cd242e1d7810ea4ad77447abfacdf65cae5f9d6a",
+    "REFERENCE_MAPPING_E7.md": "5c6f4532a87541d624d61165bb0613d264bc3ac0bb29e7406b618513dcd6f091"
+  },
+  "publication_verification_before": "PASS",
+  "publication_verification_after": "PASS",
+  "immutable": true
+}

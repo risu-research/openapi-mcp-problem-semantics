@@ -1,0 +1,1053 @@
+{
+  "profile": "OpenAPI-to-MCP Problem-Semantics Preservation Profile",
+  "classification": "RC1_CLEANROOM_CONFIRMED",
+  "public_draft_sha256": "6cb3947ab8bff220f37b6f81707bc979d56f7cd63788ef0c94f2d1e90e7ac3f7",
+  "evidence_level": "fresh-install-official-mcp-sdk-v2-real-stdio-wire",
+  "fresh_dependency_tree": true,
+  "baseline_immutable": true,
+  "official_sdk": {
+    "client_package": "@modelcontextprotocol/client@2.0.0",
+    "server_package": "@modelcontextprotocol/server@2.0.0"
+  },
+  "protocol": {
+    "pinned_spec_version": "2026-07-28",
+    "era": "modern",
+    "negotiated_protocol_version": "2026-07-28",
+    "discover_result": {
+      "_meta": {
+        "io.modelcontextprotocol/serverInfo": {
+          "name": "risu-e7-reference-bridge",
+          "version": "1.0.0"
+        }
+      },
+      "ttlMs": 0,
+      "cacheScope": "private",
+      "supportedVersions": [
+        "2026-07-28"
+      ],
+      "capabilities": {
+        "tools": {
+          "listChanged": true
+        }
+      },
+      "resultType": "complete"
+    }
+  },
+  "summary": {
+    "preserved": 11,
+    "loss": 0,
+    "invented": 0,
+    "not_applicable": 1,
+    "conformant": true
+  },
+  "controls": {
+    "public_draft_hash_verified": true,
+    "frozen_baseline_immutable": true,
+    "fresh_dependency_tree": true,
+    "operation_id_identity_exact": true,
+    "real_fixture_responses_observed": true,
+    "official_client_and_server_separate_processes_stdio": true,
+    "protocol_era_modern": true,
+    "protocol_version_pinned_2026_07_28": true,
+    "wire_request_response_projection_exact": true,
+    "wire_typed_embedded_problem_resources_preserved": true,
+    "same_tool_success_machine_addressable": true,
+    "same_tool_problem_machine_addressable": true,
+    "p05_media_type_gate_no_rfc_recognition": true,
+    "p11_body_503_observed_502_distinct": true,
+    "p12_no_retryability_invention": true,
+    "negative_text_demotion_detected_as_loss": true
+  },
+  "same_operation_control": {
+    "tool_name": "fixture_S00_asymmetry",
+    "success_raw": {
+      "_meta": {
+        "io.modelcontextprotocol/serverInfo": {
+          "name": "risu-e7-reference-bridge",
+          "version": "1.0.0"
+        },
+        "org.risu.reference.source_http": {
+          "observed_http_status": 200,
+          "content_type": "application/json"
+        }
+      },
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"ok\":true,\"probe\":\"same-tool\"}"
+        }
+      ],
+      "structuredContent": {
+        "ok": true,
+        "probe": "same-tool"
+      },
+      "isError": false
+    },
+    "problem_raw": {
+      "_meta": {
+        "io.modelcontextprotocol/serverInfo": {
+          "name": "risu-e7-reference-bridge",
+          "version": "1.0.0"
+        },
+        "org.risu.reference.source_http": {
+          "observed_http_status": 403,
+          "content_type": "application/problem+json"
+        }
+      },
+      "content": [
+        {
+          "type": "resource",
+          "resource": {
+            "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fasymmetry-probe%22%2C%22title%22%3A%22Asymmetry%20probe%20failure%22%2C%22status%22%3A403%2C%22detail%22%3A%22The%20same%20generated%20MCP%20tool%20returned%20this%20RFC%209457%20problem.%22%2C%22code%22%3A%22probe-failed%22%7D",
+            "mimeType": "application/problem+json",
+            "text": "{\"type\":\"https://example.test/problems/asymmetry-probe\",\"title\":\"Asymmetry probe failure\",\"status\":403,\"detail\":\"The same generated MCP tool returned this RFC 9457 problem.\",\"code\":\"probe-failed\"}"
+          }
+        }
+      ],
+      "isError": true
+    },
+    "problem_observation": {
+      "machine": {
+        "semantic_type": "rfc9457-problem",
+        "body": {
+          "type": "https://example.test/problems/asymmetry-probe",
+          "title": "Asymmetry probe failure",
+          "status": 403,
+          "detail": "The same generated MCP tool returned this RFC 9457 problem.",
+          "code": "probe-failed"
+        },
+        "content_type": "application/problem+json",
+        "observed_http_status": 403
+      },
+      "diagnostic": null,
+      "claims": {},
+      "_wire": {
+        "isError": true,
+        "structuredContent_present": false,
+        "meta_present": true,
+        "embedded_problem_resource_count": 1
+      }
+    }
+  },
+  "p11_control": {
+    "body_status": 503,
+    "observed_http_status": 502,
+    "verdict": "PRESERVED"
+  },
+  "p12_control": {
+    "unsupported_retry_claim_present": false,
+    "verdict": "PRESERVED"
+  },
+  "negative_text_demotion_control": {
+    "raw_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"type\":\"https://example.test/problems/out-of-credit\",\"title\":\"Insufficient credit\",\"detail\":\"The purchase cannot be completed.\"}"
+        }
+      ],
+      "isError": true,
+      "_meta": {
+        "io.modelcontextprotocol/serverInfo": {
+          "name": "risu-e7-reference-bridge",
+          "version": "1.0.0"
+        },
+        "org.risu.reference.source_http": {
+          "observed_http_status": 403,
+          "content_type": "application/problem+json"
+        }
+      }
+    },
+    "observation": {
+      "machine": {},
+      "diagnostic": "{\"type\":\"https://example.test/problems/out-of-credit\",\"title\":\"Insufficient credit\",\"detail\":\"The purchase cannot be completed.\"}",
+      "claims": {},
+      "_wire": {
+        "isError": true,
+        "structuredContent_present": false,
+        "meta_present": true,
+        "embedded_problem_resource_count": 0
+      }
+    },
+    "verdict": "LOSS",
+    "losses": [
+      "problem_type:https://example.test/problems/out-of-credit"
+    ],
+    "inventions": []
+  },
+  "cases": [
+    {
+      "id": "P01-explicit-type",
+      "tools": [
+        "fixture_P01_explicit_type"
+      ],
+      "sources": {
+        "http_status": 403,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/out-of-credit",
+          "title": "Insufficient credit",
+          "detail": "The purchase cannot be completed."
+        }
+      },
+      "raw_results": {
+        "_meta": {
+          "io.modelcontextprotocol/serverInfo": {
+            "name": "risu-e7-reference-bridge",
+            "version": "1.0.0"
+          },
+          "org.risu.reference.source_http": {
+            "observed_http_status": 403,
+            "content_type": "application/problem+json"
+          }
+        },
+        "content": [
+          {
+            "type": "resource",
+            "resource": {
+              "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fout-of-credit%22%2C%22title%22%3A%22Insufficient%20credit%22%2C%22detail%22%3A%22The%20purchase%20cannot%20be%20completed.%22%7D",
+              "mimeType": "application/problem+json",
+              "text": "{\"type\":\"https://example.test/problems/out-of-credit\",\"title\":\"Insufficient credit\",\"detail\":\"The purchase cannot be completed.\"}"
+            }
+          }
+        ],
+        "isError": true
+      },
+      "observation": {
+        "machine": {
+          "semantic_type": "rfc9457-problem",
+          "body": {
+            "type": "https://example.test/problems/out-of-credit",
+            "title": "Insufficient credit",
+            "detail": "The purchase cannot be completed."
+          },
+          "content_type": "application/problem+json",
+          "observed_http_status": 403
+        },
+        "diagnostic": null,
+        "claims": {},
+        "_wire": {
+          "isError": true,
+          "structuredContent_present": false,
+          "meta_present": true,
+          "embedded_problem_resource_count": 1
+        }
+      },
+      "verdict": "PRESERVED",
+      "losses": [],
+      "inventions": []
+    },
+    {
+      "id": "P02-default-about-blank",
+      "tools": [
+        "fixture_P02_default_about_blank"
+      ],
+      "sources": {
+        "http_status": 400,
+        "content_type": "application/problem+json",
+        "body": {
+          "title": "Bad Request",
+          "detail": "The request is invalid."
+        }
+      },
+      "raw_results": {
+        "_meta": {
+          "io.modelcontextprotocol/serverInfo": {
+            "name": "risu-e7-reference-bridge",
+            "version": "1.0.0"
+          },
+          "org.risu.reference.source_http": {
+            "observed_http_status": 400,
+            "content_type": "application/problem+json"
+          }
+        },
+        "content": [
+          {
+            "type": "resource",
+            "resource": {
+              "uri": "data:application/problem+json,%7B%22title%22%3A%22Bad%20Request%22%2C%22detail%22%3A%22The%20request%20is%20invalid.%22%7D",
+              "mimeType": "application/problem+json",
+              "text": "{\"title\":\"Bad Request\",\"detail\":\"The request is invalid.\"}"
+            }
+          }
+        ],
+        "isError": true
+      },
+      "observation": {
+        "machine": {
+          "semantic_type": "rfc9457-problem",
+          "body": {
+            "title": "Bad Request",
+            "detail": "The request is invalid."
+          },
+          "content_type": "application/problem+json",
+          "observed_http_status": 400
+        },
+        "diagnostic": null,
+        "claims": {},
+        "_wire": {
+          "isError": true,
+          "structuredContent_present": false,
+          "meta_present": true,
+          "embedded_problem_resource_count": 1
+        }
+      },
+      "verdict": "PRESERVED",
+      "losses": [],
+      "inventions": []
+    },
+    {
+      "id": "P03-same-status-different-type",
+      "tools": [
+        "fixture_P03_same_status_different_type_1",
+        "fixture_P03_same_status_different_type_2"
+      ],
+      "sources": [
+        {
+          "http_status": 403,
+          "content_type": "application/problem+json",
+          "body": {
+            "type": "https://example.test/problems/out-of-credit",
+            "title": "Insufficient credit"
+          }
+        },
+        {
+          "http_status": 403,
+          "content_type": "application/problem+json",
+          "body": {
+            "type": "https://example.test/problems/account-suspended",
+            "title": "Account suspended"
+          }
+        }
+      ],
+      "raw_results": [
+        {
+          "_meta": {
+            "io.modelcontextprotocol/serverInfo": {
+              "name": "risu-e7-reference-bridge",
+              "version": "1.0.0"
+            },
+            "org.risu.reference.source_http": {
+              "observed_http_status": 403,
+              "content_type": "application/problem+json"
+            }
+          },
+          "content": [
+            {
+              "type": "resource",
+              "resource": {
+                "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fout-of-credit%22%2C%22title%22%3A%22Insufficient%20credit%22%7D",
+                "mimeType": "application/problem+json",
+                "text": "{\"type\":\"https://example.test/problems/out-of-credit\",\"title\":\"Insufficient credit\"}"
+              }
+            }
+          ],
+          "isError": true
+        },
+        {
+          "_meta": {
+            "io.modelcontextprotocol/serverInfo": {
+              "name": "risu-e7-reference-bridge",
+              "version": "1.0.0"
+            },
+            "org.risu.reference.source_http": {
+              "observed_http_status": 403,
+              "content_type": "application/problem+json"
+            }
+          },
+          "content": [
+            {
+              "type": "resource",
+              "resource": {
+                "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Faccount-suspended%22%2C%22title%22%3A%22Account%20suspended%22%7D",
+                "mimeType": "application/problem+json",
+                "text": "{\"type\":\"https://example.test/problems/account-suspended\",\"title\":\"Account suspended\"}"
+              }
+            }
+          ],
+          "isError": true
+        }
+      ],
+      "observation": [
+        {
+          "machine": {
+            "semantic_type": "rfc9457-problem",
+            "body": {
+              "type": "https://example.test/problems/out-of-credit",
+              "title": "Insufficient credit"
+            },
+            "content_type": "application/problem+json",
+            "observed_http_status": 403
+          },
+          "diagnostic": null,
+          "claims": {},
+          "_wire": {
+            "isError": true,
+            "structuredContent_present": false,
+            "meta_present": true,
+            "embedded_problem_resource_count": 1
+          }
+        },
+        {
+          "machine": {
+            "semantic_type": "rfc9457-problem",
+            "body": {
+              "type": "https://example.test/problems/account-suspended",
+              "title": "Account suspended"
+            },
+            "content_type": "application/problem+json",
+            "observed_http_status": 403
+          },
+          "diagnostic": null,
+          "claims": {},
+          "_wire": {
+            "isError": true,
+            "structuredContent_present": false,
+            "meta_present": true,
+            "embedded_problem_resource_count": 1
+          }
+        }
+      ],
+      "verdict": "PRESERVED",
+      "losses": [],
+      "inventions": []
+    },
+    {
+      "id": "P04-instance",
+      "tools": [
+        "fixture_P04_instance"
+      ],
+      "sources": {
+        "http_status": 409,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/conflict",
+          "instance": "/problems/occurrences/abc-123",
+          "title": "Conflict"
+        }
+      },
+      "raw_results": {
+        "_meta": {
+          "io.modelcontextprotocol/serverInfo": {
+            "name": "risu-e7-reference-bridge",
+            "version": "1.0.0"
+          },
+          "org.risu.reference.source_http": {
+            "observed_http_status": 409,
+            "content_type": "application/problem+json"
+          }
+        },
+        "content": [
+          {
+            "type": "resource",
+            "resource": {
+              "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fconflict%22%2C%22instance%22%3A%22%2Fproblems%2Foccurrences%2Fabc-123%22%2C%22title%22%3A%22Conflict%22%7D",
+              "mimeType": "application/problem+json",
+              "text": "{\"type\":\"https://example.test/problems/conflict\",\"instance\":\"/problems/occurrences/abc-123\",\"title\":\"Conflict\"}"
+            }
+          }
+        ],
+        "isError": true
+      },
+      "observation": {
+        "machine": {
+          "semantic_type": "rfc9457-problem",
+          "body": {
+            "type": "https://example.test/problems/conflict",
+            "instance": "/problems/occurrences/abc-123",
+            "title": "Conflict"
+          },
+          "content_type": "application/problem+json",
+          "observed_http_status": 409
+        },
+        "diagnostic": null,
+        "claims": {},
+        "_wire": {
+          "isError": true,
+          "structuredContent_present": false,
+          "meta_present": true,
+          "embedded_problem_resource_count": 1
+        }
+      },
+      "verdict": "PRESERVED",
+      "losses": [],
+      "inventions": []
+    },
+    {
+      "id": "P05-media-type-gate",
+      "tools": [
+        "fixture_P05_media_type_gate"
+      ],
+      "sources": {
+        "http_status": 400,
+        "content_type": "application/json",
+        "body": {
+          "type": "internal_code",
+          "title": "Bad input",
+          "detail": "Missing field"
+        }
+      },
+      "raw_results": {
+        "_meta": {
+          "io.modelcontextprotocol/serverInfo": {
+            "name": "risu-e7-reference-bridge",
+            "version": "1.0.0"
+          },
+          "org.risu.reference.source_http": {
+            "observed_http_status": 400,
+            "content_type": "application/json"
+          }
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Upstream HTTP 400"
+          }
+        ],
+        "isError": true
+      },
+      "observation": {
+        "machine": {},
+        "diagnostic": "Upstream HTTP 400",
+        "claims": {},
+        "_wire": {
+          "isError": true,
+          "structuredContent_present": false,
+          "meta_present": true,
+          "embedded_problem_resource_count": 0
+        }
+      },
+      "verdict": "NOT_APPLICABLE",
+      "losses": [],
+      "inventions": []
+    },
+    {
+      "id": "P06-scalar-extension",
+      "tools": [
+        "fixture_P06_scalar_extension"
+      ],
+      "sources": {
+        "http_status": 400,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/invalid-body-property",
+          "title": "Invalid body property",
+          "code": "invalid-body-property"
+        }
+      },
+      "raw_results": {
+        "_meta": {
+          "io.modelcontextprotocol/serverInfo": {
+            "name": "risu-e7-reference-bridge",
+            "version": "1.0.0"
+          },
+          "org.risu.reference.source_http": {
+            "observed_http_status": 400,
+            "content_type": "application/problem+json"
+          }
+        },
+        "content": [
+          {
+            "type": "resource",
+            "resource": {
+              "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Finvalid-body-property%22%2C%22title%22%3A%22Invalid%20body%20property%22%2C%22code%22%3A%22invalid-body-property%22%7D",
+              "mimeType": "application/problem+json",
+              "text": "{\"type\":\"https://example.test/problems/invalid-body-property\",\"title\":\"Invalid body property\",\"code\":\"invalid-body-property\"}"
+            }
+          }
+        ],
+        "isError": true
+      },
+      "observation": {
+        "machine": {
+          "semantic_type": "rfc9457-problem",
+          "body": {
+            "type": "https://example.test/problems/invalid-body-property",
+            "title": "Invalid body property",
+            "code": "invalid-body-property"
+          },
+          "content_type": "application/problem+json",
+          "observed_http_status": 400
+        },
+        "diagnostic": null,
+        "claims": {},
+        "_wire": {
+          "isError": true,
+          "structuredContent_present": false,
+          "meta_present": true,
+          "embedded_problem_resource_count": 1
+        }
+      },
+      "verdict": "PRESERVED",
+      "losses": [],
+      "inventions": []
+    },
+    {
+      "id": "P07-nested-validation-extension",
+      "tools": [
+        "fixture_P07_nested_validation_extension"
+      ],
+      "sources": {
+        "http_status": 422,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/validation-error",
+          "title": "Validation failed",
+          "errors": [
+            {
+              "detail": "must be a positive integer",
+              "pointer": "#/age"
+            },
+            {
+              "detail": "must be green, red, or blue",
+              "pointer": "#/profile/color"
+            }
+          ]
+        }
+      },
+      "raw_results": {
+        "_meta": {
+          "io.modelcontextprotocol/serverInfo": {
+            "name": "risu-e7-reference-bridge",
+            "version": "1.0.0"
+          },
+          "org.risu.reference.source_http": {
+            "observed_http_status": 422,
+            "content_type": "application/problem+json"
+          }
+        },
+        "content": [
+          {
+            "type": "resource",
+            "resource": {
+              "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fvalidation-error%22%2C%22title%22%3A%22Validation%20failed%22%2C%22errors%22%3A%5B%7B%22detail%22%3A%22must%20be%20a%20positive%20integer%22%2C%22pointer%22%3A%22%23%2Fage%22%7D%2C%7B%22detail%22%3A%22must%20be%20green%2C%20red%2C%20or%20blue%22%2C%22pointer%22%3A%22%23%2Fprofile%2Fcolor%22%7D%5D%7D",
+              "mimeType": "application/problem+json",
+              "text": "{\"type\":\"https://example.test/problems/validation-error\",\"title\":\"Validation failed\",\"errors\":[{\"detail\":\"must be a positive integer\",\"pointer\":\"#/age\"},{\"detail\":\"must be green, red, or blue\",\"pointer\":\"#/profile/color\"}]}"
+            }
+          }
+        ],
+        "isError": true
+      },
+      "observation": {
+        "machine": {
+          "semantic_type": "rfc9457-problem",
+          "body": {
+            "type": "https://example.test/problems/validation-error",
+            "title": "Validation failed",
+            "errors": [
+              {
+                "detail": "must be a positive integer",
+                "pointer": "#/age"
+              },
+              {
+                "detail": "must be green, red, or blue",
+                "pointer": "#/profile/color"
+              }
+            ]
+          },
+          "content_type": "application/problem+json",
+          "observed_http_status": 422
+        },
+        "diagnostic": null,
+        "claims": {},
+        "_wire": {
+          "isError": true,
+          "structuredContent_present": false,
+          "meta_present": true,
+          "embedded_problem_resource_count": 1
+        }
+      },
+      "verdict": "PRESERVED",
+      "losses": [],
+      "inventions": []
+    },
+    {
+      "id": "P08-unknown-future-extension",
+      "tools": [
+        "fixture_P08_unknown_future_extension"
+      ],
+      "sources": {
+        "http_status": 409,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/state-conflict",
+          "title": "State conflict",
+          "remediation": {
+            "actions": [
+              {
+                "rel": "refresh",
+                "href": "/state/42"
+              },
+              {
+                "rel": "retry",
+                "after": "state-refresh"
+              }
+            ]
+          }
+        }
+      },
+      "raw_results": {
+        "_meta": {
+          "io.modelcontextprotocol/serverInfo": {
+            "name": "risu-e7-reference-bridge",
+            "version": "1.0.0"
+          },
+          "org.risu.reference.source_http": {
+            "observed_http_status": 409,
+            "content_type": "application/problem+json"
+          }
+        },
+        "content": [
+          {
+            "type": "resource",
+            "resource": {
+              "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fstate-conflict%22%2C%22title%22%3A%22State%20conflict%22%2C%22remediation%22%3A%7B%22actions%22%3A%5B%7B%22rel%22%3A%22refresh%22%2C%22href%22%3A%22%2Fstate%2F42%22%7D%2C%7B%22rel%22%3A%22retry%22%2C%22after%22%3A%22state-refresh%22%7D%5D%7D%7D",
+              "mimeType": "application/problem+json",
+              "text": "{\"type\":\"https://example.test/problems/state-conflict\",\"title\":\"State conflict\",\"remediation\":{\"actions\":[{\"rel\":\"refresh\",\"href\":\"/state/42\"},{\"rel\":\"retry\",\"after\":\"state-refresh\"}]}}"
+            }
+          }
+        ],
+        "isError": true
+      },
+      "observation": {
+        "machine": {
+          "semantic_type": "rfc9457-problem",
+          "body": {
+            "type": "https://example.test/problems/state-conflict",
+            "title": "State conflict",
+            "remediation": {
+              "actions": [
+                {
+                  "rel": "refresh",
+                  "href": "/state/42"
+                },
+                {
+                  "rel": "retry",
+                  "after": "state-refresh"
+                }
+              ]
+            }
+          },
+          "content_type": "application/problem+json",
+          "observed_http_status": 409
+        },
+        "diagnostic": null,
+        "claims": {},
+        "_wire": {
+          "isError": true,
+          "structuredContent_present": false,
+          "meta_present": true,
+          "embedded_problem_resource_count": 1
+        }
+      },
+      "verdict": "PRESERVED",
+      "losses": [],
+      "inventions": []
+    },
+    {
+      "id": "P09-localized-human-text",
+      "tools": [
+        "fixture_P09_localized_human_text_1",
+        "fixture_P09_localized_human_text_2"
+      ],
+      "sources": [
+        {
+          "http_status": 403,
+          "content_type": "application/problem+json",
+          "content_language": "en",
+          "body": {
+            "type": "https://example.test/problems/out-of-credit",
+            "title": "Insufficient credit",
+            "detail": "Add funds."
+          }
+        },
+        {
+          "http_status": 403,
+          "content_type": "application/problem+json",
+          "content_language": "ko",
+          "body": {
+            "type": "https://example.test/problems/out-of-credit",
+            "title": "잔액 부족",
+            "detail": "잔액을 추가하세요."
+          }
+        }
+      ],
+      "raw_results": [
+        {
+          "_meta": {
+            "io.modelcontextprotocol/serverInfo": {
+              "name": "risu-e7-reference-bridge",
+              "version": "1.0.0"
+            },
+            "org.risu.reference.source_http": {
+              "observed_http_status": 403,
+              "content_type": "application/problem+json",
+              "content_language": "en"
+            }
+          },
+          "content": [
+            {
+              "type": "resource",
+              "resource": {
+                "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fout-of-credit%22%2C%22title%22%3A%22Insufficient%20credit%22%2C%22detail%22%3A%22Add%20funds.%22%7D",
+                "mimeType": "application/problem+json",
+                "text": "{\"type\":\"https://example.test/problems/out-of-credit\",\"title\":\"Insufficient credit\",\"detail\":\"Add funds.\"}"
+              }
+            }
+          ],
+          "isError": true
+        },
+        {
+          "_meta": {
+            "io.modelcontextprotocol/serverInfo": {
+              "name": "risu-e7-reference-bridge",
+              "version": "1.0.0"
+            },
+            "org.risu.reference.source_http": {
+              "observed_http_status": 403,
+              "content_type": "application/problem+json",
+              "content_language": "ko"
+            }
+          },
+          "content": [
+            {
+              "type": "resource",
+              "resource": {
+                "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fout-of-credit%22%2C%22title%22%3A%22%EC%9E%94%EC%95%A1%20%EB%B6%80%EC%A1%B1%22%2C%22detail%22%3A%22%EC%9E%94%EC%95%A1%EC%9D%84%20%EC%B6%94%EA%B0%80%ED%95%98%EC%84%B8%EC%9A%94.%22%7D",
+                "mimeType": "application/problem+json",
+                "text": "{\"type\":\"https://example.test/problems/out-of-credit\",\"title\":\"잔액 부족\",\"detail\":\"잔액을 추가하세요.\"}"
+              }
+            }
+          ],
+          "isError": true
+        }
+      ],
+      "observation": [
+        {
+          "machine": {
+            "semantic_type": "rfc9457-problem",
+            "body": {
+              "type": "https://example.test/problems/out-of-credit",
+              "title": "Insufficient credit",
+              "detail": "Add funds."
+            },
+            "content_type": "application/problem+json",
+            "observed_http_status": 403
+          },
+          "diagnostic": null,
+          "claims": {},
+          "_wire": {
+            "isError": true,
+            "structuredContent_present": false,
+            "meta_present": true,
+            "embedded_problem_resource_count": 1
+          }
+        },
+        {
+          "machine": {
+            "semantic_type": "rfc9457-problem",
+            "body": {
+              "type": "https://example.test/problems/out-of-credit",
+              "title": "잔액 부족",
+              "detail": "잔액을 추가하세요."
+            },
+            "content_type": "application/problem+json",
+            "observed_http_status": 403
+          },
+          "diagnostic": null,
+          "claims": {},
+          "_wire": {
+            "isError": true,
+            "structuredContent_present": false,
+            "meta_present": true,
+            "embedded_problem_resource_count": 1
+          }
+        }
+      ],
+      "verdict": "PRESERVED",
+      "losses": [],
+      "inventions": []
+    },
+    {
+      "id": "P10-no-prose-mining",
+      "tools": [
+        "fixture_P10_no_prose_mining"
+      ],
+      "sources": {
+        "http_status": 429,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/quota-exceeded",
+          "title": "Quota exceeded",
+          "detail": "Please try again in 30 seconds."
+        }
+      },
+      "raw_results": {
+        "_meta": {
+          "io.modelcontextprotocol/serverInfo": {
+            "name": "risu-e7-reference-bridge",
+            "version": "1.0.0"
+          },
+          "org.risu.reference.source_http": {
+            "observed_http_status": 429,
+            "content_type": "application/problem+json"
+          }
+        },
+        "content": [
+          {
+            "type": "resource",
+            "resource": {
+              "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fquota-exceeded%22%2C%22title%22%3A%22Quota%20exceeded%22%2C%22detail%22%3A%22Please%20try%20again%20in%2030%20seconds.%22%7D",
+              "mimeType": "application/problem+json",
+              "text": "{\"type\":\"https://example.test/problems/quota-exceeded\",\"title\":\"Quota exceeded\",\"detail\":\"Please try again in 30 seconds.\"}"
+            }
+          }
+        ],
+        "isError": true
+      },
+      "observation": {
+        "machine": {
+          "semantic_type": "rfc9457-problem",
+          "body": {
+            "type": "https://example.test/problems/quota-exceeded",
+            "title": "Quota exceeded",
+            "detail": "Please try again in 30 seconds."
+          },
+          "content_type": "application/problem+json",
+          "observed_http_status": 429
+        },
+        "diagnostic": null,
+        "claims": {},
+        "_wire": {
+          "isError": true,
+          "structuredContent_present": false,
+          "meta_present": true,
+          "embedded_problem_resource_count": 1
+        }
+      },
+      "verdict": "PRESERVED",
+      "losses": [],
+      "inventions": []
+    },
+    {
+      "id": "P11-origin-status-survives-intermediary",
+      "tools": [
+        "fixture_P11_origin_status_survives_intermediary"
+      ],
+      "sources": {
+        "http_status": 502,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/upstream-overloaded",
+          "status": 503,
+          "title": "Upstream overloaded"
+        }
+      },
+      "raw_results": {
+        "_meta": {
+          "io.modelcontextprotocol/serverInfo": {
+            "name": "risu-e7-reference-bridge",
+            "version": "1.0.0"
+          },
+          "org.risu.reference.source_http": {
+            "observed_http_status": 502,
+            "content_type": "application/problem+json"
+          }
+        },
+        "content": [
+          {
+            "type": "resource",
+            "resource": {
+              "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fupstream-overloaded%22%2C%22status%22%3A503%2C%22title%22%3A%22Upstream%20overloaded%22%7D",
+              "mimeType": "application/problem+json",
+              "text": "{\"type\":\"https://example.test/problems/upstream-overloaded\",\"status\":503,\"title\":\"Upstream overloaded\"}"
+            }
+          }
+        ],
+        "isError": true
+      },
+      "observation": {
+        "machine": {
+          "semantic_type": "rfc9457-problem",
+          "body": {
+            "type": "https://example.test/problems/upstream-overloaded",
+            "status": 503,
+            "title": "Upstream overloaded"
+          },
+          "content_type": "application/problem+json",
+          "observed_http_status": 502
+        },
+        "diagnostic": null,
+        "claims": {},
+        "_wire": {
+          "isError": true,
+          "structuredContent_present": false,
+          "meta_present": true,
+          "embedded_problem_resource_count": 1
+        }
+      },
+      "verdict": "PRESERVED",
+      "losses": [],
+      "inventions": []
+    },
+    {
+      "id": "P12-no-retryability-invention",
+      "tools": [
+        "fixture_P12_no_retryability_invention"
+      ],
+      "sources": {
+        "http_status": 503,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/service-unavailable",
+          "title": "Service unavailable"
+        }
+      },
+      "raw_results": {
+        "_meta": {
+          "io.modelcontextprotocol/serverInfo": {
+            "name": "risu-e7-reference-bridge",
+            "version": "1.0.0"
+          },
+          "org.risu.reference.source_http": {
+            "observed_http_status": 503,
+            "content_type": "application/problem+json"
+          }
+        },
+        "content": [
+          {
+            "type": "resource",
+            "resource": {
+              "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fservice-unavailable%22%2C%22title%22%3A%22Service%20unavailable%22%7D",
+              "mimeType": "application/problem+json",
+              "text": "{\"type\":\"https://example.test/problems/service-unavailable\",\"title\":\"Service unavailable\"}"
+            }
+          }
+        ],
+        "isError": true
+      },
+      "observation": {
+        "machine": {
+          "semantic_type": "rfc9457-problem",
+          "body": {
+            "type": "https://example.test/problems/service-unavailable",
+            "title": "Service unavailable"
+          },
+          "content_type": "application/problem+json",
+          "observed_http_status": 503
+        },
+        "diagnostic": null,
+        "claims": {},
+        "_wire": {
+          "isError": true,
+          "structuredContent_present": false,
+          "meta_present": true,
+          "embedded_problem_resource_count": 1
+        }
+      },
+      "verdict": "PRESERVED",
+      "losses": [],
+      "inventions": []
+    }
+  ]
+}

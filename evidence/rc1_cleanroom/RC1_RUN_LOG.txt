@@ -1,0 +1,75 @@
+RC1 clean-room reproduction run — 2026-08-12
+
+Input gates
+-----------
+PUBLIC_DRAFT_SHA256: 6cb3947ab8bff220f37b6f81707bc979d56f7cd63788ef0c94f2d1e90e7ac3f7 (MATCH)
+E7_BUNDLE_SHA256: 7a6c5a047f66cad20e4ca14b44af30e272646cf7dce72a61401aa24372651f92 (MATCH)
+E7 internal SHA256SUMS: PASS (39 files)
+verify_publication.py before replay: PASS
+reference mapping model: PASS
+summary: preserved=11 loss=0 invented=0 n/a=1 conformant=True
+negative text-demotion control: PASS (LOSS)
+
+Clean dependency materialization
+--------------------------------
+node_modules absent before install: YES
+compiled dist absent before build: YES
+target npm cache empty before install: YES
+prior E7 installed tree reused: NO
+npm version: 11.19.0
+npm ci exit: 0
+npm ci output: added 17 packages in 683ms
+package-lock SHA256 before/after: 47add159bd41427166f373240941e750d93148e3e0a8acc222a3f0f9828c4b9a
+npm ls --all exit: 0
+
+Fresh build
+-----------
+Node: v24.14.0
+TypeScript: 5.9.3
+compile exit: 0
+fresh bridge JS SHA256: ddb4e90fdefadbc618acb10e4a439bc55e3dd6e8a94c90420e64e8048b233726
+fresh client JS SHA256: b300d5be122a798867d30d62046b1e88b2892b43b8641b2b662ae71282b2a033
+fresh wire tee JS SHA256: 0fa27e561d46b278684aa7b859d32dfe629007b08e4644c3bbc0323483675326
+
+Fresh protocol replay
+---------------------
+fresh observation timestamp: 2026-08-12T17:27:32.153Z
+negotiated protocol: 2026-07-28
+negotiated era: modern
+legacy opening policy: reject
+registered tools: 15
+real fixture responses: 16
+client tools/call requests: 16
+server tool results: 16
+typed embedded application/problem+json resources on wire: 14
+fixture stderr: empty
+
+Frozen post-observation replay
+------------------------------
+CLASSIFICATION: RC1_CLEANROOM_CONFIRMED
+PRESERVED: 11
+LOSS: 0
+INVENTED: 0
+NOT_APPLICABLE: 1
+S00 success machine-addressable: PASS
+S00 problem machine-addressable: PASS
+P05 media-type gate: PASS
+P11 body status 503 plus observed status 502: PASS
+P12 no retryability invention: PASS
+P01 text-only demotion: PASS (LOSS detected)
+client-side results correspond to fresh wire results: PASS
+typed embedded resources survive fresh official wire: PASS
+
+Post-run integrity
+------------------
+verify_publication.py after replay: PASS
+all seven frozen/contract hashes before == after: YES
+public draft modified: NO
+
+Determinism note
+----------------
+The fresh observation timestamp differs from E7. After removing only that
+timestamp, the fresh raw client document equals E7, and both new stdio
+transcripts are byte-identical to E7. This is a deterministic reproduction,
+not reuse: the clean replay began with no node_modules, no dist, no raw
+observations, and started new fixture/server/client processes.

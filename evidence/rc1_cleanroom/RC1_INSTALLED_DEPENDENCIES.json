@@ -1,0 +1,62 @@
+{
+  "package_lock_sha256": "47add159bd41427166f373240941e750d93148e3e0a8acc222a3f0f9828c4b9a",
+  "package_lock_unchanged_after_install": true,
+  "lockfile_version": 3,
+  "npm_version": "11.19.0",
+  "npm_ci": {
+    "exit_code": 0,
+    "reported_added_packages": 17,
+    "reported_duration": "683ms",
+    "audit_disabled": true,
+    "fund_output_disabled": true
+  },
+  "fresh_install": {
+    "source_directory_contained_only_bridge_sources_manifest_lock_and_tsconfig": true,
+    "node_modules_absent_before_npm_ci": true,
+    "compiled_dist_absent_before_build": true,
+    "empty_npm_cache_before_npm_ci": true,
+    "prior_e7_node_modules_reused": false,
+    "prior_e7_compiled_output_reused": false,
+    "newly_materialized_dependency_tree": true,
+    "node_modules_birth_utc": "2026-08-12T17:26:51Z"
+  },
+  "packages": {
+    "@modelcontextprotocol/client": {
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/@modelcontextprotocol/client/-/client-2.0.0.tgz",
+      "integrity": "sha512-8f1OghQ2rjzIOfqgUCP+8GiUWqRs89njoWLNqAe8kWmDePv3s1fZXseej+QXemssEuuOvLLmLO/kqM3IQHtISw==",
+      "installed_package_json_sha256": "e82352cb01cda68e239b73ba7ca2065b3078fa9bb8d762e7cff04fcc5a141ccb"
+    },
+    "@modelcontextprotocol/core": {
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/@modelcontextprotocol/core/-/core-2.0.0.tgz",
+      "integrity": "sha512-pJCEwGG7Lfr/+PQp9ZTwKXNeO5wzbfKL7H3MYpCorM4oFBoQrdjnBgEoqG+RjhsvS1FKrDbKux+M1HhlnGWqcA==",
+      "installed_package_json_sha256": "dc2e8e1fc31878b0b537b0ea034d4a11284cce20fe81f4c6ea823dd6db7e7ad5"
+    },
+    "@modelcontextprotocol/server": {
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/@modelcontextprotocol/server/-/server-2.0.0.tgz",
+      "integrity": "sha512-YhHWdHfpFMQfd0prsEnxKeS3Qz3ytIGmsS0sth4KDjnacIT7hxk6hXHkJ9KysxlkvTM+WZAtQbbcUhdoP4Hvtw==",
+      "installed_package_json_sha256": "ff7f23c4a4a3162a34a2cb21087e1844bb8631724d8e43aa14aaa86d3f7e07c2"
+    },
+    "@types/node": {
+      "version": "25.5.0",
+      "integrity": "sha512-jp2P3tQMSxWugkCUKLRPVUpGaL5MVFwF8RDuSRztfwgN1wmqJeMSbKlnEtQqU8UrhTmzEmZdu2I6v2dpp7XIxw==",
+      "installed_package_json_sha256": "ec8948af58014e2914b8994950a985e66c69ce34adfdd3558299025e6e3cc9f8"
+    },
+    "cross-spawn": {"version": "7.0.6", "integrity": "sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==", "installed_package_json_sha256": "2e106cd9b4ae4e34ead35218371a0d4e172da72515a4f8f97d69a2e1fe3dee82"},
+    "eventsource": {"version": "3.0.7", "integrity": "sha512-CRT1WTyuQoD771GW56XEZFQ/ZoSfWid1alKGDYMmkt2yl8UXrVR4pspqWNEcqKvVIzg6PAltWjxcSSPrboA4iA==", "installed_package_json_sha256": "99cec0bc0f4919b5de13302b0ce28cb0dd966b316cd2c961e0e7c73f884f7524"},
+    "eventsource-parser": {"version": "3.1.1", "integrity": "sha512-EKN1vKAMcZ8MlYMpaNuxN6R9yakzH6uajHcHVTqWJzvu5pWw9DyhbP35HH8MVBQ+dZjAfDxk+A8NiR9KWaXiyQ==", "installed_package_json_sha256": "27a8440c43f6bb12ec3d93338d93efcc4130e8be1ec7f33f5b31c05c2147430b"},
+    "isexe": {"version": "2.0.0", "integrity": "sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==", "installed_package_json_sha256": "395c2af9abeeaafe7391974c1eacfb2a2bdeef187f21c3f5582c49e0368e59bf"},
+    "jose": {"version": "6.2.8", "integrity": "sha512-Bsdjwm3Qsd/P0jR+BHDe3LytDfY7WBq2HmCCLIwuVRHMuEC9ae7/R474GIUdF1NgCyZjzVo/A9DOiOBtXq8ZoQ==", "installed_package_json_sha256": "ddc23313393b2ff90837afa6dc6af39c38f37c8c02fb07665a657bc720f3b56c"},
+    "path-key": {"version": "3.1.1", "integrity": "sha512-ojmeN0qd+y0jszEtoY48r0Peq5dwMEkIlCOu6Q5f41lfkswXuKtYrhgoTpLnyIcHm24Uhqx+5Tqm2InSwLhE6Q==", "installed_package_json_sha256": "25594dab72681c910d9cc919263a4daf27d77a75e0d2c26a4d958d6d6b798f86"},
+    "pkce-challenge": {"version": "5.0.1", "integrity": "sha512-wQ0b/W4Fr01qtpHlqSqspcj3EhBvimsdh0KlHhH8HRZnMsEa0ea2fTULOXOS9ccQr3om+GcGRk4e+isrZWV8qQ==", "installed_package_json_sha256": "74fd5b54078ebad49e15421f928d285f63926caae3220356d95a9afc6fa0e417"},
+    "shebang-command": {"version": "2.0.0", "integrity": "sha512-kHxr2zZpYtdmrN1qDjrrX/Z1rR1kG8Dx+gkpK1G4eXmvXswmcE1hTWBWYUzlraYw1/yZp6YuDY77YtvbN0dmDA==", "installed_package_json_sha256": "44de390ae5ed6c5f9758b8b9c90b93fa53977d5361731600429f1de08f4b3f30"},
+    "shebang-regex": {"version": "3.0.0", "integrity": "sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==", "installed_package_json_sha256": "b8018c6b8cc9900dfd1ac18a54956ba34c453fdc2da5e5fe555ee8f04133a1c5"},
+    "typescript": {"version": "5.9.3", "integrity": "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==", "installed_package_json_sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"},
+    "undici-types": {"version": "7.18.2", "integrity": "sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==", "installed_package_json_sha256": "01701286a0441eddf1cd47d488047d363ce7d75466e7b6c89f1c605fba1c3957"},
+    "which": {"version": "2.0.2", "integrity": "sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==", "installed_package_json_sha256": "43010039ed5e89f7186960be682b3cb5cda5ab6cdfb06cbfd4f081cf0e7b4260"},
+    "zod": {"version": "4.4.3", "integrity": "sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==", "installed_package_json_sha256": "c630bd10b52dcf71c112a2bf78dbf2734b9db58d62de663b8d86c2ec2c8cda2e"}
+  },
+  "npm_ls_all_exit_code": 0
+}

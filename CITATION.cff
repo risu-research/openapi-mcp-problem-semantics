@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this research artifact, please cite it using the metadata below."
+title: "OpenAPI→MCP Problem-Semantics Preservation Profile"
+type: software
+authors:
+  - family-names: Lee
+    given-names: Moon
+    affiliation: "RISU Institute"
+repository-code: "https://github.com/risu-research/openapi-mcp-problem-semantics"
+url: "https://github.com/risu-research/openapi-mcp-problem-semantics"
+version: "0.1.0-rc1"
+date-released: 2026-08-12
+license: Apache-2.0
+abstract: >-
+  A bounded, executable conformance profile for testing whether RFC 9457
+  Problem Details semantics remain machine-addressable across OpenAPI-to-MCP
+  translation, with empirical translator evidence, a constructive preserving
+  reference, and a clean-room reproduction.
+keywords:
+  - OpenAPI
+  - Model Context Protocol
+  - MCP
+  - RFC 9457
+  - Problem Details
+  - semantic preservation
+  - protocol translation

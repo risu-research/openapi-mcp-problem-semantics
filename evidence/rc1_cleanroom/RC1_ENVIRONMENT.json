@@ -1,0 +1,25 @@
+{
+  "execution_date": "2026-08-12",
+  "fresh_observation_generated_at_utc": "2026-08-12T17:27:32.153Z",
+  "final_frozen_rehash_utc": "2026-08-12T17:29:35Z",
+  "os": {
+    "product": "macOS",
+    "version": "26.5.2",
+    "build": "25F84",
+    "kernel": "Darwin 25.5.0",
+    "architecture": "arm64"
+  },
+  "runtimes": {
+    "node": "v24.14.0",
+    "npm": "11.19.0",
+    "typescript": "5.9.3",
+    "fixture_python": "3.12.13",
+    "dependency_free_verifier_python": "3.9.6"
+  },
+  "protocol": {
+    "requested": "2026-07-28",
+    "observed": "2026-07-28",
+    "era": "modern",
+    "legacy_server_opening_policy": "reject"
+  }
+}

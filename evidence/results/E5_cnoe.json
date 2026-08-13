@@ -1,0 +1,1005 @@
+{
+  "profile": "OpenAPI→MCP Problem-Semantics Preservation Profile",
+  "evidence_level": "current-official-github-source-generated-server-full-mcp-e2e",
+  "target": {
+    "repository": "cnoe-io/openapi-mcp-codegen",
+    "commit": "d0d9e1d848c5705d9bfb1f58a82a7e653c9c85c2",
+    "source_modified": false
+  },
+  "runtime": {
+    "python": "3.13.15 (main, Aug  7 2026, 02:15:21) [Clang 22.1.3 ]",
+    "openapi-mcp-codegen": "0.1.0",
+    "fastmcp": "2.11.1",
+    "mcp": "1.12.3"
+  },
+  "mcp_initialize_result": {
+    "_meta": null,
+    "protocolVersion": "2025-06-18",
+    "capabilities": {
+      "experimental": {},
+      "logging": null,
+      "prompts": {
+        "listChanged": false
+      },
+      "resources": {
+        "subscribe": false,
+        "listChanged": false
+      },
+      "tools": {
+        "listChanged": true
+      },
+      "completions": null
+    },
+    "serverInfo": {
+      "name": "RISU E5 CNOE MCP Server",
+      "title": null,
+      "version": "1.12.3"
+    },
+    "instructions": null
+  },
+  "listed_tools": [
+    {
+      "name": "get_fixture_p01_explicit_type",
+      "title": null,
+      "description": "Fixture P01-explicit-type\n\nOpenAPI Description:\n\n\nArgs:\n\n\nReturns:\n    Any: The JSON response from the API call.\n\nRaises:\n    Exception: If the API request fails or returns an error.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      },
+      "outputSchema": null,
+      "annotations": null,
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "get_fixture_p02_blank",
+      "title": null,
+      "description": "Fixture P02-default-about-blank\n\nOpenAPI Description:\n\n\nArgs:\n\n\nReturns:\n    Any: The JSON response from the API call.\n\nRaises:\n    Exception: If the API request fails or returns an error.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      },
+      "outputSchema": null,
+      "annotations": null,
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "get_fixture_p03_1",
+      "title": null,
+      "description": "Fixture P03-same-status-different-type\n\nOpenAPI Description:\n\n\nArgs:\n\n\nReturns:\n    Any: The JSON response from the API call.\n\nRaises:\n    Exception: If the API request fails or returns an error.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      },
+      "outputSchema": null,
+      "annotations": null,
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "get_fixture_p03_2",
+      "title": null,
+      "description": "Fixture P03-same-status-different-type\n\nOpenAPI Description:\n\n\nArgs:\n\n\nReturns:\n    Any: The JSON response from the API call.\n\nRaises:\n    Exception: If the API request fails or returns an error.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      },
+      "outputSchema": null,
+      "annotations": null,
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "get_fixture_p04_instance",
+      "title": null,
+      "description": "Fixture P04-instance\n\nOpenAPI Description:\n\n\nArgs:\n\n\nReturns:\n    Any: The JSON response from the API call.\n\nRaises:\n    Exception: If the API request fails or returns an error.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      },
+      "outputSchema": null,
+      "annotations": null,
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "get_fixture_p05_media_type_gate",
+      "title": null,
+      "description": "Fixture P05-media-type-gate\n\nOpenAPI Description:\n\n\nArgs:\n\n\nReturns:\n    Any: The JSON response from the API call.\n\nRaises:\n    Exception: If the API request fails or returns an error.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      },
+      "outputSchema": null,
+      "annotations": null,
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "get_fixture_p06_scalar_extension",
+      "title": null,
+      "description": "Fixture P06-scalar-extension\n\nOpenAPI Description:\n\n\nArgs:\n\n\nReturns:\n    Any: The JSON response from the API call.\n\nRaises:\n    Exception: If the API request fails or returns an error.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      },
+      "outputSchema": null,
+      "annotations": null,
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "get_fixture_p07_extension",
+      "title": null,
+      "description": "Fixture P07-nested-validation-extension\n\nOpenAPI Description:\n\n\nArgs:\n\n\nReturns:\n    Any: The JSON response from the API call.\n\nRaises:\n    Exception: If the API request fails or returns an error.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      },
+      "outputSchema": null,
+      "annotations": null,
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "get_fixture_p08_extension",
+      "title": null,
+      "description": "Fixture P08-unknown-future-extension\n\nOpenAPI Description:\n\n\nArgs:\n\n\nReturns:\n    Any: The JSON response from the API call.\n\nRaises:\n    Exception: If the API request fails or returns an error.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      },
+      "outputSchema": null,
+      "annotations": null,
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "get_fixture_p09_1",
+      "title": null,
+      "description": "Fixture P09-localized-human-text\n\nOpenAPI Description:\n\n\nArgs:\n\n\nReturns:\n    Any: The JSON response from the API call.\n\nRaises:\n    Exception: If the API request fails or returns an error.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      },
+      "outputSchema": null,
+      "annotations": null,
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "get_fixture_p09_2",
+      "title": null,
+      "description": "Fixture P09-localized-human-text\n\nOpenAPI Description:\n\n\nArgs:\n\n\nReturns:\n    Any: The JSON response from the API call.\n\nRaises:\n    Exception: If the API request fails or returns an error.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      },
+      "outputSchema": null,
+      "annotations": null,
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "get_fixture_p10_no_prose_mining",
+      "title": null,
+      "description": "Fixture P10-no-prose-mining\n\nOpenAPI Description:\n\n\nArgs:\n\n\nReturns:\n    Any: The JSON response from the API call.\n\nRaises:\n    Exception: If the API request fails or returns an error.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      },
+      "outputSchema": null,
+      "annotations": null,
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "get_fixture_p11_intermediary",
+      "title": null,
+      "description": "Fixture P11-origin-status-survives-intermediary\n\nOpenAPI Description:\n\n\nArgs:\n\n\nReturns:\n    Any: The JSON response from the API call.\n\nRaises:\n    Exception: If the API request fails or returns an error.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      },
+      "outputSchema": null,
+      "annotations": null,
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "get_fixture_p12_invention",
+      "title": null,
+      "description": "Fixture P12-no-retryability-invention\n\nOpenAPI Description:\n\n\nArgs:\n\n\nReturns:\n    Any: The JSON response from the API call.\n\nRaises:\n    Exception: If the API request fails or returns an error.",
+      "inputSchema": {
+        "properties": {},
+        "type": "object"
+      },
+      "outputSchema": null,
+      "annotations": null,
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    },
+    {
+      "name": "get_fixture_s00_asymmetry",
+      "title": null,
+      "description": "Same-tool success/error representation asymmetry control\n\nOpenAPI Description:\n\n\nArgs:\n\n    param_outcome (Literal['success', 'problem']): Select a 200 JSON success or 403 RFC 9457 Problem Details response.\n\n\nReturns:\n    Any: The JSON response from the API call.\n\nRaises:\n    Exception: If the API request fails or returns an error.",
+      "inputSchema": {
+        "properties": {
+          "param_outcome": {
+            "enum": [
+              "success",
+              "problem"
+            ],
+            "title": "Param Outcome",
+            "type": "string"
+          }
+        },
+        "required": [
+          "param_outcome"
+        ],
+        "type": "object"
+      },
+      "outputSchema": null,
+      "annotations": null,
+      "_meta": {
+        "_fastmcp": {
+          "tags": []
+        }
+      }
+    }
+  ],
+  "summary": {
+    "preserved": 0,
+    "loss": 11,
+    "invented": 0,
+    "not_applicable": 1,
+    "conformant": false,
+    "same_tool_success_machine_addressable": true,
+    "same_tool_problem_rfc9457_machine_addressable": false
+  },
+  "asymmetry_control": {
+    "generated_tool_name": "get_fixture_s00_asymmetry",
+    "success_source": {
+      "http_status": 200,
+      "content_type": "application/json",
+      "body": {
+        "ok": true,
+        "probe": "same-tool"
+      }
+    },
+    "success_raw_result": {
+      "_meta": null,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"ok\":true,\"probe\":\"same-tool\"}",
+          "annotations": null,
+          "_meta": null
+        }
+      ],
+      "structuredContent": {
+        "ok": true,
+        "probe": "same-tool"
+      },
+      "isError": false
+    },
+    "problem_source": {
+      "http_status": 403,
+      "content_type": "application/problem+json",
+      "body": {
+        "type": "https://example.test/problems/asymmetry-probe",
+        "title": "Asymmetry probe failure",
+        "status": 403,
+        "detail": "The same generated MCP tool returned this RFC 9457 problem.",
+        "code": "probe-failed"
+      }
+    },
+    "problem_raw_result": {
+      "_meta": null,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"error\":\"API request failed: 403\"}",
+          "annotations": null,
+          "_meta": null
+        }
+      ],
+      "structuredContent": {
+        "error": "API request failed: 403"
+      },
+      "isError": false
+    },
+    "problem_normalized_observation": {
+      "machine": {},
+      "diagnostic": "{\"error\":\"API request failed: 403\"}",
+      "claims": {},
+      "_wire": {
+        "isError": false,
+        "structuredContent_present": true,
+        "meta_present": false,
+        "embedded_problem_resource_count": 0
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "P01-explicit-type",
+      "source": {
+        "http_status": 403,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/out-of-credit",
+          "title": "Insufficient credit",
+          "detail": "The purchase cannot be completed."
+        }
+      },
+      "generated_tool_name": "get_fixture_p01_explicit_type",
+      "raw_result": {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"error\":\"API request failed: 403\"}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": {
+          "error": "API request failed: 403"
+        },
+        "isError": false
+      },
+      "normalized_observation": {
+        "machine": {},
+        "diagnostic": "{\"error\":\"API request failed: 403\"}",
+        "claims": {},
+        "_wire": {
+          "isError": false,
+          "structuredContent_present": true,
+          "meta_present": false,
+          "embedded_problem_resource_count": 0
+        }
+      },
+      "verdict": "LOSS",
+      "losses": [
+        "problem_type:https://example.test/problems/out-of-credit"
+      ],
+      "inventions": []
+    },
+    {
+      "id": "P02-default-about-blank",
+      "source": {
+        "http_status": 400,
+        "content_type": "application/problem+json",
+        "body": {
+          "title": "Bad Request",
+          "detail": "The request is invalid."
+        }
+      },
+      "generated_tool_name": "get_fixture_p02_blank",
+      "raw_result": {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"error\":\"API request failed: 400\"}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": {
+          "error": "API request failed: 400"
+        },
+        "isError": false
+      },
+      "normalized_observation": {
+        "machine": {},
+        "diagnostic": "{\"error\":\"API request failed: 400\"}",
+        "claims": {},
+        "_wire": {
+          "isError": false,
+          "structuredContent_present": true,
+          "meta_present": false,
+          "embedded_problem_resource_count": 0
+        }
+      },
+      "verdict": "LOSS",
+      "losses": [
+        "effective_problem_type:about:blank"
+      ],
+      "inventions": []
+    },
+    {
+      "id": "P03-same-status-different-type",
+      "source": [
+        {
+          "http_status": 403,
+          "content_type": "application/problem+json",
+          "body": {
+            "type": "https://example.test/problems/out-of-credit",
+            "title": "Insufficient credit"
+          }
+        },
+        {
+          "http_status": 403,
+          "content_type": "application/problem+json",
+          "body": {
+            "type": "https://example.test/problems/account-suspended",
+            "title": "Account suspended"
+          }
+        }
+      ],
+      "generated_tool_name": [
+        "get_fixture_p03_1",
+        "get_fixture_p03_2"
+      ],
+      "raw_result": [
+        {
+          "_meta": null,
+          "content": [
+            {
+              "type": "text",
+              "text": "{\"error\":\"API request failed: 403\"}",
+              "annotations": null,
+              "_meta": null
+            }
+          ],
+          "structuredContent": {
+            "error": "API request failed: 403"
+          },
+          "isError": false
+        },
+        {
+          "_meta": null,
+          "content": [
+            {
+              "type": "text",
+              "text": "{\"error\":\"API request failed: 403\"}",
+              "annotations": null,
+              "_meta": null
+            }
+          ],
+          "structuredContent": {
+            "error": "API request failed: 403"
+          },
+          "isError": false
+        }
+      ],
+      "normalized_observation": [
+        {
+          "machine": {},
+          "diagnostic": "{\"error\":\"API request failed: 403\"}",
+          "claims": {},
+          "_wire": {
+            "isError": false,
+            "structuredContent_present": true,
+            "meta_present": false,
+            "embedded_problem_resource_count": 0
+          }
+        },
+        {
+          "machine": {},
+          "diagnostic": "{\"error\":\"API request failed: 403\"}",
+          "claims": {},
+          "_wire": {
+            "isError": false,
+            "structuredContent_present": true,
+            "meta_present": false,
+            "embedded_problem_resource_count": 0
+          }
+        }
+      ],
+      "verdict": "LOSS",
+      "losses": [
+        "pair_distinct_problem_types"
+      ],
+      "inventions": []
+    },
+    {
+      "id": "P04-instance",
+      "source": {
+        "http_status": 409,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/conflict",
+          "instance": "/problems/occurrences/abc-123",
+          "title": "Conflict"
+        }
+      },
+      "generated_tool_name": "get_fixture_p04_instance",
+      "raw_result": {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"error\":\"API request failed: 409\"}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": {
+          "error": "API request failed: 409"
+        },
+        "isError": false
+      },
+      "normalized_observation": {
+        "machine": {},
+        "diagnostic": "{\"error\":\"API request failed: 409\"}",
+        "claims": {},
+        "_wire": {
+          "isError": false,
+          "structuredContent_present": true,
+          "meta_present": false,
+          "embedded_problem_resource_count": 0
+        }
+      },
+      "verdict": "LOSS",
+      "losses": [
+        "instance:/problems/occurrences/abc-123"
+      ],
+      "inventions": []
+    },
+    {
+      "id": "P05-media-type-gate",
+      "source": {
+        "http_status": 400,
+        "content_type": "application/json",
+        "body": {
+          "type": "internal_code",
+          "title": "Bad input",
+          "detail": "Missing field"
+        }
+      },
+      "generated_tool_name": "get_fixture_p05_media_type_gate",
+      "raw_result": {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"error\":\"API request failed: 400\"}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": {
+          "error": "API request failed: 400"
+        },
+        "isError": false
+      },
+      "normalized_observation": {
+        "machine": {},
+        "diagnostic": "{\"error\":\"API request failed: 400\"}",
+        "claims": {},
+        "_wire": {
+          "isError": false,
+          "structuredContent_present": true,
+          "meta_present": false,
+          "embedded_problem_resource_count": 0
+        }
+      },
+      "verdict": "NOT_APPLICABLE",
+      "losses": [],
+      "inventions": []
+    },
+    {
+      "id": "P06-scalar-extension",
+      "source": {
+        "http_status": 400,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/invalid-body-property",
+          "title": "Invalid body property",
+          "code": "invalid-body-property"
+        }
+      },
+      "generated_tool_name": "get_fixture_p06_scalar_extension",
+      "raw_result": {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"error\":\"API request failed: 400\"}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": {
+          "error": "API request failed: 400"
+        },
+        "isError": false
+      },
+      "normalized_observation": {
+        "machine": {},
+        "diagnostic": "{\"error\":\"API request failed: 400\"}",
+        "claims": {},
+        "_wire": {
+          "isError": false,
+          "structuredContent_present": true,
+          "meta_present": false,
+          "embedded_problem_resource_count": 0
+        }
+      },
+      "verdict": "LOSS",
+      "losses": [
+        "extension:code"
+      ],
+      "inventions": []
+    },
+    {
+      "id": "P07-nested-validation-extension",
+      "source": {
+        "http_status": 422,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/validation-error",
+          "title": "Validation failed",
+          "errors": [
+            {
+              "detail": "must be a positive integer",
+              "pointer": "#/age"
+            },
+            {
+              "detail": "must be green, red, or blue",
+              "pointer": "#/profile/color"
+            }
+          ]
+        }
+      },
+      "generated_tool_name": "get_fixture_p07_extension",
+      "raw_result": {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"error\":\"API request failed: 422\"}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": {
+          "error": "API request failed: 422"
+        },
+        "isError": false
+      },
+      "normalized_observation": {
+        "machine": {},
+        "diagnostic": "{\"error\":\"API request failed: 422\"}",
+        "claims": {},
+        "_wire": {
+          "isError": false,
+          "structuredContent_present": true,
+          "meta_present": false,
+          "embedded_problem_resource_count": 0
+        }
+      },
+      "verdict": "LOSS",
+      "losses": [
+        "extension:errors"
+      ],
+      "inventions": []
+    },
+    {
+      "id": "P08-unknown-future-extension",
+      "source": {
+        "http_status": 409,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/state-conflict",
+          "title": "State conflict",
+          "remediation": {
+            "actions": [
+              {
+                "rel": "refresh",
+                "href": "/state/42"
+              },
+              {
+                "rel": "retry",
+                "after": "state-refresh"
+              }
+            ]
+          }
+        }
+      },
+      "generated_tool_name": "get_fixture_p08_extension",
+      "raw_result": {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"error\":\"API request failed: 409\"}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": {
+          "error": "API request failed: 409"
+        },
+        "isError": false
+      },
+      "normalized_observation": {
+        "machine": {},
+        "diagnostic": "{\"error\":\"API request failed: 409\"}",
+        "claims": {},
+        "_wire": {
+          "isError": false,
+          "structuredContent_present": true,
+          "meta_present": false,
+          "embedded_problem_resource_count": 0
+        }
+      },
+      "verdict": "LOSS",
+      "losses": [
+        "extension:remediation"
+      ],
+      "inventions": []
+    },
+    {
+      "id": "P09-localized-human-text",
+      "source": [
+        {
+          "http_status": 403,
+          "content_type": "application/problem+json",
+          "content_language": "en",
+          "body": {
+            "type": "https://example.test/problems/out-of-credit",
+            "title": "Insufficient credit",
+            "detail": "Add funds."
+          }
+        },
+        {
+          "http_status": 403,
+          "content_type": "application/problem+json",
+          "content_language": "ko",
+          "body": {
+            "type": "https://example.test/problems/out-of-credit",
+            "title": "잔액 부족",
+            "detail": "잔액을 추가하세요."
+          }
+        }
+      ],
+      "generated_tool_name": [
+        "get_fixture_p09_1",
+        "get_fixture_p09_2"
+      ],
+      "raw_result": [
+        {
+          "_meta": null,
+          "content": [
+            {
+              "type": "text",
+              "text": "{\"error\":\"API request failed: 403\"}",
+              "annotations": null,
+              "_meta": null
+            }
+          ],
+          "structuredContent": {
+            "error": "API request failed: 403"
+          },
+          "isError": false
+        },
+        {
+          "_meta": null,
+          "content": [
+            {
+              "type": "text",
+              "text": "{\"error\":\"API request failed: 403\"}",
+              "annotations": null,
+              "_meta": null
+            }
+          ],
+          "structuredContent": {
+            "error": "API request failed: 403"
+          },
+          "isError": false
+        }
+      ],
+      "normalized_observation": [
+        {
+          "machine": {},
+          "diagnostic": "{\"error\":\"API request failed: 403\"}",
+          "claims": {},
+          "_wire": {
+            "isError": false,
+            "structuredContent_present": true,
+            "meta_present": false,
+            "embedded_problem_resource_count": 0
+          }
+        },
+        {
+          "machine": {},
+          "diagnostic": "{\"error\":\"API request failed: 403\"}",
+          "claims": {},
+          "_wire": {
+            "isError": false,
+            "structuredContent_present": true,
+            "meta_present": false,
+            "embedded_problem_resource_count": 0
+          }
+        }
+      ],
+      "verdict": "LOSS",
+      "losses": [
+        "pair_same_problem_type"
+      ],
+      "inventions": []
+    },
+    {
+      "id": "P10-no-prose-mining",
+      "source": {
+        "http_status": 429,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/quota-exceeded",
+          "title": "Quota exceeded",
+          "detail": "Please try again in 30 seconds."
+        }
+      },
+      "generated_tool_name": "get_fixture_p10_no_prose_mining",
+      "raw_result": {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"error\":\"API request failed: 429\"}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": {
+          "error": "API request failed: 429"
+        },
+        "isError": false
+      },
+      "normalized_observation": {
+        "machine": {},
+        "diagnostic": "{\"error\":\"API request failed: 429\"}",
+        "claims": {},
+        "_wire": {
+          "isError": false,
+          "structuredContent_present": true,
+          "meta_present": false,
+          "embedded_problem_resource_count": 0
+        }
+      },
+      "verdict": "LOSS",
+      "losses": [
+        "problem_type:https://example.test/problems/quota-exceeded",
+        "detail"
+      ],
+      "inventions": []
+    },
+    {
+      "id": "P11-origin-status-survives-intermediary",
+      "source": {
+        "http_status": 502,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/upstream-overloaded",
+          "status": 503,
+          "title": "Upstream overloaded"
+        }
+      },
+      "generated_tool_name": "get_fixture_p11_intermediary",
+      "raw_result": {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"error\":\"API request failed: 502\"}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": {
+          "error": "API request failed: 502"
+        },
+        "isError": false
+      },
+      "normalized_observation": {
+        "machine": {},
+        "diagnostic": "{\"error\":\"API request failed: 502\"}",
+        "claims": {},
+        "_wire": {
+          "isError": false,
+          "structuredContent_present": true,
+          "meta_present": false,
+          "embedded_problem_resource_count": 0
+        }
+      },
+      "verdict": "LOSS",
+      "losses": [
+        "body_status:503",
+        "observed_status:502",
+        "distinct_origin_and_observed_status"
+      ],
+      "inventions": []
+    },
+    {
+      "id": "P12-no-retryability-invention",
+      "source": {
+        "http_status": 503,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/service-unavailable",
+          "title": "Service unavailable"
+        }
+      },
+      "generated_tool_name": "get_fixture_p12_invention",
+      "raw_result": {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"error\":\"API request failed: 503\"}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": {
+          "error": "API request failed: 503"
+        },
+        "isError": false
+      },
+      "normalized_observation": {
+        "machine": {},
+        "diagnostic": "{\"error\":\"API request failed: 503\"}",
+        "claims": {},
+        "_wire": {
+          "isError": false,
+          "structuredContent_present": true,
+          "meta_present": false,
+          "embedded_problem_resource_count": 0
+        }
+      },
+      "verdict": "LOSS",
+      "losses": [
+        "problem_type:https://example.test/problems/service-unavailable",
+        "observed_status:503"
+      ],
+      "inventions": []
+    }
+  ]
+}

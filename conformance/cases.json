@@ -1,0 +1,186 @@
+{
+  "profile": "OpenAPI-to-MCP Problem-Semantics Preservation Profile",
+  "version": "phase1-corpus-v0.1",
+  "scope_gate": {
+    "in_scope": "HTTP responses whose source contract or runtime media type identifies RFC 9457 Problem Details (application/problem+json), plus two anti-inference control cases.",
+    "machine_addressable": "A consumer can deterministically recover the source semantic using target-protocol structure or an explicitly typed serialization, without natural-language interpretation or heuristic extraction from diagnostic prose.",
+    "verdicts": ["PRESERVED", "LOSS", "INVENTED", "NOT_APPLICABLE"]
+  },
+  "cases": [
+    {
+      "id": "P01-explicit-type",
+      "purpose": "Preserve explicit problem-type identity.",
+      "http_status": 403,
+      "content_type": "application/problem+json",
+      "body": {
+        "type": "https://example.test/problems/out-of-credit",
+        "title": "Insufficient credit",
+        "detail": "The purchase cannot be completed."
+      },
+      "must_preserve": ["body.type as machine-addressable problem identity"],
+      "must_not_infer": []
+    },
+    {
+      "id": "P02-default-about-blank",
+      "purpose": "Respect RFC 9457 default identity when type is absent without inventing a custom type.",
+      "http_status": 400,
+      "content_type": "application/problem+json",
+      "body": {
+        "title": "Bad Request",
+        "detail": "The request is invalid."
+      },
+      "must_preserve": ["effective problem identity about:blank"],
+      "must_not_infer": ["a custom problem type from title or detail"]
+    },
+    {
+      "id": "P03-same-status-different-type",
+      "purpose": "Ensure HTTP status does not collapse distinct problem types.",
+      "pair": [
+        {
+          "http_status": 403,
+          "content_type": "application/problem+json",
+          "body": {"type": "https://example.test/problems/out-of-credit", "title": "Insufficient credit"}
+        },
+        {
+          "http_status": 403,
+          "content_type": "application/problem+json",
+          "body": {"type": "https://example.test/problems/account-suspended", "title": "Account suspended"}
+        }
+      ],
+      "must_preserve": ["the two distinct type identities remain distinguishable"],
+      "must_not_infer": ["403 as a sufficient replacement for problem type"]
+    },
+    {
+      "id": "P04-instance",
+      "purpose": "Preserve occurrence identity independently from problem-type identity.",
+      "http_status": 409,
+      "content_type": "application/problem+json",
+      "body": {
+        "type": "https://example.test/problems/conflict",
+        "instance": "/problems/occurrences/abc-123",
+        "title": "Conflict"
+      },
+      "must_preserve": ["body.instance as machine-addressable occurrence identifier"],
+      "must_not_infer": []
+    },
+    {
+      "id": "P05-media-type-gate",
+      "purpose": "Avoid treating a lookalike JSON error as RFC 9457 solely because field names resemble Problem Details.",
+      "http_status": 400,
+      "content_type": "application/json",
+      "body": {
+        "type": "internal_code",
+        "title": "Bad input",
+        "detail": "Missing field"
+      },
+      "must_preserve": [],
+      "must_not_infer": ["RFC 9457 semantics without a source contract identifying Problem Details"],
+      "expected_scope": "NOT_APPLICABLE"
+    },
+    {
+      "id": "P06-scalar-extension",
+      "purpose": "Preserve a machine-actionable scalar extension.",
+      "http_status": 400,
+      "content_type": "application/problem+json",
+      "body": {
+        "type": "https://example.test/problems/invalid-body-property",
+        "title": "Invalid body property",
+        "code": "invalid-body-property"
+      },
+      "must_preserve": ["extension code with exact string value"],
+      "must_not_infer": []
+    },
+    {
+      "id": "P07-nested-validation-extension",
+      "purpose": "Preserve nested actionable extension structure such as JSON Pointers.",
+      "http_status": 422,
+      "content_type": "application/problem+json",
+      "body": {
+        "type": "https://example.test/problems/validation-error",
+        "title": "Validation failed",
+        "errors": [
+          {"detail": "must be a positive integer", "pointer": "#/age"},
+          {"detail": "must be green, red, or blue", "pointer": "#/profile/color"}
+        ]
+      },
+      "must_preserve": ["errors array cardinality", "each pointer", "object nesting and values"],
+      "must_not_infer": []
+    },
+    {
+      "id": "P08-unknown-future-extension",
+      "purpose": "Test forward-compatible preservation of an extension the converter does not understand.",
+      "http_status": 409,
+      "content_type": "application/problem+json",
+      "body": {
+        "type": "https://example.test/problems/state-conflict",
+        "title": "State conflict",
+        "remediation": {
+          "actions": [
+            {"rel": "refresh", "href": "/state/42"},
+            {"rel": "retry", "after": "state-refresh"}
+          ]
+        }
+      },
+      "must_preserve": ["unknown remediation extension recursively and losslessly"],
+      "must_not_infer": ["new semantics from extension names beyond their represented values"]
+    },
+    {
+      "id": "P09-localized-human-text",
+      "purpose": "Keep human-readable localization from changing machine identity.",
+      "pair": [
+        {
+          "http_status": 403,
+          "content_type": "application/problem+json",
+          "content_language": "en",
+          "body": {"type": "https://example.test/problems/out-of-credit", "title": "Insufficient credit", "detail": "Add funds."}
+        },
+        {
+          "http_status": 403,
+          "content_type": "application/problem+json",
+          "content_language": "ko",
+          "body": {"type": "https://example.test/problems/out-of-credit", "title": "잔액 부족", "detail": "잔액을 추가하세요."}
+        }
+      ],
+      "must_preserve": ["same problem type identity across localized title/detail"],
+      "must_not_infer": ["problem identity from localized title/detail"]
+    },
+    {
+      "id": "P10-no-prose-mining",
+      "purpose": "Enforce the RFC boundary between human detail and machine-readable data.",
+      "http_status": 429,
+      "content_type": "application/problem+json",
+      "body": {
+        "type": "https://example.test/problems/quota-exceeded",
+        "title": "Quota exceeded",
+        "detail": "Please try again in 30 seconds."
+      },
+      "must_preserve": ["type and detail"],
+      "must_not_infer": ["retryAfterMs=30000 or equivalent machine field by parsing detail"]
+    },
+    {
+      "id": "P11-origin-status-survives-intermediary",
+      "purpose": "Preserve the Problem Details status member when transport status has been changed by an intermediary.",
+      "http_status": 502,
+      "content_type": "application/problem+json",
+      "body": {
+        "type": "https://example.test/problems/upstream-overloaded",
+        "status": 503,
+        "title": "Upstream overloaded"
+      },
+      "must_preserve": ["body.status=503 separately from observed HTTP status=502"],
+      "must_not_infer": ["that body.status and observed transport status are necessarily identical"]
+    },
+    {
+      "id": "P12-no-retryability-invention",
+      "purpose": "Detect unsupported behavioral guarantees derived only from an HTTP/problem status.",
+      "http_status": 503,
+      "content_type": "application/problem+json",
+      "body": {
+        "type": "https://example.test/problems/service-unavailable",
+        "title": "Service unavailable"
+      },
+      "must_preserve": ["HTTP status and problem type if represented"],
+      "must_not_infer": ["retryable=true", "safeToRetry=true", "idempotent retry semantics"]
+    }
+  ]
+}

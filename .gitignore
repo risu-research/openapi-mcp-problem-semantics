@@ -1,0 +1,24 @@
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Node
+node_modules/
+dist/
+
+# Logs / temporary files
+*.log
+*.tmp
+*.swp
+
+# Internal-only evidence archives
+*_raw_evidence_assets_internal.zip
+raw-evidence/

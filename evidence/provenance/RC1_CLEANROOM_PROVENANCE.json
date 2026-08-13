@@ -1,0 +1,102 @@
+{
+  "classification": "RC1_CLEANROOM_CONFIRMED",
+  "promotion_status": "eligible for promotion; repository, tag, and publication actions remain human-controlled",
+  "execution_date": "2026-08-12",
+  "inputs": {
+    "cleanroom_handoff_zip_sha256": "016cfe6500ce721726c2437fba3cb6e3219af660250c269e130c0bc95358bb8a",
+    "cleanroom_prompt_sha256": "25306d70020f1fe381e88c667d7e7a16c3504f3298c84b61854fa133e29c7e02",
+    "public_draft_sha256": "6cb3947ab8bff220f37b6f81707bc979d56f7cd63788ef0c94f2d1e90e7ac3f7",
+    "expected_public_draft_sha256": "6cb3947ab8bff220f37b6f81707bc979d56f7cd63788ef0c94f2d1e90e7ac3f7",
+    "e7_source_bundle_sha256": "7a6c5a047f66cad20e4ca14b44af30e272646cf7dce72a61401aa24372651f92",
+    "e7_source_bundle_recorded_sha256": "7a6c5a047f66cad20e4ca14b44af30e272646cf7dce72a61401aa24372651f92"
+  },
+  "publication_verification": {
+    "before_replay": "PASS",
+    "after_replay": "PASS",
+    "frozen_files": 5,
+    "evidence_bundles": 4,
+    "result_snapshots": 4,
+    "corpus_cases": 12
+  },
+  "cleanroom": {
+    "work_directory_outside_extracted_public_artifact": true,
+    "copied_inputs": [
+      "E7 bridge TypeScript source",
+      "E7 bridge package manifest, exact lockfile, and tsconfig",
+      "fixture_server.py",
+      "public draft frozen corpus, OpenAPI, adapter, oracle, mapping model, and mapping contract"
+    ],
+    "copied_prior_node_modules": false,
+    "copied_prior_compiled_dist": false,
+    "copied_prior_raw_observations_into_primary_replay": false,
+    "prior_running_fixture_or_server_reused": false,
+    "new_empty_npm_cache_used_for_target_install": true,
+    "fresh_node_modules_materialized": true,
+    "fresh_fixture_process": true,
+    "fresh_server_process": true,
+    "fresh_client_process": true
+  },
+  "dependency_install": {
+    "command": "npm 11.19.0 ci --cache <new-empty-cleanroom-cache> --no-audit --no-fund",
+    "exit_code": 0,
+    "packages_added": 17,
+    "package_lock_sha256_before_and_after": "47add159bd41427166f373240941e750d93148e3e0a8acc222a3f0f9828c4b9a",
+    "target_tree_materialized_at_utc": "2026-08-12T17:26:51Z",
+    "details": "RC1_INSTALLED_DEPENDENCIES.json"
+  },
+  "build": {
+    "compiled_from_source": true,
+    "typescript": "5.9.3",
+    "fresh_dist_absent_before_build": true,
+    "source_hashes": {
+      "reference-bridge.ts": "b2b895a47048d44193b718af7ee5feed799f725a7cdd6f3204e701ef15d08242",
+      "reference-client.ts": "f19c14abf4ad20f05afe6d3f58b647748a081b843ce28ac21d9f4a971800664c",
+      "wire-tee.ts": "cd814cb55a56dc80fa6d987bb30bd2a84cd5a038432625b8f8b290fe73aae466"
+    },
+    "fresh_compiled_hashes": {
+      "reference-bridge.js": "ddb4e90fdefadbc618acb10e4a439bc55e3dd6e8a94c90420e64e8048b233726",
+      "reference-client.js": "b300d5be122a798867d30d62046b1e88b2892b43b8641b2b662ae71282b2a033",
+      "wire-tee.js": "0fa27e561d46b278684aa7b859d32dfe629007b08e4644c3bbc0323483675326"
+    },
+    "compiled_hashes_reproduced_e7": true
+  },
+  "fresh_observation": {
+    "generated_at_utc": "2026-08-12T17:27:32.153Z",
+    "protocol": "2026-07-28",
+    "protocol_era": "modern",
+    "legacy_openings_rejected": true,
+    "registered_tools": 15,
+    "fresh_fixture_responses": 16,
+    "fresh_tool_calls": 16,
+    "fresh_tool_results": 16,
+    "typed_problem_resources_on_wire": 14,
+    "raw_client_sha256": "868ccafda2dd9f955706c88c48c1befbe77e0190b0123b24af77d886516dcf62",
+    "client_to_server_wire_sha256": "df278baf5652b842c3401e98f73adb8f0548b0436be890753bc8358005e0d8b1",
+    "server_to_client_wire_sha256": "1e37e48e69ac3bc524bc866bcdc17a03ef7dd70afad769093579227415863331",
+    "bridge_http_audit_sha256": "f0eafc8799cede5418031771aee33d49074f07f5062931df778948b7c57155d1"
+  },
+  "reproduction_comparison": {
+    "prior_e7_observation_timestamp_utc": "2026-08-12T16:49:21.223Z",
+    "fresh_rc1_observation_timestamp_utc": "2026-08-12T17:27:32.153Z",
+    "timestamps_distinct": true,
+    "fresh_raw_equals_prior_raw_after_removing_only_generated_timestamp": true,
+    "client_to_server_wire_byte_identical_to_e7": true,
+    "server_to_client_wire_byte_identical_to_e7": true,
+    "interpretation": "The new processes deterministically reproduced the prior protocol bytes and semantic observation; no prior bytes were used as the clean replay input."
+  },
+  "oracle_result": {
+    "preserved": 11,
+    "loss": 0,
+    "invented": 0,
+    "not_applicable": 1,
+    "same_tool_success": "PASS",
+    "same_tool_problem": "PASS",
+    "p05_media_type_gate": "PASS",
+    "p11_body_503_observed_502": "PASS",
+    "p12_no_retryability_invention": "PASS",
+    "negative_text_demotion": "PASS (oracle verdict LOSS)"
+  },
+  "frozen_hashes": "RC1_FROZEN_HASHES.json",
+  "environment": "RC1_ENVIRONMENT.json",
+  "verifier": "verify_rc1_cleanroom.py"
+}

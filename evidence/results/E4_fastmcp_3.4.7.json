@@ -1,0 +1,815 @@
+{
+  "profile": "OpenAPI→MCP Problem-Semantics Preservation Profile",
+  "evidence_level": "official-pypi-package-full-mcp-e2e",
+  "target": {
+    "fastmcp": "3.4.7",
+    "fastmcp-slim": "3.4.7"
+  },
+  "summary": {
+    "preserved": 0,
+    "loss": 11,
+    "invented": 0,
+    "not_applicable": 1,
+    "conformant": false,
+    "same_tool_success_structured": true,
+    "same_tool_problem_structured": false,
+    "same_tool_problem_visible_in_text": true
+  },
+  "asymmetry_control": {
+    "success": {
+      "_meta": null,
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"ok\":true,\"probe\":\"same-tool\"}",
+          "annotations": null,
+          "_meta": null
+        }
+      ],
+      "structuredContent": {
+        "ok": true,
+        "probe": "same-tool"
+      },
+      "isError": false
+    },
+    "problem": {
+      "_meta": null,
+      "content": [
+        {
+          "type": "text",
+          "text": "Error calling tool 'fixture_S00_asymmetry': HTTP error 403: Forbidden - {'type': 'https://example.test/problems/asymmetry-probe', 'title': 'Asymmetry probe failure', 'status': 403, 'detail': 'The same generated MCP tool returned this RFC 9457 problem.', 'code': 'probe-failed'}",
+          "annotations": null,
+          "_meta": null
+        }
+      ],
+      "structuredContent": null,
+      "isError": true
+    }
+  },
+  "raw_cases": {
+    "P01-explicit-type": {
+      "_meta": null,
+      "content": [
+        {
+          "type": "text",
+          "text": "Error calling tool 'fixture_P01_explicit_type': HTTP error 403: Forbidden - {'type': 'https://example.test/problems/out-of-credit', 'title': 'Insufficient credit', 'detail': 'The purchase cannot be completed.'}",
+          "annotations": null,
+          "_meta": null
+        }
+      ],
+      "structuredContent": null,
+      "isError": true
+    },
+    "P02-default-about-blank": {
+      "_meta": null,
+      "content": [
+        {
+          "type": "text",
+          "text": "Error calling tool 'fixture_P02_default_about_blank': HTTP error 400: Bad Request - {'title': 'Bad Request', 'detail': 'The request is invalid.'}",
+          "annotations": null,
+          "_meta": null
+        }
+      ],
+      "structuredContent": null,
+      "isError": true
+    },
+    "P03-same-status-different-type": [
+      {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "Error calling tool 'fixture_P03_same_status_different_type_1': HTTP error 403: Forbidden - {'type': 'https://example.test/problems/out-of-credit', 'title': 'Insufficient credit'}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": null,
+        "isError": true
+      },
+      {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "Error calling tool 'fixture_P03_same_status_different_type_2': HTTP error 403: Forbidden - {'type': 'https://example.test/problems/account-suspended', 'title': 'Account suspended'}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": null,
+        "isError": true
+      }
+    ],
+    "P04-instance": {
+      "_meta": null,
+      "content": [
+        {
+          "type": "text",
+          "text": "Error calling tool 'fixture_P04_instance': HTTP error 409: Conflict - {'type': 'https://example.test/problems/conflict', 'instance': '/problems/occurrences/abc-123', 'title': 'Conflict'}",
+          "annotations": null,
+          "_meta": null
+        }
+      ],
+      "structuredContent": null,
+      "isError": true
+    },
+    "P05-media-type-gate": {
+      "_meta": null,
+      "content": [
+        {
+          "type": "text",
+          "text": "Error calling tool 'fixture_P05_media_type_gate': HTTP error 400: Bad Request - {'type': 'internal_code', 'title': 'Bad input', 'detail': 'Missing field'}",
+          "annotations": null,
+          "_meta": null
+        }
+      ],
+      "structuredContent": null,
+      "isError": true
+    },
+    "P06-scalar-extension": {
+      "_meta": null,
+      "content": [
+        {
+          "type": "text",
+          "text": "Error calling tool 'fixture_P06_scalar_extension': HTTP error 400: Bad Request - {'type': 'https://example.test/problems/invalid-body-property', 'title': 'Invalid body property', 'code': 'invalid-body-property'}",
+          "annotations": null,
+          "_meta": null
+        }
+      ],
+      "structuredContent": null,
+      "isError": true
+    },
+    "P07-nested-validation-extension": {
+      "_meta": null,
+      "content": [
+        {
+          "type": "text",
+          "text": "Error calling tool 'fixture_P07_nested_validation_extension': HTTP error 422: Unprocessable Entity - {'type': 'https://example.test/problems/validation-error', 'title': 'Validation failed', 'errors': [{'detail': 'must be a positive integer', 'pointer': '#/age'}, {'detail': 'must be green, red, or blue', 'pointer': '#/profile/color'}]}",
+          "annotations": null,
+          "_meta": null
+        }
+      ],
+      "structuredContent": null,
+      "isError": true
+    },
+    "P08-unknown-future-extension": {
+      "_meta": null,
+      "content": [
+        {
+          "type": "text",
+          "text": "Error calling tool 'fixture_P08_unknown_future_extension': HTTP error 409: Conflict - {'type': 'https://example.test/problems/state-conflict', 'title': 'State conflict', 'remediation': {'actions': [{'rel': 'refresh', 'href': '/state/42'}, {'rel': 'retry', 'after': 'state-refresh'}]}}",
+          "annotations": null,
+          "_meta": null
+        }
+      ],
+      "structuredContent": null,
+      "isError": true
+    },
+    "P09-localized-human-text": [
+      {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "Error calling tool 'fixture_P09_localized_human_text_1': HTTP error 403: Forbidden - {'type': 'https://example.test/problems/out-of-credit', 'title': 'Insufficient credit', 'detail': 'Add funds.'}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": null,
+        "isError": true
+      },
+      {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "Error calling tool 'fixture_P09_localized_human_text_2': HTTP error 403: Forbidden - {'type': 'https://example.test/problems/out-of-credit', 'title': '잔액 부족', 'detail': '잔액을 추가하세요.'}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": null,
+        "isError": true
+      }
+    ],
+    "P10-no-prose-mining": {
+      "_meta": null,
+      "content": [
+        {
+          "type": "text",
+          "text": "Error calling tool 'fixture_P10_no_prose_mining': HTTP error 429: Too Many Requests - {'type': 'https://example.test/problems/quota-exceeded', 'title': 'Quota exceeded', 'detail': 'Please try again in 30 seconds.'}",
+          "annotations": null,
+          "_meta": null
+        }
+      ],
+      "structuredContent": null,
+      "isError": true
+    },
+    "P11-origin-status-survives-intermediary": {
+      "_meta": null,
+      "content": [
+        {
+          "type": "text",
+          "text": "Error calling tool 'fixture_P11_origin_status_survives_intermediary': HTTP error 502: Bad Gateway - {'type': 'https://example.test/problems/upstream-overloaded', 'status': 503, 'title': 'Upstream overloaded'}",
+          "annotations": null,
+          "_meta": null
+        }
+      ],
+      "structuredContent": null,
+      "isError": true
+    },
+    "P12-no-retryability-invention": {
+      "_meta": null,
+      "content": [
+        {
+          "type": "text",
+          "text": "Error calling tool 'fixture_P12_no_retryability_invention': HTTP error 503: Service Unavailable - {'type': 'https://example.test/problems/service-unavailable', 'title': 'Service unavailable'}",
+          "annotations": null,
+          "_meta": null
+        }
+      ],
+      "structuredContent": null,
+      "isError": true
+    }
+  },
+  "cases": [
+    {
+      "id": "P01-explicit-type",
+      "source": {
+        "http_status": 403,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/out-of-credit",
+          "title": "Insufficient credit",
+          "detail": "The purchase cannot be completed."
+        }
+      },
+      "raw_result": {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "Error calling tool 'fixture_P01_explicit_type': HTTP error 403: Forbidden - {'type': 'https://example.test/problems/out-of-credit', 'title': 'Insufficient credit', 'detail': 'The purchase cannot be completed.'}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": null,
+        "isError": true
+      },
+      "verdict": "LOSS",
+      "losses": [
+        "problem_type:https://example.test/problems/out-of-credit"
+      ],
+      "inventions": [],
+      "observation": {
+        "machine": {},
+        "diagnostic": "Error calling tool 'fixture_P01_explicit_type': HTTP error 403: Forbidden - {'type': 'https://example.test/problems/out-of-credit', 'title': 'Insufficient credit', 'detail': 'The purchase cannot be completed.'}",
+        "claims": {},
+        "_wire": {
+          "isError": true,
+          "structuredContent_present": false,
+          "meta_present": false
+        }
+      }
+    },
+    {
+      "id": "P02-default-about-blank",
+      "source": {
+        "http_status": 400,
+        "content_type": "application/problem+json",
+        "body": {
+          "title": "Bad Request",
+          "detail": "The request is invalid."
+        }
+      },
+      "raw_result": {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "Error calling tool 'fixture_P02_default_about_blank': HTTP error 400: Bad Request - {'title': 'Bad Request', 'detail': 'The request is invalid.'}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": null,
+        "isError": true
+      },
+      "verdict": "LOSS",
+      "losses": [
+        "effective_problem_type:about:blank"
+      ],
+      "inventions": [],
+      "observation": {
+        "machine": {},
+        "diagnostic": "Error calling tool 'fixture_P02_default_about_blank': HTTP error 400: Bad Request - {'title': 'Bad Request', 'detail': 'The request is invalid.'}",
+        "claims": {},
+        "_wire": {
+          "isError": true,
+          "structuredContent_present": false,
+          "meta_present": false
+        }
+      }
+    },
+    {
+      "id": "P03-same-status-different-type",
+      "source": [
+        {
+          "http_status": 403,
+          "content_type": "application/problem+json",
+          "body": {
+            "type": "https://example.test/problems/out-of-credit",
+            "title": "Insufficient credit"
+          }
+        },
+        {
+          "http_status": 403,
+          "content_type": "application/problem+json",
+          "body": {
+            "type": "https://example.test/problems/account-suspended",
+            "title": "Account suspended"
+          }
+        }
+      ],
+      "raw_result": [
+        {
+          "_meta": null,
+          "content": [
+            {
+              "type": "text",
+              "text": "Error calling tool 'fixture_P03_same_status_different_type_1': HTTP error 403: Forbidden - {'type': 'https://example.test/problems/out-of-credit', 'title': 'Insufficient credit'}",
+              "annotations": null,
+              "_meta": null
+            }
+          ],
+          "structuredContent": null,
+          "isError": true
+        },
+        {
+          "_meta": null,
+          "content": [
+            {
+              "type": "text",
+              "text": "Error calling tool 'fixture_P03_same_status_different_type_2': HTTP error 403: Forbidden - {'type': 'https://example.test/problems/account-suspended', 'title': 'Account suspended'}",
+              "annotations": null,
+              "_meta": null
+            }
+          ],
+          "structuredContent": null,
+          "isError": true
+        }
+      ],
+      "verdict": "LOSS",
+      "losses": [
+        "pair_distinct_problem_types"
+      ],
+      "inventions": [],
+      "observation": [
+        {
+          "machine": {},
+          "diagnostic": "Error calling tool 'fixture_P03_same_status_different_type_1': HTTP error 403: Forbidden - {'type': 'https://example.test/problems/out-of-credit', 'title': 'Insufficient credit'}",
+          "claims": {},
+          "_wire": {
+            "isError": true,
+            "structuredContent_present": false,
+            "meta_present": false
+          }
+        },
+        {
+          "machine": {},
+          "diagnostic": "Error calling tool 'fixture_P03_same_status_different_type_2': HTTP error 403: Forbidden - {'type': 'https://example.test/problems/account-suspended', 'title': 'Account suspended'}",
+          "claims": {},
+          "_wire": {
+            "isError": true,
+            "structuredContent_present": false,
+            "meta_present": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "P04-instance",
+      "source": {
+        "http_status": 409,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/conflict",
+          "instance": "/problems/occurrences/abc-123",
+          "title": "Conflict"
+        }
+      },
+      "raw_result": {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "Error calling tool 'fixture_P04_instance': HTTP error 409: Conflict - {'type': 'https://example.test/problems/conflict', 'instance': '/problems/occurrences/abc-123', 'title': 'Conflict'}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": null,
+        "isError": true
+      },
+      "verdict": "LOSS",
+      "losses": [
+        "instance:/problems/occurrences/abc-123"
+      ],
+      "inventions": [],
+      "observation": {
+        "machine": {},
+        "diagnostic": "Error calling tool 'fixture_P04_instance': HTTP error 409: Conflict - {'type': 'https://example.test/problems/conflict', 'instance': '/problems/occurrences/abc-123', 'title': 'Conflict'}",
+        "claims": {},
+        "_wire": {
+          "isError": true,
+          "structuredContent_present": false,
+          "meta_present": false
+        }
+      }
+    },
+    {
+      "id": "P05-media-type-gate",
+      "source": {
+        "http_status": 400,
+        "content_type": "application/json",
+        "body": {
+          "type": "internal_code",
+          "title": "Bad input",
+          "detail": "Missing field"
+        }
+      },
+      "raw_result": {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "Error calling tool 'fixture_P05_media_type_gate': HTTP error 400: Bad Request - {'type': 'internal_code', 'title': 'Bad input', 'detail': 'Missing field'}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": null,
+        "isError": true
+      },
+      "verdict": "NOT_APPLICABLE",
+      "losses": [],
+      "inventions": [],
+      "observation": {
+        "machine": {},
+        "diagnostic": "Error calling tool 'fixture_P05_media_type_gate': HTTP error 400: Bad Request - {'type': 'internal_code', 'title': 'Bad input', 'detail': 'Missing field'}",
+        "claims": {},
+        "_wire": {
+          "isError": true,
+          "structuredContent_present": false,
+          "meta_present": false
+        }
+      }
+    },
+    {
+      "id": "P06-scalar-extension",
+      "source": {
+        "http_status": 400,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/invalid-body-property",
+          "title": "Invalid body property",
+          "code": "invalid-body-property"
+        }
+      },
+      "raw_result": {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "Error calling tool 'fixture_P06_scalar_extension': HTTP error 400: Bad Request - {'type': 'https://example.test/problems/invalid-body-property', 'title': 'Invalid body property', 'code': 'invalid-body-property'}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": null,
+        "isError": true
+      },
+      "verdict": "LOSS",
+      "losses": [
+        "extension:code"
+      ],
+      "inventions": [],
+      "observation": {
+        "machine": {},
+        "diagnostic": "Error calling tool 'fixture_P06_scalar_extension': HTTP error 400: Bad Request - {'type': 'https://example.test/problems/invalid-body-property', 'title': 'Invalid body property', 'code': 'invalid-body-property'}",
+        "claims": {},
+        "_wire": {
+          "isError": true,
+          "structuredContent_present": false,
+          "meta_present": false
+        }
+      }
+    },
+    {
+      "id": "P07-nested-validation-extension",
+      "source": {
+        "http_status": 422,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/validation-error",
+          "title": "Validation failed",
+          "errors": [
+            {
+              "detail": "must be a positive integer",
+              "pointer": "#/age"
+            },
+            {
+              "detail": "must be green, red, or blue",
+              "pointer": "#/profile/color"
+            }
+          ]
+        }
+      },
+      "raw_result": {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "Error calling tool 'fixture_P07_nested_validation_extension': HTTP error 422: Unprocessable Entity - {'type': 'https://example.test/problems/validation-error', 'title': 'Validation failed', 'errors': [{'detail': 'must be a positive integer', 'pointer': '#/age'}, {'detail': 'must be green, red, or blue', 'pointer': '#/profile/color'}]}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": null,
+        "isError": true
+      },
+      "verdict": "LOSS",
+      "losses": [
+        "extension:errors"
+      ],
+      "inventions": [],
+      "observation": {
+        "machine": {},
+        "diagnostic": "Error calling tool 'fixture_P07_nested_validation_extension': HTTP error 422: Unprocessable Entity - {'type': 'https://example.test/problems/validation-error', 'title': 'Validation failed', 'errors': [{'detail': 'must be a positive integer', 'pointer': '#/age'}, {'detail': 'must be green, red, or blue', 'pointer': '#/profile/color'}]}",
+        "claims": {},
+        "_wire": {
+          "isError": true,
+          "structuredContent_present": false,
+          "meta_present": false
+        }
+      }
+    },
+    {
+      "id": "P08-unknown-future-extension",
+      "source": {
+        "http_status": 409,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/state-conflict",
+          "title": "State conflict",
+          "remediation": {
+            "actions": [
+              {
+                "rel": "refresh",
+                "href": "/state/42"
+              },
+              {
+                "rel": "retry",
+                "after": "state-refresh"
+              }
+            ]
+          }
+        }
+      },
+      "raw_result": {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "Error calling tool 'fixture_P08_unknown_future_extension': HTTP error 409: Conflict - {'type': 'https://example.test/problems/state-conflict', 'title': 'State conflict', 'remediation': {'actions': [{'rel': 'refresh', 'href': '/state/42'}, {'rel': 'retry', 'after': 'state-refresh'}]}}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": null,
+        "isError": true
+      },
+      "verdict": "LOSS",
+      "losses": [
+        "extension:remediation"
+      ],
+      "inventions": [],
+      "observation": {
+        "machine": {},
+        "diagnostic": "Error calling tool 'fixture_P08_unknown_future_extension': HTTP error 409: Conflict - {'type': 'https://example.test/problems/state-conflict', 'title': 'State conflict', 'remediation': {'actions': [{'rel': 'refresh', 'href': '/state/42'}, {'rel': 'retry', 'after': 'state-refresh'}]}}",
+        "claims": {},
+        "_wire": {
+          "isError": true,
+          "structuredContent_present": false,
+          "meta_present": false
+        }
+      }
+    },
+    {
+      "id": "P09-localized-human-text",
+      "source": [
+        {
+          "http_status": 403,
+          "content_type": "application/problem+json",
+          "content_language": "en",
+          "body": {
+            "type": "https://example.test/problems/out-of-credit",
+            "title": "Insufficient credit",
+            "detail": "Add funds."
+          }
+        },
+        {
+          "http_status": 403,
+          "content_type": "application/problem+json",
+          "content_language": "ko",
+          "body": {
+            "type": "https://example.test/problems/out-of-credit",
+            "title": "잔액 부족",
+            "detail": "잔액을 추가하세요."
+          }
+        }
+      ],
+      "raw_result": [
+        {
+          "_meta": null,
+          "content": [
+            {
+              "type": "text",
+              "text": "Error calling tool 'fixture_P09_localized_human_text_1': HTTP error 403: Forbidden - {'type': 'https://example.test/problems/out-of-credit', 'title': 'Insufficient credit', 'detail': 'Add funds.'}",
+              "annotations": null,
+              "_meta": null
+            }
+          ],
+          "structuredContent": null,
+          "isError": true
+        },
+        {
+          "_meta": null,
+          "content": [
+            {
+              "type": "text",
+              "text": "Error calling tool 'fixture_P09_localized_human_text_2': HTTP error 403: Forbidden - {'type': 'https://example.test/problems/out-of-credit', 'title': '잔액 부족', 'detail': '잔액을 추가하세요.'}",
+              "annotations": null,
+              "_meta": null
+            }
+          ],
+          "structuredContent": null,
+          "isError": true
+        }
+      ],
+      "verdict": "LOSS",
+      "losses": [
+        "pair_same_problem_type"
+      ],
+      "inventions": [],
+      "observation": [
+        {
+          "machine": {},
+          "diagnostic": "Error calling tool 'fixture_P09_localized_human_text_1': HTTP error 403: Forbidden - {'type': 'https://example.test/problems/out-of-credit', 'title': 'Insufficient credit', 'detail': 'Add funds.'}",
+          "claims": {},
+          "_wire": {
+            "isError": true,
+            "structuredContent_present": false,
+            "meta_present": false
+          }
+        },
+        {
+          "machine": {},
+          "diagnostic": "Error calling tool 'fixture_P09_localized_human_text_2': HTTP error 403: Forbidden - {'type': 'https://example.test/problems/out-of-credit', 'title': '잔액 부족', 'detail': '잔액을 추가하세요.'}",
+          "claims": {},
+          "_wire": {
+            "isError": true,
+            "structuredContent_present": false,
+            "meta_present": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "P10-no-prose-mining",
+      "source": {
+        "http_status": 429,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/quota-exceeded",
+          "title": "Quota exceeded",
+          "detail": "Please try again in 30 seconds."
+        }
+      },
+      "raw_result": {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "Error calling tool 'fixture_P10_no_prose_mining': HTTP error 429: Too Many Requests - {'type': 'https://example.test/problems/quota-exceeded', 'title': 'Quota exceeded', 'detail': 'Please try again in 30 seconds.'}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": null,
+        "isError": true
+      },
+      "verdict": "LOSS",
+      "losses": [
+        "problem_type:https://example.test/problems/quota-exceeded",
+        "detail"
+      ],
+      "inventions": [],
+      "observation": {
+        "machine": {},
+        "diagnostic": "Error calling tool 'fixture_P10_no_prose_mining': HTTP error 429: Too Many Requests - {'type': 'https://example.test/problems/quota-exceeded', 'title': 'Quota exceeded', 'detail': 'Please try again in 30 seconds.'}",
+        "claims": {},
+        "_wire": {
+          "isError": true,
+          "structuredContent_present": false,
+          "meta_present": false
+        }
+      }
+    },
+    {
+      "id": "P11-origin-status-survives-intermediary",
+      "source": {
+        "http_status": 502,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/upstream-overloaded",
+          "status": 503,
+          "title": "Upstream overloaded"
+        }
+      },
+      "raw_result": {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "Error calling tool 'fixture_P11_origin_status_survives_intermediary': HTTP error 502: Bad Gateway - {'type': 'https://example.test/problems/upstream-overloaded', 'status': 503, 'title': 'Upstream overloaded'}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": null,
+        "isError": true
+      },
+      "verdict": "LOSS",
+      "losses": [
+        "body_status:503",
+        "observed_status:502",
+        "distinct_origin_and_observed_status"
+      ],
+      "inventions": [],
+      "observation": {
+        "machine": {},
+        "diagnostic": "Error calling tool 'fixture_P11_origin_status_survives_intermediary': HTTP error 502: Bad Gateway - {'type': 'https://example.test/problems/upstream-overloaded', 'status': 503, 'title': 'Upstream overloaded'}",
+        "claims": {},
+        "_wire": {
+          "isError": true,
+          "structuredContent_present": false,
+          "meta_present": false
+        }
+      }
+    },
+    {
+      "id": "P12-no-retryability-invention",
+      "source": {
+        "http_status": 503,
+        "content_type": "application/problem+json",
+        "body": {
+          "type": "https://example.test/problems/service-unavailable",
+          "title": "Service unavailable"
+        }
+      },
+      "raw_result": {
+        "_meta": null,
+        "content": [
+          {
+            "type": "text",
+            "text": "Error calling tool 'fixture_P12_no_retryability_invention': HTTP error 503: Service Unavailable - {'type': 'https://example.test/problems/service-unavailable', 'title': 'Service unavailable'}",
+            "annotations": null,
+            "_meta": null
+          }
+        ],
+        "structuredContent": null,
+        "isError": true
+      },
+      "verdict": "LOSS",
+      "losses": [
+        "problem_type:https://example.test/problems/service-unavailable",
+        "observed_status:503"
+      ],
+      "inventions": [],
+      "observation": {
+        "machine": {},
+        "diagnostic": "Error calling tool 'fixture_P12_no_retryability_invention': HTTP error 503: Service Unavailable - {'type': 'https://example.test/problems/service-unavailable', 'title': 'Service unavailable'}",
+        "claims": {},
+        "_wire": {
+          "isError": true,
+          "structuredContent_present": false,
+          "meta_present": false
+        }
+      }
+    }
+  ]
+}
