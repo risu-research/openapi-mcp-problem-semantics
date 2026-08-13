@@ -1,5 +1,7 @@
 # OpenAPI→MCP Problem-Semantics Preservation Profile
 
+[![DOI](https://zenodo.org/badge/1332313466.svg)](https://doi.org/10.5281/zenodo.21911146)
+
 **Version:** v0.1.0-rc1  
 **Status:** Experimental release candidate; bounded, review-oriented research artifact  
 **Promotion gate:** Core experiments frozen; clean-room positive-control reproduction confirmed
@@ -59,8 +61,12 @@ This uses only the Python standard library. It checks the frozen semantic core, 
 
 Canonical repository: `https://github.com/risu-research/openapi-mcp-problem-semantics`
 
-Citation metadata is provided in `CITATION.cff`. This repository is released under the Apache License 2.0. A DOI may be added after the first tagged archival release.
+Concept DOI (all versions): [`10.5281/zenodo.21911146`](https://doi.org/10.5281/zenodo.21911146)
+
+Version DOI (`v0.1.0-rc1`): [`10.5281/zenodo.21911147`](https://doi.org/10.5281/zenodo.21911147)
+
+Citation metadata is provided in `CITATION.cff`. This repository is released under the Apache License 2.0.
 
 ## Publication discipline
 
-Read `profile/CLAIM_LEDGER.md` and `release/PUBLICATION_GATE.md` before reusing conclusions. This is a release candidate, not an accepted MCP/IETF/industry standard. Tagging, archival DOI creation, website publication, maintainer outreach, and preprint submission remain deliberate human-controlled actions.
+Read `profile/CLAIM_LEDGER.md` and `release/PUBLICATION_GATE.md` before reusing conclusions. This is a release candidate, not an accepted MCP/IETF/industry standard. The archived `v0.1.0-rc1` release and its DOI are fixed historical records; later commits to `main` do not alter that archive. Website publication, maintainer outreach, subsequent versioning, and preprint submission remain deliberate human-controlled actions.
