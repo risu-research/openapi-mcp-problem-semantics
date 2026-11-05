@@ -16,7 +16,13 @@ RUN python /opt/risu/ci/unpack_product.py \
     && /opt/cnoe/bin/python -m pip install --no-cache-dir -e /opt/cnoe-source \
     && /opt/cnoe/bin/python -m pip check \
     && /opt/cnoe/bin/python -m pip freeze > /opt/risu/product-bundle/CNOE_DEPENDENCIES.txt
-RUN chmod -R a+rX /opt/risu /opt/cnoe /opt/cnoe-source
+# Separate version-pinned modern MCP server environment. Never overwrite CNOE's
+# native dependency environment (which uses FastMCP 3.4.0).
+RUN python -m venv /opt/modern \
+    && /opt/modern/bin/python -m pip install --no-cache-dir 'mcp==2.3.0' 'fastmcp==4.1.6' 'fastmcp-slim==4.1.6' \
+    && /opt/modern/bin/python -m pip check \
+    && /opt/modern/bin/python -m pip freeze > /opt/risu/product-bundle/MODERN_MCP_DEPENDENCIES.txt
+RUN chmod -R a+rX /opt/risu /opt/cnoe /opt/cnoe-source /opt/modern
 ENV HOME=/tmp XDG_CACHE_HOME=/tmp/cache PATH="/opt/cnoe/bin:/usr/local/bin:/usr/bin:/bin"
 USER 65534:65534
 CMD ["/usr/local/bin/python","/opt/risu/ci/run_ci.py"]
