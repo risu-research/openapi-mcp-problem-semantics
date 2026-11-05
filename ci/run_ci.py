@@ -148,11 +148,11 @@ def main():
                     protocol='legacy',env=boot_env) as _probe_client:
                 _catalog=_probe_client.list_tools_catalog()
             (OUT/'ORIGINAL_CLIENT_DIRECT_LEGACY.json').write_text(
-                json.dumps({'status':'PASS','tool_names':sorted(_catalog)},indent=2)+'\\n')
+                json.dumps({'status':'PASS','tool_names':sorted(_catalog)},indent=2)+'\n')
         except Exception:
             import traceback as _tb
             (OUT/'ORIGINAL_CLIENT_DIRECT_LEGACY.json').write_text(
-                json.dumps({'status':'FAIL','traceback':_tb.format_exc()},indent=2)+'\\n')
+                json.dumps({'status':'FAIL','traceback':_tb.format_exc()},indent=2)+'\n')
         # THIS executes the original v0.8 product module, not a second verifier.
         try:
             command([sys.executable,'-B',product,'verify','--fixture',str(generated),
