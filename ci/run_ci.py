@@ -121,6 +121,24 @@ def main():
             'exited_before_4s='+str(boot.returncode not in (-15,-9,-2))+'\\n'
             +'returncode='+str(boot.returncode)+'\\n'
             +'stderr='+boot_err[-4500:]+'\\n'+'stdout='+boot_out[-600:])
+        # Independent raw stdio experiments (not a replacement for the product).
+        import time as _tt
+        for protocol_version in ('2025-06-18','2025-11-25'):
+            request={'jsonrpc':'2.0','id':1,'method':'initialize',
+                     'params':{'protocolVersion':protocol_version,'capabilities':{},
+                               'clientInfo':{'name':'risu-debug-client','version':'0'}}}
+            boot=subprocess.Popen(['/opt/cnoe/bin/python','-u',str(pre['adapter']['server'])],
+                                  stdin=subprocess.PIPE,stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE,text=True,env=boot_env)
+            boot.stdin.write(json.dumps(request)+'\\n')
+            boot.stdin.flush()
+            _tt.sleep(2)
+            code_before=boot.poll()
+            if code_before is None:boot.terminate()
+            raw_out,raw_err=boot.communicate(timeout=8)
+            (OUT/('PROTOCOL_INITIALIZE_'+protocol_version+'.txt')).write_text(
+                'return_before_terminate='+str(code_before)+'\\nSTDOUT:\\n'+raw_out[-3500:]
+                +'\\nSTDERR:\\n'+raw_err[-5500:])
         # THIS executes the original v0.8 product module, not a second verifier.
         try:
             command([sys.executable,'-B',product,'verify','--fixture',str(generated),
