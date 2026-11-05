@@ -109,6 +109,23 @@ for line in sys.stdin:
         self.assertIsNotNone(proc.poll())
         self.assertLess(time.monotonic()-started,6.0)
 
+    def test_descendant_process_is_terminated(self):
+        marker=self.root/'child-escaped.txt'
+        child=f"import time,pathlib;time.sleep(2.4);pathlib.Path({str(marker)!r}).write_text('escaped')"
+        parent=("import subprocess,sys,time\n"
+                f"subprocess.Popen([sys.executable,'-c',{child!r}],"
+                "stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,"
+                "stderr=subprocess.DEVNULL)\n"
+                "print('READY',flush=True)\ntime.sleep(30)\n")
+        proc=spawn_stdio(self.script(parent))
+        try:
+            self.assertEqual(proc.stdout.readline().strip(),'READY')
+        finally:
+            stop_stdio(proc)
+        time.sleep(2.8)
+        self.assertFalse(marker.exists(),'server descendant survived process-tree shutdown')
+        self.assertIsNotNone(proc.poll())
+
     def test_source_version(self):
         self.assertEqual(VERSION,'0.9.1-experimental')
 
