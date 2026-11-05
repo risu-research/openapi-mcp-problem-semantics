@@ -10,6 +10,7 @@ on:
       - ci/upgrade_v10_modules.py
       - ci/test_v10_regressions.py
       - ci/test_v10_installed.py
+      - ci/test_v10_real_servers.py
       - .github/workflows/risu-v10-windows-reliability.yml
   workflow_dispatch:
 permissions:
@@ -42,6 +43,12 @@ jobs:
           python -m build --wheel --no-isolation dist/risu_v09_source --outdir dist/wheels
       - name: Clean-room wheel install and first run
         run: python ci/test_v10_installed.py
+      - name: Install pinned external SDK and FastMCP for real server regression
+        if: matrix.python == '3.13'
+        run: python -m pip install --disable-pip-version-check 'mcp==2.3.0' 'fastmcp==4.1.6' 'fastmcp-slim==4.1.6'
+      - name: Call real pinned SDK2, FastMCP4 and legacy MCP servers
+        if: matrix.python == '3.13'
+        run: python ci/test_v10_real_servers.py
       - name: Store verified wheel and source (single qualifying job only)
         if: always() && matrix.os == 'ubuntu-latest' && matrix.python == '3.11'
         uses: actions/upload-artifact@v4
