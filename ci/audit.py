@@ -1,5 +1,5 @@
 """Fail-closed independent audit; does not run CNOE or product code."""
-import hashlib,json,sys,zipfile
+import base64,hashlib,io,json,sys,tarfile,zipfile
 from pathlib import Path
 
 root=Path(sys.argv[1] if len(sys.argv)>1 else 'results')
@@ -40,10 +40,33 @@ with zipfile.ZipFile(root/'GENERATED_CNOE_SOURCES.zip') as z:
     assert {n for n in z.namelist() if not n.endswith('/')}==set(ledger)
     for name,digest in ledger.items():
         assert hashlib.sha256(z.read(name)).hexdigest()==digest,name
+# Independent exact-delta audit. Rebuild the original authenticated v0.8
+# module from the checked-out upload and require exactly three replacements.
+patch=load('V09_PATCH_MANIFEST.json')
+assert patch['changed_file']=='risu_verify.py'
+assert patch['original_sha256']==meta['modules_sha256']['risu_verify.py']
+assert len(patch['replacements'])==3
+pieces=[(root.parent/'product'/f'part_{i:02d}.b64').read_text().strip() for i in range(6)]
+tar_bytes=base64.b64decode(''.join(pieces),validate=True)
+assert hashlib.sha256(tar_bytes).hexdigest()==meta['module_tar_sha256']
+with tarfile.open(fileobj=io.BytesIO(tar_bytes),mode='r:xz') as tar:
+    original=tar.extractfile('risu_verify.py').read()
+assert hashlib.sha256(original).hexdigest()==patch['original_sha256']
+expected=original.decode('utf-8')
+for change in patch['replacements']:
+    assert expected.count(change['before'])==1
+    expected=expected.replace(change['before'],change['after'])
+    assert change['before'].count("protocol='auto'")==1
+    assert change['after'].count("protocol='legacy'")==1
+patched=(root/'V09_PATCHED_RISU_VERIFY.py').read_bytes()
+assert patched==expected.encode('utf-8'), 'v0.9 adapter has unexpected modifications'
+assert hashlib.sha256(patched).hexdigest()==patch['patched_sha256']==status['protocol_fix_sha256']
+
 assert (root/'GENERATOR_LOG.txt').is_file() and (root/'PRODUCT_EXECUTION_LOG.txt').is_file()
-finding={'verdict':'PASS','product':'RISU Probe original v0.8 modules',
+finding={'verdict':'PASS','product':'RISU Probe v0.9 CNOE targeted legacy fix',
          'generator_commit':status['actual_cnoe_generator_commit'],
          'source_wheel_sha256':meta['source_wheel_sha256'],
+         'patched_adapter_sha256':patch['patched_sha256'],'patches':3,
          'case_count':len(checks),'error_losses':3,
          'generated_files_hashed':len(ledger),'module_files_hashed':len(meta['modules_sha256']),
          'limitations':'Synthetic localhost; not exact line coverage; container isolation not a kernel sandbox proof'}
