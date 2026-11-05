@@ -1,0 +1,44 @@
+name: RISU Probe v0.5 fresh CNOE auto-capture (experimental)
+on:
+  push:
+    branches:
+      - experiment/risu-probe-v05-cnoe-20261105
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cnoe-fresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Fetch current CNOE generator
+        run: |
+          git clone --depth 1 https://github.com/cnoe-io/openapi-mcp-codegen.git "$RUNNER_TEMP/cnoe-codegen"
+          git -C "$RUNNER_TEMP/cnoe-codegen" rev-parse HEAD
+      - name: Install current generator and MCP client
+        run: |
+          python -m pip install -e "$RUNNER_TEMP/cnoe-codegen"
+          python -m pip install "mcp==2.3.0" "fastmcp==4.1.6"
+          python -m pip check
+      - name: Capture source HTTP and generated MCP automatically
+        run: |
+          RISU_CNOE_REPO="$RUNNER_TEMP/cnoe-codegen" RISU_CNOE_OUTPUT="$RUNNER_TEMP/risu-results" python experiments/cnoe-fresh-20261105/run_current_cnoe.py
+      - name: Reproducibility metadata
+        if: always()
+        run: |
+          mkdir -p "$RUNNER_TEMP/risu-results"
+          python -VV > "$RUNNER_TEMP/risu-results/ENVIRONMENT.txt"
+          python -m pip freeze >> "$RUNNER_TEMP/risu-results/ENVIRONMENT.txt"
+          git -C "$RUNNER_TEMP/cnoe-codegen" rev-parse HEAD > "$RUNNER_TEMP/risu-results/CNOE_HEAD.txt"
+          cp -r "$RUNNER_TEMP/risu-results" ./risu-fresh-output
+      - name: Preserve source and SDK-parsed MCP results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: risu-v05-fresh-cnoe-autocapture
+          path: ./risu-fresh-output/
+          if-no-files-found: warn
