@@ -13,7 +13,8 @@ import sys
 
 PRODUCT=Path('/opt/risu/product')
 sys.path.insert(0,str(PRODUCT))
-from risu_probe import MCPClient, ProbeError
+from risu_probe import MCPClient, ProbeError, VERSION
+assert VERSION=='0.9.0-experimental',VERSION
 
 SERVER_ROOT=Path('/opt/risu/ci/servers')
 OUT=Path('/results/MULTI_SERVER_TRANSPORT.json')
@@ -49,7 +50,7 @@ def main():
     except ProbeError:
         rejected=True
     assert rejected,'modern mode unexpectedly downgraded to legacy'
-    result={'status':'PASS','pinned_versions':versions,'targets':3,'cases_passed':len(cases),
+    result={'status':'PASS','product_version':VERSION,'pinned_versions':versions,'targets':3,'cases_passed':len(cases),
             'cases':cases,'explicit_modern_to_legacy_rejected':rejected,
             'virtualenv_symlink_preserved':True,'network':'disabled by Docker',
             'claim_boundary':'Actual MCPClient, real SDK 2.3.0 and FastMCP 4.1.6. Only echo tool; not a whole protocol conformance claim.'}
