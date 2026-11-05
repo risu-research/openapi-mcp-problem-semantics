@@ -71,7 +71,7 @@ def main():
     patch=json.loads((BASE/'product-bundle'/'V09_PATCH_MANIFEST.json').read_text())
     assert patch['changed_file']=='risu_verify.py'
     assert patch['original_sha256']==meta['modules_sha256']['risu_verify.py']
-    assert patch['status']=='AUTHENTICATED_BASE_PLUS_EXACT_THREE_REPLACEMENTS'
+    assert patch['status']=='AUTHENTICATED_BASE_PLUS_EXACT_FOUR_REPLACEMENTS'
     assert len(patch['replacements'])==4
     for path,digest in meta['modules_sha256'].items():
         expected=patch['patched_sha256'] if path==patch['changed_file'] else digest
