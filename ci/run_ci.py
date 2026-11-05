@@ -73,11 +73,17 @@ def main():
     assert patch['original_sha256']==meta['modules_sha256']['risu_verify.py']
     assert patch['status']=='AUTHENTICATED_BASE_PLUS_EXACT_FOUR_REPLACEMENTS'
     assert len(patch['replacements'])==4
+    integrated=json.loads((BASE/'product-bundle'/'V09_INTEGRATION_MANIFEST.json').read_text())
+    assert integrated['status']=='AUTHENTICATED_INTEGRATED_V09'
+    assert integrated['product_version']=='0.9.0-experimental'
     for path,digest in meta['modules_sha256'].items():
-        expected=patch['patched_sha256'] if path==patch['changed_file'] else digest
+        expected=(integrated['source_files'][path]['sha256']
+                  if path in integrated['source_files'] else digest)
         assert hashlib.sha256((BASE/'product'/path).read_bytes()).hexdigest()==expected,path
     (OUT/'V09_PATCH_MANIFEST.json').write_text(json.dumps(patch,indent=2)+'\n')
-    shutil.copy2(BASE/'product'/'risu_verify.py',OUT/'V09_PATCHED_RISU_VERIFY.py')
+    (OUT/'V09_INTEGRATION_MANIFEST.json').write_text(json.dumps(integrated,indent=2)+'\n')
+    shutil.copy2(BASE/'product'/'risu_verify.py',OUT/'V09_INTEGRATED_RISU_VERIFY.py')
+    shutil.copy2(BASE/'product'/'risu_probe.py',OUT/'V09_INTEGRATED_RISU_PROBE.py')
     (OUT/'SOURCE_MANIFEST.json').write_text(json.dumps(meta,indent=2)+'\n')
     (OUT/'CNOE_HEAD.txt').write_text(sha+'\n')
     shutil.copy2(BASE/'product-bundle'/'CNOE_DEPENDENCIES.txt',OUT/'CNOE_DEPENDENCIES.txt')
@@ -187,6 +193,7 @@ def main():
         (OUT/'V08_PRODUCT_VERIFICATION.json').chmod(0o644)
         result=json.loads((OUT/'V08_PRODUCT_VERIFICATION.json').read_text())
         assert result['status']=='CORROBORATED_BEHAVIOR'
+        assert result['probe_version']=='0.9.0-experimental'
         assert result['counts']=={'planned':4,'captured':4,'fixture_gets':12,
                                   'unexpected_requests':0,'error_losses':3}
         assert result['positive_control']=='PRESERVED'
@@ -198,11 +205,13 @@ def main():
             'status':'PASS','product':'RISU Probe v0.9 CNOE adapter (authenticated v0.8 base + 4-line patch)',
             'source_wheel_sha256':meta['source_wheel_sha256'],
             'protocol_fix_sha256':patch['patched_sha256'],
+            'integrated_product_version':integrated['product_version'],
+            'integrated_source_sha256':{n:v['sha256'] for n,v in integrated['source_files'].items()},
             'actual_cnoe_generator_commit':sha,
             'sandbox':{'nonroot':True,'network':'none','root_filesystem':'read-only',
                        'capabilities':'all dropped','credentials':'none'},
             'cases':result['counts']},indent=2)+'\n')
-        print('AUTHENTICATED RISU v0.9 PATCHED PRODUCT ON REAL CNOE PASS:',result['counts'])
+        print('AUTHENTICATED INTEGRATED RISU v0.9 PRODUCT ON REAL CNOE PASS:',result['counts'])
         # Exercise the unchanged general-purpose RISU MCPClient against two
         # other real server libraries, each in a distinct pinned venv.
         command([sys.executable,'-B',str(BASE/'ci'/'transport_server_regression.py')],
