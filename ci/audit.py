@@ -67,11 +67,31 @@ patched=(root/'V09_PATCHED_RISU_VERIFY.py').read_bytes()
 assert patched==expected.encode('utf-8'), 'v0.9 adapter has unexpected modifications'
 assert hashlib.sha256(patched).hexdigest()==patch['patched_sha256']==status['protocol_fix_sha256']
 
+# v0.9 cross-server transport regression is from the same authenticated
+# product engine, with modern targets installed in their own pinned venv.
+transport=load('MULTI_SERVER_TRANSPORT.json')
+assert transport['status']=='PASS'
+assert transport['pinned_versions']=={'mcp':'2.3.0','fastmcp':'4.1.6','fastmcp-slim':'4.1.6'}
+assert transport['cases_passed']==6 and transport['targets']==3
+assert transport['virtualenv_symlink_preserved'] is True
+assert transport['explicit_modern_to_legacy_rejected'] is True
+cases=transport['cases']
+assert len(cases)==6
+assert {r['target'] for r in cases}=={'official-sdk2','fastmcp-4.1.6','stdlib-legacy'}
+for row in cases:
+    assert row['result']=='PRESERVED' and row['tool']=='echo'
+    assert row['requested_mode'] in ('modern','auto','legacy')
+    assert row['negotiated_mode']==('legacy' if row['target']=='stdlib-legacy' else 'modern')
+    assert row['synthetic_value'].startswith('RISU_SYNTHETIC_ECHO_')
+assert (root/'MULTI_SERVER_RUN_LOG.txt').is_file()
+
 assert (root/'GENERATOR_LOG.txt').is_file() and (root/'PRODUCT_EXECUTION_LOG.txt').is_file()
 finding={'verdict':'PASS','product':'RISU Probe v0.9 CNOE targeted legacy fix',
          'generator_commit':status['actual_cnoe_generator_commit'],
          'source_wheel_sha256':meta['source_wheel_sha256'],
          'patched_adapter_sha256':patch['patched_sha256'],'patches':4,
+         'server_implementations_tested':['CNOE/FastMCP3.4','official MCP SDK2.3','FastMCP4.1.6','stdlib legacy'],
+         'transport_cases_passed':6,
          'case_count':len(checks),'error_losses':3,
          'generated_files_hashed':len(ledger),'module_files_hashed':len(meta['modules_sha256']),
          'limitations':'Synthetic localhost; not exact line coverage; container isolation not a kernel sandbox proof'}
