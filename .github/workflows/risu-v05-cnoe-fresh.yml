@@ -21,18 +21,23 @@ jobs:
           git -C "$RUNNER_TEMP/cnoe-codegen" rev-parse HEAD
       - name: Install current generator and MCP client
         run: |
-          python -m pip install -e "$RUNNER_TEMP/cnoe-codegen"
-          python -m pip install "mcp==2.3.0" "fastmcp==4.1.6"
+          python -m venv "$RUNNER_TEMP/risu-generator-env"
+          "$RUNNER_TEMP/risu-generator-env/bin/python" -m pip install -e "$RUNNER_TEMP/cnoe-codegen"
+          "$RUNNER_TEMP/risu-generator-env/bin/python" -m pip check
+          python -m pip install "mcp==2.3.0"
           python -m pip check
       - name: Capture source HTTP and generated MCP automatically
         run: |
-          RISU_CNOE_REPO="$RUNNER_TEMP/cnoe-codegen" RISU_CNOE_OUTPUT="$RUNNER_TEMP/risu-results" python experiments/cnoe-fresh-20261105/run_current_cnoe.py
+          RISU_CNOE_REPO="$RUNNER_TEMP/cnoe-codegen" RISU_CNOE_OUTPUT="$RUNNER_TEMP/risu-results" RISU_CNOE_GENERATOR_PYTHON="$RUNNER_TEMP/risu-generator-env/bin/python" python experiments/cnoe-fresh-20261105/run_current_cnoe.py
       - name: Reproducibility metadata
         if: always()
         run: |
           mkdir -p "$RUNNER_TEMP/risu-results"
           python -VV > "$RUNNER_TEMP/risu-results/ENVIRONMENT.txt"
+          echo "=== SDK 2 client environment ===" >> "$RUNNER_TEMP/risu-results/ENVIRONMENT.txt"
           python -m pip freeze >> "$RUNNER_TEMP/risu-results/ENVIRONMENT.txt"
+          echo "=== CNOE generator and generated server environment ===" >> "$RUNNER_TEMP/risu-results/ENVIRONMENT.txt"
+          "$RUNNER_TEMP/risu-generator-env/bin/python" -m pip freeze >> "$RUNNER_TEMP/risu-results/ENVIRONMENT.txt"
           git -C "$RUNNER_TEMP/cnoe-codegen" rev-parse HEAD > "$RUNNER_TEMP/risu-results/CNOE_HEAD.txt"
           cp -r "$RUNNER_TEMP/risu-results" ./risu-fresh-output
       - name: Preserve source and SDK-parsed MCP results
