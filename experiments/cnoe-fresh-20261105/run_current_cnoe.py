@@ -87,7 +87,7 @@ async def invoke(base,server):
         catalog={t.name:t for t in listing.tools}
         if 'get_order' not in catalog:
             raise RuntimeError('Missing generated get_order, catalog='+str(sorted(catalog)))
-        schema=catalog['get_order'].inputSchema
+        schema=catalog['get_order'].input_schema
         print('Generated tool schema:',json.dumps(schema))
         if 'path_id' in schema.get('properties',{}):key='path_id'
         elif 'id' in schema.get('properties',{}):key='id'
