@@ -39,11 +39,14 @@ for target in report['projects']:
         if target['project']!='cnoe':
             assert len(row['source_sha256'])==64
             assert len(row['mcp_sha256'])==64
-    if target['project']=='cnoe':
+    if target['project'] in ('cnoe','fastmcp'):
         assert [row['verdict'] for row in target['cases'] if row['status']==200]==['PRESERVED']
+        assert all(row['verdict'] in ('LOSS','LOSS_AND_INVENTED') for row in target['cases'] if row['status']>=400)
+    if target['project']=='mcpgen':
+        assert all(row['verdict']=='LOSS' for row in target['cases']), 'text-only result is not a structured machine carrier'
 start=int((base/'begin_unix.txt').read_text())
 finish=int((base/'end_unix.txt').read_text())
-assert 0<finish-start<1800
+assert 0<finish-start<600, f'clean setup and three probes exceeded ten minutes: {finish-start}s'
 meta={'audit':'PASS','elapsed_total_including_dependency_image_build_seconds':finish-start,
       'per_project_execution_seconds':{x['project']:x['seconds_after_dependencies_ready']
                                       for x in report['projects']},
@@ -51,6 +54,5 @@ meta={'audit':'PASS','elapsed_total_including_dependency_image_build_seconds':fi
       'checked_program_source_sha256':report['original_product_sha256'],
       'three_actual_external_implementations':True,
       'scope':'synthetic loopback GET only, no user workload'}
-(base/'INDEPENDENT_AUDIT.json').write_text(json.dumps(meta,indent=2)+'
-')
+(base/'INDEPENDENT_AUDIT.json').write_text(json.dumps(meta,indent=2)+'\n')
 print('THREE_PROJECTS_INDEPENDENT_AUDIT_PASS',meta)
