@@ -101,7 +101,8 @@ async def invoke(base,server,source_spec):
         declared=source_op['parameters'][0]['examples']
         before_planning=dict(COUNT)
         prepared=[]
-        for label,sample in sorted(declared.items()):
+        for label in CASES:
+            sample=declared[label]
             val=sample['value']
             if not isinstance(val,str) or val not in CASES:
                 raise RuntimeError('Unsafe/missing explicitly declared example')
@@ -115,16 +116,22 @@ async def invoke(base,server,source_spec):
         assert len(prepared)==len(CASES) and {x['example_label'] for x in prepared}==set(CASES)
         assert dict(COUNT)==before_planning, 'auto mapping unexpectedly executed HTTP'
         rows=[]
-        for name in CASES:
+        for proposed in prepared:
+            name=proposed['example_label']
+            assert proposed['source_path']=='/orders/'+name
             before=get_http(base,name)
             count=COUNT[name]
-            raw=(await asyncio.wait_for(client.call_tool('get_order',{key:name}),timeout=25)
+            raw=(await asyncio.wait_for(client.call_tool(
+                proposed['tool'],proposed['arguments']),timeout=25)
                 ).model_dump(mode='json',by_alias=True,exclude_none=True)
             delta=COUNT[name]-count
             after=get_http(base,name)
             if before!=after:raise RuntimeError('Changing upstream source: '+name)
             if delta!=1:raise RuntimeError(f'No actual API call from generated MCP for {name}; delta={delta}')
-            rows.append({'check':{'id':name,'tool':'get_order','http_path':'/orders/'+name,
+            rows.append({'check':{'id':name,'tool':proposed['tool'],
+                                   'tool_arguments':proposed['arguments'],
+                                   'http_path':proposed['source_path'],
+                                   'mapping_source':'OpenAPI examples + actual tools/list inputSchema',
                                    'mediated_http_requests':delta},
                          'source_sample':before,'mcp_sample':raw,
                          'source_sha256':digest(before),'mcp_sha256':digest(raw)})
