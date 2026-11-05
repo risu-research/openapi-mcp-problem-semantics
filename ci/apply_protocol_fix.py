@@ -32,7 +32,7 @@ patched=text.encode('utf-8')
 product.write_bytes(patched)
 ledger={
     'patch_name':'RISU Probe v0.9 CNOE legacy-initialize compatibility fix',
-    'status':'AUTHENTICATED_BASE_PLUS_EXACT_THREE_REPLACEMENTS',
+    'status':'AUTHENTICATED_BASE_PLUS_EXACT_FOUR_REPLACEMENTS',
     'source_product':'RISU Probe v0.8 original authenticated module bundle',
     'changed_file':'risu_verify.py',
     'original_sha256':hashlib.sha256(original).hexdigest(),
