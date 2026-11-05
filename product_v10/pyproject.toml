@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "risu-probe-preview"
+version = "0.9.1.dev0"
+description = "Experimental offline-first HTTP to MCP preservation diagnostics"
+requires-python = ">=3.11"
+readme = {text = "RISU Probe experimental developer preview, not MCP conformance certification.", content-type = "text/plain"}
+dependencies = []
+classifiers = ["Programming Language :: Python :: 3", "Operating System :: OS Independent"]
+
+[project.scripts]
+risu-probe = "risu_probe:main"
+
+[tool.setuptools]
+py-modules = [
+  "risu_probe", "risu_verify", "risu_static", "risu_auto_plan",
+  "risu_collect", "risu_analyze", "risu_diagnostics",
+  "risu_contract", "risu_project", "risu_report",
+  "risu_baseline", "risu_plan", "risu_process", "risu_onboarding"
+]
