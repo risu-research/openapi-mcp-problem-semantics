@@ -3,7 +3,7 @@
 Synthetic loopback GET only; no production endpoints or credentials.
 """
 from __future__ import annotations
-import asyncio, hashlib, json, os, subprocess, sys, tempfile
+import asyncio, hashlib, json, os, shutil, subprocess, sys, tempfile
 from collections import Counter
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -128,6 +128,15 @@ def main():
             subprocess.run(command,check=True,timeout=180,cwd=root,env=generator_env)
             servers=[p for p in generated.rglob('server.py') if p.parent.name.startswith('mcp_')]
             if len(servers)!=1:raise RuntimeError('Unexpected generated servers: '+str(servers))
+            # Archive the exact generated files and input spec for reproducibility.
+            import hashlib as _hashlib
+            import json as _json
+            shutil.copy2(inp/'openapi.json', out/'SOURCE_OPENAPI.json')
+            shutil.copy2(inp/'config.yaml', out/'GENERATOR_CONFIG.yaml')
+            generated_hashes={str(p.relative_to(generated)):_hashlib.sha256(p.read_bytes()).hexdigest()
+                              for p in generated.rglob('*') if p.is_file()}
+            (out/'GENERATED_SHA256.json').write_text(_json.dumps(generated_hashes,indent=2)+'\n')
+            shutil.make_archive(str(out/'generated-code'),'zip',root_dir=generated)
             rows,catalog=asyncio.run(invoke(base,servers[0]))
     finally:server.shutdown();server.server_close()
     result={'status':'EXECUTED','generator':'cnoe-io/openapi-mcp-codegen',
