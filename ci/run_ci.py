@@ -139,6 +139,20 @@ def main():
             (OUT/('PROTOCOL_INITIALIZE_'+protocol_version+'.txt')).write_text(
                 'return_before_terminate='+str(code_before)+'\nSTDOUT:\n'+raw_out[-3500:]
                 +'\nSTDERR:\n'+raw_err[-5500:])
+        # Test the ORIGINAL v0.8 MCPClient in legacy-only mode. This isolates
+        # fallback-state bugs from server protocol compatibility.
+        try:
+            from risu_probe import MCPClient as _OriginalMCPClient
+            with _OriginalMCPClient(
+                    ['/opt/cnoe/bin/python','-u',str(pre['adapter']['server'])],
+                    protocol='legacy',env=boot_env) as _probe_client:
+                _catalog=_probe_client.list_tools_catalog()
+            (OUT/'ORIGINAL_CLIENT_DIRECT_LEGACY.json').write_text(
+                json.dumps({'status':'PASS','tool_names':sorted(_catalog)},indent=2)+'\\n')
+        except Exception:
+            import traceback as _tb
+            (OUT/'ORIGINAL_CLIENT_DIRECT_LEGACY.json').write_text(
+                json.dumps({'status':'FAIL','traceback':_tb.format_exc()},indent=2)+'\\n')
         # THIS executes the original v0.8 product module, not a second verifier.
         try:
             command([sys.executable,'-B',product,'verify','--fixture',str(generated),
