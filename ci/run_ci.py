@@ -203,5 +203,10 @@ def main():
                        'capabilities':'all dropped','credentials':'none'},
             'cases':result['counts']},indent=2)+'\n')
         print('AUTHENTICATED RISU v0.9 PATCHED PRODUCT ON REAL CNOE PASS:',result['counts'])
+        # Exercise the unchanged general-purpose RISU MCPClient against two
+        # other real server libraries, each in a distinct pinned venv.
+        command([sys.executable,'-B',str(BASE/'ci'/'transport_server_regression.py')],
+                environment=subprocess_env(),log='MULTI_SERVER_RUN_LOG.txt',timeout=180)
+
 
 if __name__=='__main__':main()
