@@ -2,7 +2,7 @@
 
 The Docker runtime must be --network none, read-only, non-root and secret-free.
 """
-import hashlib,json,os,pathlib,shutil,subprocess,sys,tempfile
+import errno,hashlib,json,os,pathlib,shutil,subprocess,sys,tempfile
 
 BASE=pathlib.Path('/opt/risu')
 OUT=pathlib.Path('/results')
@@ -21,7 +21,8 @@ def isolated():
     lines=pathlib.Path('/proc/net/route').read_text().splitlines()[1:]
     assert not any(len(x.split())>2 and x.split()[1]=='00000000' for x in lines), 'network default route detected'
     try: (BASE/'unexpected-write').write_text('x')
-    except PermissionError: pass
+    except OSError as exc:
+        if exc.errno not in {errno.EROFS, errno.EACCES, errno.EPERM}: raise
     else:raise RuntimeError('root filesystem is writable')
 
 def subprocess_env():
