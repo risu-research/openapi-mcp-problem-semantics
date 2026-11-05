@@ -37,6 +37,24 @@ def run(command, *,env=None,cwd=None,timeout=120):
         raise RuntimeError(f"command {Path(command[0]).name} exited {r.returncode}; stdout={r.stdout[-2500:]}; stderr={r.stderr[-4000:]}")
     return r.stdout
 
+def boot_diagnostic(name,cmd,env):
+    """Synthetic server-only preflight. Captures stderr only on early boot failure."""
+    p=subprocess.Popen(cmd,env=env,cwd='/tmp',stdin=subprocess.PIPE,
+                       stdout=subprocess.PIPE,stderr=subprocess.PIPE,
+                       text=True)
+    try:
+        time.sleep(2)
+        if p.poll() is not None:
+            out,err=p.communicate(timeout=3)
+            raise RuntimeError(f'{name} MCP server EXITED BEFORE INITIALIZE: '
+                               f'exit={p.returncode}, stderr={err[-4500:]}, stdout={out[-900:]}')
+    finally:
+        if p.poll() is None:
+            p.terminate()
+            try:p.communicate(timeout=3)
+            except subprocess.TimeoutExpired:
+                p.kill();p.communicate(timeout=3)
+
 def interpreter_env(python_path=None, *, base=None,root=None):
     allowed=('PATH','HOME','TMP','TEMP','TMPDIR','LANG','LC_ALL','SYSTEMROOT','WINDIR','USERPROFILE')
     env={k:os.environ[k] for k in allowed if k in os.environ}
@@ -133,6 +151,7 @@ def evaluate_result(adapter,matrix,expected_paths,counters,unexpected,elapsed):
             'first_diagnosis_under_ten_minutes_after_dependencies_ready':True}
 
 def main():
+    os.chdir('/tmp')
     assert VERSION=='0.9.1-experimental',VERSION
     assert git_head('/opt/cnoe-source')==REPO_SHA['cnoe']
     assert git_head('/opt/mcpgen-source')==REPO_SHA['mcpgen']
@@ -199,6 +218,8 @@ def main():
                     cmd=['/opt/mcpgen/bin/python','-u',str(out/'server.py')]
                     env=interpreter_env(base=base)
                 assert not counters and not unexpected,(name,'startup unexpectedly called HTTP')
+                print('TRIAD_START',name,flush=True)
+                boot_diagnostic(name,cmd,env)
                 matrix=capture(cases,base,cmd,protocol=mode,recheck_source=True,
                                error_profile='json-errors',label=name,server_env=env)
                 elapsed=time.monotonic()-started
