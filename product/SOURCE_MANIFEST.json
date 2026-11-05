@@ -1,0 +1,18 @@
+{
+  "source_wheel_sha256": "e9ebe383ff6453951150ad4050f401d3e207ac9d8a1df88dcbde1d05149c6b71",
+  "module_tar_sha256": "fa7d81b797dbb784039a315296192a668ae1307665591cc6ff98e710988f8575",
+  "modules_sha256": {
+    "risu_probe.py": "595db2c3fdbe5b72f5bbaefbc946a1e659e622d570477b685b6f22c14125daab",
+    "risu_verify.py": "154bfe4359739be844730e33aaa1b1eddfa9043ee7a2d6a33d39bf291c2a7676",
+    "risu_static.py": "08741d5ad8d90d76be49c32edeb34aa658e1877e2887e2e4b62d2cbd87381d90",
+    "risu_auto_plan.py": "c844795a2e22074783620b08b148c8fcf92f476466d33bfdf5a53b42438f892d",
+    "risu_collect.py": "3c78a0311a1501513b63946cfca6a4c166cf509a97723f6fb2136aa8e531be93",
+    "risu_analyze.py": "2d213dbb7faccc5a5c4895394572b1c46847d589f8c37471f3632dc5464be32d",
+    "risu_diagnostics.py": "fc86306861f3d555f0a155c8106b0d1f13121314bb84f10e5a9dc8137063e717",
+    "risu_contract.py": "50b12fb5f0dcdc2cadd8c4340b8c3014ca9614905b466e67b81a859831d4d05b",
+    "risu_project.py": "299a0774f03a613c9867b2bf706fd09c6888ceeb666764b1c8ec5769c7ad9032",
+    "risu_report.py": "23dfec38ea4442ea5ca1fef5abbc3aaf08cc03535da5befa0678390b998670d1",
+    "risu_baseline.py": "c6415121a2efc33a713096724d9483f45bca09453133a4b0203c34e6180ef9df",
+    "risu_plan.py": "65d34a317d8f613ffb716eef9feb4417f8b209884ecb85720550e0fb89a6d762"
+  }
+}
