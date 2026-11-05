@@ -8,6 +8,8 @@ version = "0.9.1.dev0"
 description = "Experimental offline-first HTTP to MCP preservation diagnostics"
 requires-python = ">=3.11"
 readme = {text = "RISU Probe experimental developer preview, not MCP conformance certification.", content-type = "text/plain"}
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 dependencies = []
 classifiers = ["Programming Language :: Python :: 3", "Operating System :: OS Independent"]
 
