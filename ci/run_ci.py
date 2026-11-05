@@ -101,6 +101,25 @@ def main():
         assert preview['status']=='UNVERIFIED' and preview['execution']=='NONE'
         assert len(preview['fixture_cases'])==4
         (OUT/'PREVIEW.json').write_text(json.dumps(preview,indent=2)+'\n')
+        # Separate synthetic-only boot diagnostic: the original v0.8 client
+        # intentionally suppresses target stderr, so distinguish startup failure.
+        from risu_verify import prepare as _prepare, _restricted_env as _restricted_env
+        import time as _time
+        pre=_prepare(generated)
+        boot_env=_restricted_env(pre['adapter'],'http://127.0.0.1:1',pre['root'])
+        boot=subprocess.Popen(['/opt/cnoe/bin/python','-u',str(pre['adapter']['server'])],
+                               stdin=subprocess.PIPE,stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE,text=True,env=boot_env)
+        _time.sleep(4)
+        if boot.poll() is None:
+            boot.terminate()
+        try: boot_out,boot_err=boot.communicate(timeout=6)
+        except subprocess.TimeoutExpired:
+            boot.kill();boot_out,boot_err=boot.communicate(timeout=3)
+        (OUT/'TARGET_BOOT_DIAGNOSTIC.txt').write_text(
+            'exited_before_4s='+str(boot.returncode not in (-15,-9,-2))+'\\n'
+            +'returncode='+str(boot.returncode)+'\\n'
+            +'stderr='+boot_err[-4500:]+'\\n'+'stdout='+boot_out[-600:])
         # THIS executes the original v0.8 product module, not a second verifier.
         try:
             command([sys.executable,'-B',product,'verify','--fixture',str(generated),
