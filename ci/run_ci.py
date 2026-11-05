@@ -102,10 +102,26 @@ def main():
         assert len(preview['fixture_cases'])==4
         (OUT/'PREVIEW.json').write_text(json.dumps(preview,indent=2)+'\n')
         # THIS executes the original v0.8 product module, not a second verifier.
-        command([sys.executable,'-B',product,'verify','--fixture',str(generated),
-                 '--allow-exec','--python','/opt/cnoe/bin/python',
-                 '--out',str(OUT/'V08_PRODUCT_VERIFICATION.json')],
-                environment=subprocess_env(),log='PRODUCT_EXECUTION_LOG.txt',timeout=180)
+        try:
+            command([sys.executable,'-B',product,'verify','--fixture',str(generated),
+                     '--allow-exec','--python','/opt/cnoe/bin/python',
+                     '--out',str(OUT/'V08_PRODUCT_VERIFICATION.json')],
+                    environment=subprocess_env(),log='PRODUCT_EXECUTION_LOG.txt',timeout=180)
+        except RuntimeError:
+            # Synthetic localhost only: record exact exception in a separate
+            # *diagnostic* re-run, without weakening the original CLI requirement.
+            debug_script=(
+                'import sys; from pathlib import Path; '
+                'from risu_verify import verify_fixture; '
+                'verify_fixture(Path(sys.argv[1]),python=sys.argv[2],allow_exec=True)'
+            )
+            debug=subprocess.run(
+                [sys.executable,'-B','-c',debug_script,str(generated),'/opt/cnoe/bin/python'],
+                env=subprocess_env(),capture_output=True,text=True,timeout=120)
+            (OUT/'FAILED_PRODUCT_DEBUG.txt').write_text(
+                'DIAGNOSTIC RETURNCODE '+str(debug.returncode)+'\\n'
+                +debug.stdout[-3000:]+'\\n'+debug.stderr[-7500:]+'\\n')
+            raise
         result=json.loads((OUT/'V08_PRODUCT_VERIFICATION.json').read_text())
         assert result['status']=='CORROBORATED_BEHAVIOR'
         assert result['counts']=={'planned':4,'captured':4,'fixture_gets':12,
