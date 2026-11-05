@@ -48,5 +48,6 @@ jobs:
             experiments/fastmcp-long-error-20261105/results/SUMMARY.md
             experiments/fastmcp-long-error-20261105/results/AUDIT.json
             experiments/fastmcp-long-error-20261105/results/POLICY.json
+            experiments/fastmcp-long-error-20261105/frozen-cross-library-matrix.json
             experiments/fastmcp-long-error-20261105/results/ENVIRONMENT.txt
           if-no-files-found: warn
