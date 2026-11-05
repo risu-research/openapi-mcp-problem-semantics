@@ -68,8 +68,16 @@ def main():
     sha=command(['git','-c','safe.directory=/opt/cnoe-source','-C','/opt/cnoe-source','rev-parse','HEAD']).stdout.strip()
     assert sha==CNOE_SHA
     meta=json.loads((BASE/'product-bundle'/'SOURCE_MANIFEST.json').read_text())
+    patch=json.loads((BASE/'product-bundle'/'V09_PATCH_MANIFEST.json').read_text())
+    assert patch['changed_file']=='risu_verify.py'
+    assert patch['original_sha256']==meta['modules_sha256']['risu_verify.py']
+    assert patch['status']=='AUTHENTICATED_BASE_PLUS_EXACT_THREE_REPLACEMENTS'
+    assert len(patch['replacements'])==3
     for path,digest in meta['modules_sha256'].items():
-        assert hashlib.sha256((BASE/'product'/path).read_bytes()).hexdigest()==digest
+        expected=patch['patched_sha256'] if path==patch['changed_file'] else digest
+        assert hashlib.sha256((BASE/'product'/path).read_bytes()).hexdigest()==expected,path
+    (OUT/'V09_PATCH_MANIFEST.json').write_text(json.dumps(patch,indent=2)+'\n')
+    shutil.copy2(BASE/'product'/'risu_verify.py',OUT/'V09_PATCHED_RISU_VERIFY.py')
     (OUT/'SOURCE_MANIFEST.json').write_text(json.dumps(meta,indent=2)+'\n')
     (OUT/'CNOE_HEAD.txt').write_text(sha+'\n')
     shutil.copy2(BASE/'product-bundle'/'CNOE_DEPENDENCIES.txt',OUT/'CNOE_DEPENDENCIES.txt')
@@ -184,8 +192,9 @@ def main():
         assert result['static_links'][0]['rule_id']=='RPY101'
         assert result['static_links'][0]['verdict']=='BEHAVIORALLY_CORROBORATED'
         (OUT/'EXECUTION_STATUS.json').write_text(json.dumps({
-            'status':'PASS','product':'actual original RISU Probe v0.8 wheel modules',
+            'status':'PASS','product':'RISU Probe v0.9 CNOE adapter (authenticated v0.8 base + 3-line patch)',
             'source_wheel_sha256':meta['source_wheel_sha256'],
+            'protocol_fix_sha256':patch['patched_sha256'],
             'actual_cnoe_generator_commit':sha,
             'sandbox':{'nonroot':True,'network':'none','root_filesystem':'read-only',
                        'capabilities':'all dropped','credentials':'none'},
