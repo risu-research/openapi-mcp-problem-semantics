@@ -104,7 +104,8 @@ with zipfile.ZipFile(out/'generated-code.zip') as z:
                    'captured_error_cases':['conflict','validation','generic'],
                    'positive_control':'normal',
                    'note':'Actual CNOE code generation and MCP execution; AST registration association; no Python line tracing'}
-    (out/'STATIC_DYNAMIC_LINK.json').write_text(json.dumps(evidence_link,indent=2)+'\\n')
+    (out/'STATIC_DYNAMIC_LINK.json').write_text(json.dumps(evidence_link,indent=2)+'\n')
+    assert json.loads((out/'STATIC_DYNAMIC_LINK.json').read_text())==evidence_link, 'correlation artifact must parse as JSON'
 
 print(json.dumps({'verdict':'PASS','cases':stats,'generator_commit':p['generator_commit'],
                   'generated_files_hashed':len(ledger),'api_request_counts':p['api_request_counts']},indent=2))
