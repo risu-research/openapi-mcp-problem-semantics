@@ -123,7 +123,9 @@ def main():
             command=[os.environ.get('RISU_CNOE_GENERATOR_PYTHON',sys.executable),'-m','openapi_mcp_codegen',
                      '--spec-file',str(inp/'openapi.json'),'--output-dir',str(generated),
                      '--log-level','warning']
-            subprocess.run(command,check=True,timeout=180,cwd=root)
+            generator_env=dict(os.environ)
+            generator_env['PATH']=str(Path(command[0]).parent)+os.pathsep+generator_env.get('PATH','')
+            subprocess.run(command,check=True,timeout=180,cwd=root,env=generator_env)
             servers=[p for p in generated.rglob('server.py') if p.parent.name.startswith('mcp_')]
             if len(servers)!=1:raise RuntimeError('Unexpected generated servers: '+str(servers))
             rows,catalog=asyncio.run(invoke(base,servers[0]))
