@@ -6,6 +6,7 @@ on:
     paths:
       - product/part_05.b64
       - .github/workflows/risu-v09-isolated-cnoe.yml
+      - ci/**
   workflow_dispatch:
 permissions:
   contents: read
