@@ -1,0 +1,36 @@
+name: RISU v0.9 portable source export and Windows baseline
+on:
+  push:
+    branches:
+      - experiment/risu-probe-v10-windows-lifecycle-onboarding-20261105
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  v09-portability:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11', '3.13']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Reconstitute and authenticate v0.9 without external dependencies
+        run: python ci/export_v09_source_portable.py
+      - name: Syntax / import / help smoke
+        shell: bash
+        run: |
+          python -m compileall -q dist/risu_v09_source
+          python dist/risu_v09_source/risu_probe.py --help
+          python dist/risu_v09_source/risu_probe.py scan dist/risu_v09_source --format json --out scan.json
+      - uses: actions/upload-artifact@v4
+        if: matrix.os == 'ubuntu-latest' && matrix.python == '3.11'
+        with:
+          name: risu-v09-authenticated-source-export
+          path: dist/risu_v09_source/
+          if-no-files-found: error
