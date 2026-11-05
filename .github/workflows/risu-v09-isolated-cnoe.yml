@@ -1,0 +1,40 @@
+name: RISU v0.9 isolated original-v0.8-on-CNOE (manual)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-real-product:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail closed until original v0.8 product bundle is committed
+        run: |
+          set -eu
+          test -s product/SOURCE_MANIFEST.json
+          for n in 00 01 02 03 04 05; do test -s "product/part_$n.b64"; done
+          python ci/validate_bundle.py
+      - name: Build pinned CNOE and authenticate original v0.8 product modules
+        run: docker build --pull -f ci/Dockerfile -t risu-v09-isolated .
+      - name: Run actual product in offline non-root read-only container
+        shell: bash
+        run: |
+          set -euxo pipefail
+          mkdir -p results
+          chmod 777 results
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user 65534:65534 \
+            --pids-limit 128 --memory 1536m --cpus 2 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=512m,mode=1777 \
+            --mount type=bind,src="$PWD/results",dst=/results,rw \
+            risu-v09-isolated
+      - name: Independent source/MCP/result audit
+        run: python ci/audit.py results
+      - name: Archive synthetic evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: risu-v09-real-product-isolated-cnoe
+          path: results/
+          if-no-files-found: warn
