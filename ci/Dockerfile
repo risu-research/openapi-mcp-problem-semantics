@@ -7,6 +7,7 @@ COPY product/ /opt/risu/product-bundle/
 COPY ci/ /opt/risu/ci/
 RUN python /opt/risu/ci/unpack_product.py \
     && python /opt/risu/ci/apply_protocol_fix.py \
+    && python /opt/risu/ci/promote_v09_version.py \
     && python -m venv /opt/cnoe \
     && git init -q /opt/cnoe-source \
     && git -C /opt/cnoe-source remote add origin https://github.com/cnoe-io/openapi-mcp-codegen.git \
