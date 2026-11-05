@@ -161,10 +161,16 @@ def main():
             import traceback as _tb
             (OUT/'ORIGINAL_CLIENT_DIRECT_LEGACY.json').write_text(
                 json.dumps({'status':'FAIL','traceback':_tb.format_exc()},indent=2)+'\n')
+        # Diagnostic-only launcher for the *same* CNOE interpreter: preserve
+        # stdout JSON-RPC and record otherwise-suppressed target stderr.
+        python_wrapper=root/'diagnostic-python'
+        python_wrapper.write_text(
+            '#!/bin/sh\\nexec /opt/cnoe/bin/python "$@" 2>>/results/ACTUAL_CNOE_STDERR.txt\\n')
+        python_wrapper.chmod(0o700)
         # THIS executes the original v0.8 product module, not a second verifier.
         try:
             command([sys.executable,'-B',product,'verify','--fixture',str(generated),
-                     '--allow-exec','--python','/opt/cnoe/bin/python',
+                     '--allow-exec','--python',str(python_wrapper),
                      '--out',str(OUT/'V08_PRODUCT_VERIFICATION.json')],
                     environment=subprocess_env(),log='PRODUCT_EXECUTION_LOG.txt',timeout=180)
         except RuntimeError:
