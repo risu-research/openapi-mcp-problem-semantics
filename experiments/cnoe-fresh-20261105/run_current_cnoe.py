@@ -51,7 +51,8 @@ def prepare(folder,base):
           'servers':[{'url':base}],
           'paths':{'/orders/{id}':{'get':{
               'operationId':'get_order','description':'Read a synthetic order by ID.',
-              'parameters':[{'name':'id','in':'path','required':True,'schema':{'type':'string'}}],
+              'parameters':[{'name':'id','in':'path','required':True,'schema':{'type':'string'},
+                          'examples':{x:{'value':x} for x in CASES}}],
               'responses':{
                  '200':{'description':'Success','content':{'application/json':{'schema':{'type':'object'}}}},
                  '409':{'description':'Conflict','content':{'application/problem+json':{'schema':{'type':'object'}}}},
@@ -75,7 +76,7 @@ poetry_dependencies: |
   mcp = ">=2.0.0"
 """)
 
-async def invoke(base,server):
+async def invoke(base,server,source_spec):
     from mcp import Client,StdioServerParameters
     env=dict(os.environ)
     env.update({'RISUCHECK_API_URL':base,'RISUCHECK_TOKEN':'synthetic-no-secret',
@@ -92,6 +93,27 @@ async def invoke(base,server):
         if 'path_id' in schema.get('properties',{}):key='path_id'
         elif 'id' in schema.get('properties',{}):key='id'
         else:raise RuntimeError('Unknown input schema: '+str(schema))
+        # v0.6 planner's conservative, example-only mapping assumptions
+        # independently exercised against this newly generated real catalog.
+        source_op=json.loads(Path(source_spec).read_text())['paths']['/orders/{id}']['get']
+        assert source_op['operationId']=='get_order'
+        assert source_op.get('security',[])==[]
+        declared=source_op['parameters'][0]['examples']
+        before_planning=dict(COUNT)
+        prepared=[]
+        for label,sample in sorted(declared.items()):
+            val=sample['value']
+            if not isinstance(val,str) or val not in CASES:
+                raise RuntimeError('Unsafe/missing explicitly declared example')
+            if schema.get('type')!='object' or key not in schema.get('properties',{}):
+                raise RuntimeError('Unmappable actual tool schema')
+            if schema['properties'][key].get('type')!='string' or not set(schema.get('required',[]))<=set([key]):
+                raise RuntimeError('Cannot map required parameters safely')
+            prepared.append({'example_label':label,'http_method':'GET',
+                             'source_path':'/orders/'+val,'tool':'get_order',
+                             'arguments':{key:val}})
+        assert len(prepared)==len(CASES) and {x['example_label'] for x in prepared}==set(CASES)
+        assert dict(COUNT)==before_planning, 'auto mapping unexpectedly executed HTTP'
         rows=[]
         for name in CASES:
             before=get_http(base,name)
@@ -106,7 +128,7 @@ async def invoke(base,server):
                                    'mediated_http_requests':delta},
                          'source_sample':before,'mcp_sample':raw,
                          'source_sha256':digest(before),'mcp_sha256':digest(raw)})
-        return rows,{'tool_names':sorted(catalog),'get_order_input_schema':schema}
+        return rows,{'tool_names':sorted(catalog),'get_order_input_schema':schema, 'explicit_example_auto_mapping':prepared,'planning_http_requests':0}
 
 def main():
     repo=Path(os.environ['RISU_CNOE_REPO']).resolve()
@@ -137,7 +159,7 @@ def main():
                               for p in generated.rglob('*') if p.is_file()}
             (out/'GENERATED_SHA256.json').write_text(_json.dumps(generated_hashes,indent=2)+'\n')
             shutil.make_archive(str(out/'generated-code'),'zip',root_dir=generated)
-            rows,catalog=asyncio.run(invoke(base,servers[0]))
+            rows,catalog=asyncio.run(invoke(base,servers[0],inp/'openapi.json'))
     finally:server.shutdown();server.server_close()
     result={'status':'EXECUTED','generator':'cnoe-io/openapi-mcp-codegen',
             'generator_commit':sha,'generator_ref':'fresh main on run',
