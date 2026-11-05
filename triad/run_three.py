@@ -46,6 +46,7 @@ def interpreter_env(python_path=None, *, base=None,root=None):
     env['PYTHONDONTWRITEBYTECODE']='1'
     env['PYTHON_DOTENV_DISABLED']='1'
     env['XDG_CACHE_HOME']='/tmp/cache'
+    env['RUFF_CACHE_DIR']='/tmp/ruff-cache'
     env['PYTHONPATH']='/opt/risu/product'
     if base:env['API_BASE_URL']=base
     if root:env['PYTHONPATH']=str(root)
@@ -82,7 +83,7 @@ def create_spec(root):
 def generate_cnoe(inp,out):
     run(['/opt/cnoe/bin/python','-m','openapi_mcp_codegen',
          '--spec-file',str(inp/'openapi.json'),'--output-dir',str(out),
-         '--log-level','warning'],env=interpreter_env(),timeout=150)
+         '--log-level','warning'],env=interpreter_env(),cwd=inp,timeout=150)
     (out/'openapi.json').write_bytes((inp/'openapi.json').read_bytes())
     assert (out/'mcp_risucheck'/'server.py').is_file()
     return out
