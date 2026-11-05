@@ -1,0 +1,57 @@
+name: RISU Probe three external projects safe first diagnosis
+on:
+  push:
+    branches:
+      - experiment/risu-probe-v092-three-project-first-diagnosis-20261105
+    paths:
+      - triad/**
+      - .github/workflows/risu-v092-three-projects.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  three-external-projects:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Restore SHA-verified RISU v0.9.1 source from exact v0.9 baseline
+        run: |
+          python ci/export_v09_source_portable.py
+          python ci/upgrade_v10_modules.py
+          python -m compileall -q dist/risu_v09_source
+          python dist/risu_v09_source/risu_probe.py --version
+      - name: Install pinned external implementations in a disposable image
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p results
+          chmod 777 results
+          date +%s > results/begin_unix.txt
+          docker build --pull -f triad/Dockerfile -t risu-triad-probe .
+      - name: Real synthetic GET vs three genuine generated MCP servers
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user 65534:65534 \
+            --pids-limit 160 --memory 2g --cpus 2 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=512m,mode=1777 \
+            --mount type=bind,src="$PWD/results",dst=/results \
+            risu-triad-probe
+          date +%s > results/end_unix.txt
+      - name: Independent fail-closed verdict audit
+        run: python triad/audit_results.py results
+      - name: Export redacted synthetic-only report even after failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: risu-v092-three-real-project-qualification
+          path: |
+            results/THREE_PROJECTS_SUMMARY.json
+            results/begin_unix.txt
+            results/end_unix.txt
+          if-no-files-found: warn
