@@ -32,7 +32,7 @@ jobs:
             --security-opt no-new-privileges --user 65534:65534 \
             --pids-limit 128 --memory 1536m --cpus 2 \
             --tmpfs /tmp:rw,nosuid,nodev,size=512m,mode=1777 \
-            --mount type=bind,src="$PWD/results",dst=/results,rw \
+            --mount type=bind,src="$PWD/results",dst=/results \
             risu-v09-isolated
       - name: Independent source/MCP/result audit
         run: python ci/audit.py results
