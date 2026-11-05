@@ -44,6 +44,7 @@ with zipfile.ZipFile(root/'GENERATED_CNOE_SOURCES.zip') as z:
 # module from the checked-out upload and require exactly three replacements.
 patch=load('V09_PATCH_MANIFEST.json')
 assert patch['changed_file']=='risu_verify.py'
+assert patch['status']=='AUTHENTICATED_BASE_PLUS_EXACT_FOUR_REPLACEMENTS'
 assert patch['original_sha256']==meta['modules_sha256']['risu_verify.py']
 assert len(patch['replacements'])==4
 pieces=[(root.parent/'product'/f'part_{i:02d}.b64').read_text().strip() for i in range(6)]
