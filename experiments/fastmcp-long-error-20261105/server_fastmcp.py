@@ -23,5 +23,6 @@ spec={
 client=httpx2.AsyncClient(base_url=base,timeout=7,follow_redirects=False)
 mcp=FastMCP.from_openapi(openapi_spec=spec,client=client,
     name='RISU Real FastMCP 4.1.6 Error Truncation Test',
+    mask_error_details=os.environ.get('RISU_MASK_ERRORS')=='1',
     route_maps=[RouteMap(methods=['GET'],mcp_type=MCPType.TOOL)])
 if __name__=='__main__': mcp.run(transport='stdio')
