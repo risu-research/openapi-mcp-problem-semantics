@@ -1,0 +1,36 @@
+name: RISU FastMCP 1000-character boundary (experimental)
+on:
+  push:
+    branches:
+      - experiment/fastmcp-error-truncation-20261105
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-interop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned upstream packages
+        run: python -m pip install -r experiments/fastmcp-long-error-20261105/requirements.txt
+      - name: Execute real FastMCP and official SDK stdio experiment
+        run: python experiments/fastmcp-long-error-20261105/experiment.py
+      - name: Write result summary
+        if: always()
+        shell: bash
+        run: |
+          f=experiments/fastmcp-long-error-20261105/results/SUMMARY.md
+          if [ -f "$f" ]; then cat "$f" >> "$GITHUB_STEP_SUMMARY"; fi
+      - name: Preserve raw synthetic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: risu-fastmcp-long-error-evidence
+          path: |
+            experiments/fastmcp-long-error-20261105/results/evidence.json
+            experiments/fastmcp-long-error-20261105/results/SUMMARY.md
+          if-no-files-found: warn
