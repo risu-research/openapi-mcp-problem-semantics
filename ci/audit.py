@@ -92,6 +92,7 @@ assert result['probe_version']=='0.9.0-experimental'
 # product engine, with modern targets installed in their own pinned venv.
 transport=load('MULTI_SERVER_TRANSPORT.json')
 assert transport['status']=='PASS'
+assert transport['product_version']=='0.9.0-experimental'
 assert transport['pinned_versions']=={'mcp':'2.3.0','fastmcp':'4.1.6','fastmcp-slim':'4.1.6'}
 assert transport['cases_passed']==6 and transport['targets']==3
 assert transport['virtualenv_symlink_preserved'] is True
