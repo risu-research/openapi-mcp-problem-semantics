@@ -1,36 +1,54 @@
-name: RISU v0.9 portable source export and Windows baseline
+name: RISU Probe v0.9.1 Windows Linux qualification
 on:
   push:
     branches:
       - experiment/risu-probe-v10-windows-lifecycle-onboarding-20261105
+    paths:
+      - product/**
+      - product_v10/**
+      - ci/export_v09_source_portable.py
+      - ci/upgrade_v10_modules.py
+      - ci/test_v10_regressions.py
+      - ci/test_v10_installed.py
+      - .github/workflows/risu-v10-windows-reliability.yml
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  v09-portability:
+  portability-and-install:
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python: ['3.11', '3.13']
+        python: ['3.11','3.13']
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 12
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
-      - name: Reconstitute and authenticate v0.9 without external dependencies
+      - name: Authenticate v0.9 source from exact v0.8+delta archive
         run: python ci/export_v09_source_portable.py
-      - name: Syntax / import / help smoke
-        shell: bash
+      - name: Apply narrowly scoped v0.9.1 fixes
+        run: python ci/upgrade_v10_modules.py
+      - name: Entire-source syntax compatibility check
+        run: python -m compileall -q dist/risu_v09_source
+      - name: MCP lifecycle and first-run regressions
+        run: python ci/test_v10_regressions.py
+      - name: Build installable cross-platform wheel
         run: |
-          python -m compileall -q dist/risu_v09_source
-          python dist/risu_v09_source/risu_probe.py --help
-          python dist/risu_v09_source/risu_probe.py scan dist/risu_v09_source --format json --out scan.json
-      - uses: actions/upload-artifact@v4
+          python -m pip install --disable-pip-version-check "build==1.2.2.post1" "setuptools==80.9.0" "wheel==0.45.1"
+          python -m build --wheel --no-isolation dist/risu_v09_source --outdir dist/wheels
+      - name: Clean-room wheel install and first run
+        run: python ci/test_v10_installed.py
+      - name: Store verified wheel and source (single qualifying job only)
         if: always() && matrix.os == 'ubuntu-latest' && matrix.python == '3.11'
+        uses: actions/upload-artifact@v4
         with:
-          name: risu-v09-authenticated-source-export
-          path: dist/risu_v09_source/
+          name: risu-v091-preview-qualifier
+          path: |
+            dist/risu_v09_source/*.py
+            dist/risu_v09_source/pyproject.toml
+            dist/wheels/*.whl
           if-no-files-found: error
