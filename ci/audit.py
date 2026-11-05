@@ -45,7 +45,7 @@ with zipfile.ZipFile(root/'GENERATED_CNOE_SOURCES.zip') as z:
 patch=load('V09_PATCH_MANIFEST.json')
 assert patch['changed_file']=='risu_verify.py'
 assert patch['original_sha256']==meta['modules_sha256']['risu_verify.py']
-assert len(patch['replacements'])==3
+assert len(patch['replacements'])==4
 pieces=[(root.parent/'product'/f'part_{i:02d}.b64').read_text().strip() for i in range(6)]
 tar_bytes=base64.b64decode(''.join(pieces),validate=True)
 assert hashlib.sha256(tar_bytes).hexdigest()==meta['module_tar_sha256']
@@ -56,8 +56,12 @@ expected=original.decode('utf-8')
 for change in patch['replacements']:
     assert expected.count(change['before'])==1
     expected=expected.replace(change['before'],change['after'])
-    assert change['before'].count("protocol='auto'")==1
-    assert change['after'].count("protocol='legacy'")==1
+    if "protocol='auto'" in change['before']:
+        assert change['before'].count("protocol='auto'")==1
+        assert change['after'].count("protocol='legacy'")==1
+    else:
+        assert change['before']=='interpreter=str(exe.resolve())'
+        assert change['after']=='interpreter=str(exe.absolute())'
 patched=(root/'V09_PATCHED_RISU_VERIFY.py').read_bytes()
 assert patched==expected.encode('utf-8'), 'v0.9 adapter has unexpected modifications'
 assert hashlib.sha256(patched).hexdigest()==patch['patched_sha256']==status['protocol_fix_sha256']
@@ -66,7 +70,7 @@ assert (root/'GENERATOR_LOG.txt').is_file() and (root/'PRODUCT_EXECUTION_LOG.txt
 finding={'verdict':'PASS','product':'RISU Probe v0.9 CNOE targeted legacy fix',
          'generator_commit':status['actual_cnoe_generator_commit'],
          'source_wheel_sha256':meta['source_wheel_sha256'],
-         'patched_adapter_sha256':patch['patched_sha256'],'patches':3,
+         'patched_adapter_sha256':patch['patched_sha256'],'patches':4,
          'case_count':len(checks),'error_losses':3,
          'generated_files_hashed':len(ledger),'module_files_hashed':len(meta['modules_sha256']),
          'limitations':'Synthetic localhost; not exact line coverage; container isolation not a kernel sandbox proof'}
