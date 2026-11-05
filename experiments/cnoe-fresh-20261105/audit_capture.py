@@ -39,7 +39,7 @@ for r in rows:
     stats[name]={'status':expected,'isError':mcp.get('isError'),'machine_exact':mcp.get('structuredContent')==orig['body']}
 ledger=json.loads((out/'GENERATED_SHA256.json').read_text())
 with zipfile.ZipFile(out/'generated-code.zip') as z:
-    assert set(z.namelist())==set(ledger), 'generated sources missing'
+    assert {n for n in z.namelist() if not n.endswith('/')}==set(ledger), 'generated sources missing'
     for name, digest in ledger.items():
         assert hashlib.sha256(z.read(name)).hexdigest()==digest, 'generated source hash mismatch '+name
 print(json.dumps({'verdict':'PASS','cases':stats,'generator_commit':p['generator_commit'],
