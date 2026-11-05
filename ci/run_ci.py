@@ -65,7 +65,7 @@ poetry_dependencies: |
 def main():
     isolated()
     OUT.mkdir(exist_ok=True)
-    sha=command(['git','-C','/opt/cnoe-source','rev-parse','HEAD']).stdout.strip()
+    sha=command(['git','-c','safe.directory=/opt/cnoe-source','-C','/opt/cnoe-source','rev-parse','HEAD']).stdout.strip()
     assert sha==CNOE_SHA
     meta=json.loads((BASE/'product-bundle'/'SOURCE_MANIFEST.json').read_text())
     for path,digest in meta['modules_sha256'].items():
