@@ -19,6 +19,17 @@ jobs:
         run: python -m pip install -r experiments/fastmcp-long-error-20261105/requirements.txt
       - name: Execute real FastMCP and official SDK stdio experiment
         run: python experiments/fastmcp-long-error-20261105/experiment.py
+      - name: Audit evidence independently and reject false-green runs
+        run: python experiments/fastmcp-long-error-20261105/audit_evidence.py
+      - name: Capture environment for reproduction
+        if: always()
+        shell: bash
+        run: |
+          out=experiments/fastmcp-long-error-20261105/results
+          mkdir -p "$out"
+          python -VV > "$out/ENVIRONMENT.txt"
+          python -m pip freeze >> "$out/ENVIRONMENT.txt"
+          python -m pip check >> "$out/ENVIRONMENT.txt"
       - name: Write result summary
         if: always()
         shell: bash
@@ -33,4 +44,6 @@ jobs:
           path: |
             experiments/fastmcp-long-error-20261105/results/evidence.json
             experiments/fastmcp-long-error-20261105/results/SUMMARY.md
+            experiments/fastmcp-long-error-20261105/results/AUDIT.json
+            experiments/fastmcp-long-error-20261105/results/ENVIRONMENT.txt
           if-no-files-found: warn
