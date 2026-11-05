@@ -13,6 +13,19 @@ assert set(p['api_request_counts'])=={'normal','conflict','validation','generic'
 assert all(n==3 for n in p['api_request_counts'].values())
 target=p['targets'][0]
 rows=target['checks']
+plan=p['catalog'].get('explicit_example_auto_mapping')
+assert isinstance(plan,list) and len(plan)==4, 'auto mapping cases missing'
+assert p['catalog'].get('planning_http_requests')==0, 'planner touched upstream'
+assert [x['example_label'] for x in plan]==['normal','conflict','validation','generic']
+for planned,captured in zip(plan,rows):
+    name=planned['example_label']
+    assert planned['tool']=='get_order'
+    assert planned['http_method']=='GET'
+    assert planned['source_path']=='/orders/'+name
+    assert planned['arguments']=={'path_id':name}
+    assert captured['check']['tool_arguments']==planned['arguments']
+    assert captured['check']['http_path']==planned['source_path']
+    assert captured['check']['mapping_source']=='OpenAPI examples + actual tools/list inputSchema'
 assert [x['check']['id'] for x in rows]==['normal','conflict','validation','generic']
 def sha(obj):
     s=json.dumps(obj,ensure_ascii=False,sort_keys=True,separators=(',',':'))
