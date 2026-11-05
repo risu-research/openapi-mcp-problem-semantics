@@ -165,7 +165,7 @@ def main():
         # stdout JSON-RPC and record otherwise-suppressed target stderr.
         python_wrapper=root/'diagnostic-python'
         python_wrapper.write_text(
-            '#!/bin/sh\\nexec /opt/cnoe/bin/python "$@" 2>>/results/ACTUAL_CNOE_STDERR.txt\\n')
+            '#!/bin/sh\nexec /opt/cnoe/bin/python "$@" 2>>/results/ACTUAL_CNOE_STDERR.txt\n')
         python_wrapper.chmod(0o700)
         # THIS executes the original v0.8 product module, not a second verifier.
         try:
