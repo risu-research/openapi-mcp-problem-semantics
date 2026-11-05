@@ -1,0 +1,1318 @@
+{
+  "status": "FROZEN_CAPTURE_REUSE",
+  "description": "Historical real translator MCP captures normalized without editing result payloads; NOT fresh SDK execution.",
+  "targets": [
+    {
+      "target": "cnoe-codegen-frozen",
+      "origin": "evidence/results/E5_cnoe.json",
+      "git_blob_sha": "b85ea9b69b66c7c22a2e4e10550e597b52f18a6e",
+      "checks": [
+        {
+          "check": {
+            "id": "P01-explicit-type"
+          },
+          "source_sample": {
+            "status": 403,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/out-of-credit",
+              "title": "Insufficient credit",
+              "detail": "The purchase cannot be completed."
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":\"API request failed: 403\"}",
+                "annotations": null,
+                "_meta": null
+              }
+            ],
+            "structuredContent": {
+              "error": "API request failed: 403"
+            },
+            "isError": false
+          }
+        },
+        {
+          "check": {
+            "id": "P02-default-about-blank"
+          },
+          "source_sample": {
+            "status": 400,
+            "content_type": "application/problem+json",
+            "body": {
+              "title": "Bad Request",
+              "detail": "The request is invalid."
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":\"API request failed: 400\"}",
+                "annotations": null,
+                "_meta": null
+              }
+            ],
+            "structuredContent": {
+              "error": "API request failed: 400"
+            },
+            "isError": false
+          }
+        },
+        {
+          "check": {
+            "id": "P03-same-status-different-type"
+          },
+          "source_sample": {},
+          "mcp_sample": [
+            {
+              "_meta": null,
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"error\":\"API request failed: 403\"}",
+                  "annotations": null,
+                  "_meta": null
+                }
+              ],
+              "structuredContent": {
+                "error": "API request failed: 403"
+              },
+              "isError": false
+            },
+            {
+              "_meta": null,
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"error\":\"API request failed: 403\"}",
+                  "annotations": null,
+                  "_meta": null
+                }
+              ],
+              "structuredContent": {
+                "error": "API request failed: 403"
+              },
+              "isError": false
+            }
+          ]
+        },
+        {
+          "check": {
+            "id": "P04-instance"
+          },
+          "source_sample": {
+            "status": 409,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/conflict",
+              "instance": "/problems/occurrences/abc-123",
+              "title": "Conflict"
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":\"API request failed: 409\"}",
+                "annotations": null,
+                "_meta": null
+              }
+            ],
+            "structuredContent": {
+              "error": "API request failed: 409"
+            },
+            "isError": false
+          }
+        },
+        {
+          "check": {
+            "id": "P05-media-type-gate"
+          },
+          "source_sample": {
+            "status": 400,
+            "content_type": "application/json",
+            "body": {
+              "type": "internal_code",
+              "title": "Bad input",
+              "detail": "Missing field"
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":\"API request failed: 400\"}",
+                "annotations": null,
+                "_meta": null
+              }
+            ],
+            "structuredContent": {
+              "error": "API request failed: 400"
+            },
+            "isError": false
+          }
+        },
+        {
+          "check": {
+            "id": "P06-scalar-extension"
+          },
+          "source_sample": {
+            "status": 400,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/invalid-body-property",
+              "title": "Invalid body property",
+              "code": "invalid-body-property"
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":\"API request failed: 400\"}",
+                "annotations": null,
+                "_meta": null
+              }
+            ],
+            "structuredContent": {
+              "error": "API request failed: 400"
+            },
+            "isError": false
+          }
+        },
+        {
+          "check": {
+            "id": "P07-nested-validation-extension"
+          },
+          "source_sample": {
+            "status": 422,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/validation-error",
+              "title": "Validation failed",
+              "errors": [
+                {
+                  "detail": "must be a positive integer",
+                  "pointer": "#/age"
+                },
+                {
+                  "detail": "must be green, red, or blue",
+                  "pointer": "#/profile/color"
+                }
+              ]
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":\"API request failed: 422\"}",
+                "annotations": null,
+                "_meta": null
+              }
+            ],
+            "structuredContent": {
+              "error": "API request failed: 422"
+            },
+            "isError": false
+          }
+        },
+        {
+          "check": {
+            "id": "P08-unknown-future-extension"
+          },
+          "source_sample": {
+            "status": 409,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/state-conflict",
+              "title": "State conflict",
+              "remediation": {
+                "actions": [
+                  {
+                    "rel": "refresh",
+                    "href": "/state/42"
+                  },
+                  {
+                    "rel": "retry",
+                    "after": "state-refresh"
+                  }
+                ]
+              }
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":\"API request failed: 409\"}",
+                "annotations": null,
+                "_meta": null
+              }
+            ],
+            "structuredContent": {
+              "error": "API request failed: 409"
+            },
+            "isError": false
+          }
+        },
+        {
+          "check": {
+            "id": "P09-localized-human-text"
+          },
+          "source_sample": {},
+          "mcp_sample": [
+            {
+              "_meta": null,
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"error\":\"API request failed: 403\"}",
+                  "annotations": null,
+                  "_meta": null
+                }
+              ],
+              "structuredContent": {
+                "error": "API request failed: 403"
+              },
+              "isError": false
+            },
+            {
+              "_meta": null,
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"error\":\"API request failed: 403\"}",
+                  "annotations": null,
+                  "_meta": null
+                }
+              ],
+              "structuredContent": {
+                "error": "API request failed: 403"
+              },
+              "isError": false
+            }
+          ]
+        },
+        {
+          "check": {
+            "id": "P10-no-prose-mining"
+          },
+          "source_sample": {
+            "status": 429,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/quota-exceeded",
+              "title": "Quota exceeded",
+              "detail": "Please try again in 30 seconds."
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":\"API request failed: 429\"}",
+                "annotations": null,
+                "_meta": null
+              }
+            ],
+            "structuredContent": {
+              "error": "API request failed: 429"
+            },
+            "isError": false
+          }
+        },
+        {
+          "check": {
+            "id": "P11-origin-status-survives-intermediary"
+          },
+          "source_sample": {
+            "status": 502,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/upstream-overloaded",
+              "status": 503,
+              "title": "Upstream overloaded"
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":\"API request failed: 502\"}",
+                "annotations": null,
+                "_meta": null
+              }
+            ],
+            "structuredContent": {
+              "error": "API request failed: 502"
+            },
+            "isError": false
+          }
+        },
+        {
+          "check": {
+            "id": "P12-no-retryability-invention"
+          },
+          "source_sample": {
+            "status": 503,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/service-unavailable",
+              "title": "Service unavailable"
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":\"API request failed: 503\"}",
+                "annotations": null,
+                "_meta": null
+              }
+            ],
+            "structuredContent": {
+              "error": "API request failed: 503"
+            },
+            "isError": false
+          }
+        }
+      ]
+    },
+    {
+      "target": "nihal-openapi-to-mcp-frozen",
+      "origin": "evidence/results/E6_openapi-to-mcp.json",
+      "git_blob_sha": "6e877ed28163236d1c483dccaed7a9fde2a34557",
+      "checks": [
+        {
+          "check": {
+            "id": "P01-explicit-type"
+          },
+          "source_sample": {
+            "status": 403,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/out-of-credit",
+              "title": "Insufficient credit",
+              "detail": "The purchase cannot be completed."
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API authorization failed: The purchase cannot be completed."
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "355d0f5c-e0ca-4d23-b745-d3d7ca178e01",
+              "error": {
+                "code": "api_authorization_failed",
+                "source": "upstream",
+                "retryable": false,
+                "httpStatus": 403
+              }
+            }
+          }
+        },
+        {
+          "check": {
+            "id": "P02-default-about-blank"
+          },
+          "source_sample": {
+            "status": 400,
+            "content_type": "application/problem+json",
+            "body": {
+              "title": "Bad Request",
+              "detail": "The request is invalid."
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API bad request: The request is invalid."
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "6cf206db-5fdc-4017-9080-2334bf49ebe0",
+              "error": {
+                "code": "api_bad_request",
+                "source": "upstream",
+                "retryable": false,
+                "httpStatus": 400
+              }
+            }
+          }
+        },
+        {
+          "check": {
+            "id": "P03-same-status-different-type"
+          },
+          "source_sample": {
+            "status": 403,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/out-of-credit",
+              "title": "Insufficient credit"
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API authorization failed: Request failed with status code 403"
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "142de7b6-c707-4d24-aac1-1640927d230b",
+              "error": {
+                "code": "api_authorization_failed",
+                "source": "upstream",
+                "retryable": false,
+                "httpStatus": 403
+              }
+            }
+          }
+        },
+        {
+          "check": {
+            "id": "P04-instance"
+          },
+          "source_sample": {
+            "status": 409,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/conflict",
+              "instance": "/problems/occurrences/abc-123",
+              "title": "Conflict"
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API request failed (409): Request failed with status code 409"
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "5c85bd4c-727a-4249-827b-4565140697b0",
+              "error": {
+                "code": "api_request_failed",
+                "source": "upstream",
+                "retryable": false,
+                "httpStatus": 409
+              }
+            }
+          }
+        },
+        {
+          "check": {
+            "id": "P05-media-type-gate"
+          },
+          "source_sample": {
+            "status": 400,
+            "content_type": "application/json",
+            "body": {
+              "type": "internal_code",
+              "title": "Bad input",
+              "detail": "Missing field"
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API bad request: Missing field"
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "167b1167-a8a3-4404-8886-06cf6b260702",
+              "error": {
+                "code": "api_bad_request",
+                "source": "upstream",
+                "retryable": false,
+                "httpStatus": 400
+              }
+            }
+          }
+        },
+        {
+          "check": {
+            "id": "P06-scalar-extension"
+          },
+          "source_sample": {
+            "status": 400,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/invalid-body-property",
+              "title": "Invalid body property",
+              "code": "invalid-body-property"
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API bad request: Request failed with status code 400"
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "a98b2716-00da-494c-b15e-97d7471b6daf",
+              "error": {
+                "code": "api_bad_request",
+                "source": "upstream",
+                "retryable": false,
+                "httpStatus": 400
+              }
+            }
+          }
+        },
+        {
+          "check": {
+            "id": "P07-nested-validation-extension"
+          },
+          "source_sample": {
+            "status": 422,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/validation-error",
+              "title": "Validation failed",
+              "errors": [
+                {
+                  "detail": "must be a positive integer",
+                  "pointer": "#/age"
+                },
+                {
+                  "detail": "must be green, red, or blue",
+                  "pointer": "#/profile/color"
+                }
+              ]
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API request failed (422): Request failed with status code 422"
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "25de3117-7ae8-4168-be3f-0364d33a1d7d",
+              "error": {
+                "code": "api_request_failed",
+                "source": "upstream",
+                "retryable": false,
+                "httpStatus": 422
+              }
+            }
+          }
+        },
+        {
+          "check": {
+            "id": "P08-unknown-future-extension"
+          },
+          "source_sample": {
+            "status": 409,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/state-conflict",
+              "title": "State conflict",
+              "remediation": {
+                "actions": [
+                  {
+                    "rel": "refresh",
+                    "href": "/state/42"
+                  },
+                  {
+                    "rel": "retry",
+                    "after": "state-refresh"
+                  }
+                ]
+              }
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API request failed (409): Request failed with status code 409"
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "9e3ae470-3a8b-4655-9e98-4d542f5d4d90",
+              "error": {
+                "code": "api_request_failed",
+                "source": "upstream",
+                "retryable": false,
+                "httpStatus": 409
+              }
+            }
+          }
+        },
+        {
+          "check": {
+            "id": "P09-localized-human-text"
+          },
+          "source_sample": {
+            "status": 403,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/out-of-credit",
+              "title": "Insufficient credit",
+              "detail": "Add funds."
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API authorization failed: Add funds."
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "609065e2-7afa-438f-bc2d-86c50e2e3a57",
+              "error": {
+                "code": "api_authorization_failed",
+                "source": "upstream",
+                "retryable": false,
+                "httpStatus": 403
+              }
+            }
+          }
+        },
+        {
+          "check": {
+            "id": "P10-no-prose-mining"
+          },
+          "source_sample": {
+            "status": 429,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/quota-exceeded",
+              "title": "Quota exceeded",
+              "detail": "Please try again in 30 seconds."
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API rate limit hit: Please try again in 30 seconds."
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "4d4c08d6-006c-4197-aabe-ca5cd03b858e",
+              "error": {
+                "code": "api_rate_limited",
+                "source": "upstream",
+                "retryable": true,
+                "httpStatus": 429
+              }
+            }
+          }
+        },
+        {
+          "check": {
+            "id": "P11-origin-status-survives-intermediary"
+          },
+          "source_sample": {
+            "status": 502,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/upstream-overloaded",
+              "status": 503,
+              "title": "Upstream overloaded"
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API server error (502): Request failed with status code 502"
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "743ad841-3a30-4327-9bd5-57765606daef",
+              "error": {
+                "code": "api_server_error",
+                "source": "upstream",
+                "retryable": true,
+                "httpStatus": 502
+              }
+            }
+          }
+        },
+        {
+          "check": {
+            "id": "P12-no-retryability-invention"
+          },
+          "source_sample": {
+            "status": 503,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/service-unavailable",
+              "title": "Service unavailable"
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API server error (503): Request failed with status code 503"
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "07d9aed4-dd9c-429e-bac0-dc775a2fd82a",
+              "error": {
+                "code": "api_server_error",
+                "source": "upstream",
+                "retryable": true,
+                "httpStatus": 503
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "target": "sdk2-frozen-reference",
+      "origin": "evidence/results/E7_reference.json",
+      "git_blob_sha": "888758d0bd2d7170f32dea2eb67e10aaa8613138",
+      "checks": [
+        {
+          "check": {
+            "id": "P01-explicit-type"
+          },
+          "source_sample": {
+            "status": 403,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/out-of-credit",
+              "title": "Insufficient credit",
+              "detail": "The purchase cannot be completed."
+            }
+          },
+          "mcp_sample": {
+            "_meta": {
+              "io.modelcontextprotocol/serverInfo": {
+                "name": "risu-e7-reference-bridge",
+                "version": "1.0.0"
+              },
+              "org.risu.reference.source_http": {
+                "observed_http_status": 403,
+                "content_type": "application/problem+json"
+              }
+            },
+            "content": [
+              {
+                "type": "resource",
+                "resource": {
+                  "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fout-of-credit%22%2C%22title%22%3A%22Insufficient%20credit%22%2C%22detail%22%3A%22The%20purchase%20cannot%20be%20completed.%22%7D",
+                  "mimeType": "application/problem+json",
+                  "text": "{\"type\":\"https://example.test/problems/out-of-credit\",\"title\":\"Insufficient credit\",\"detail\":\"The purchase cannot be completed.\"}"
+                }
+              }
+            ],
+            "isError": true
+          }
+        },
+        {
+          "check": {
+            "id": "P02-default-about-blank"
+          },
+          "source_sample": {
+            "status": 400,
+            "content_type": "application/problem+json",
+            "body": {
+              "title": "Bad Request",
+              "detail": "The request is invalid."
+            }
+          },
+          "mcp_sample": {
+            "_meta": {
+              "io.modelcontextprotocol/serverInfo": {
+                "name": "risu-e7-reference-bridge",
+                "version": "1.0.0"
+              },
+              "org.risu.reference.source_http": {
+                "observed_http_status": 400,
+                "content_type": "application/problem+json"
+              }
+            },
+            "content": [
+              {
+                "type": "resource",
+                "resource": {
+                  "uri": "data:application/problem+json,%7B%22title%22%3A%22Bad%20Request%22%2C%22detail%22%3A%22The%20request%20is%20invalid.%22%7D",
+                  "mimeType": "application/problem+json",
+                  "text": "{\"title\":\"Bad Request\",\"detail\":\"The request is invalid.\"}"
+                }
+              }
+            ],
+            "isError": true
+          }
+        },
+        {
+          "check": {
+            "id": "P03-same-status-different-type"
+          },
+          "source_sample": {},
+          "mcp_sample": [
+            {
+              "_meta": {
+                "io.modelcontextprotocol/serverInfo": {
+                  "name": "risu-e7-reference-bridge",
+                  "version": "1.0.0"
+                },
+                "org.risu.reference.source_http": {
+                  "observed_http_status": 403,
+                  "content_type": "application/problem+json"
+                }
+              },
+              "content": [
+                {
+                  "type": "resource",
+                  "resource": {
+                    "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fout-of-credit%22%2C%22title%22%3A%22Insufficient%20credit%22%7D",
+                    "mimeType": "application/problem+json",
+                    "text": "{\"type\":\"https://example.test/problems/out-of-credit\",\"title\":\"Insufficient credit\"}"
+                  }
+                }
+              ],
+              "isError": true
+            },
+            {
+              "_meta": {
+                "io.modelcontextprotocol/serverInfo": {
+                  "name": "risu-e7-reference-bridge",
+                  "version": "1.0.0"
+                },
+                "org.risu.reference.source_http": {
+                  "observed_http_status": 403,
+                  "content_type": "application/problem+json"
+                }
+              },
+              "content": [
+                {
+                  "type": "resource",
+                  "resource": {
+                    "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Faccount-suspended%22%2C%22title%22%3A%22Account%20suspended%22%7D",
+                    "mimeType": "application/problem+json",
+                    "text": "{\"type\":\"https://example.test/problems/account-suspended\",\"title\":\"Account suspended\"}"
+                  }
+                }
+              ],
+              "isError": true
+            }
+          ]
+        },
+        {
+          "check": {
+            "id": "P04-instance"
+          },
+          "source_sample": {
+            "status": 409,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/conflict",
+              "instance": "/problems/occurrences/abc-123",
+              "title": "Conflict"
+            }
+          },
+          "mcp_sample": {
+            "_meta": {
+              "io.modelcontextprotocol/serverInfo": {
+                "name": "risu-e7-reference-bridge",
+                "version": "1.0.0"
+              },
+              "org.risu.reference.source_http": {
+                "observed_http_status": 409,
+                "content_type": "application/problem+json"
+              }
+            },
+            "content": [
+              {
+                "type": "resource",
+                "resource": {
+                  "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fconflict%22%2C%22instance%22%3A%22%2Fproblems%2Foccurrences%2Fabc-123%22%2C%22title%22%3A%22Conflict%22%7D",
+                  "mimeType": "application/problem+json",
+                  "text": "{\"type\":\"https://example.test/problems/conflict\",\"instance\":\"/problems/occurrences/abc-123\",\"title\":\"Conflict\"}"
+                }
+              }
+            ],
+            "isError": true
+          }
+        },
+        {
+          "check": {
+            "id": "P05-media-type-gate"
+          },
+          "source_sample": {
+            "status": 400,
+            "content_type": "application/json",
+            "body": {
+              "type": "internal_code",
+              "title": "Bad input",
+              "detail": "Missing field"
+            }
+          },
+          "mcp_sample": {
+            "_meta": {
+              "io.modelcontextprotocol/serverInfo": {
+                "name": "risu-e7-reference-bridge",
+                "version": "1.0.0"
+              },
+              "org.risu.reference.source_http": {
+                "observed_http_status": 400,
+                "content_type": "application/json"
+              }
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Upstream HTTP 400"
+              }
+            ],
+            "isError": true
+          }
+        },
+        {
+          "check": {
+            "id": "P06-scalar-extension"
+          },
+          "source_sample": {
+            "status": 400,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/invalid-body-property",
+              "title": "Invalid body property",
+              "code": "invalid-body-property"
+            }
+          },
+          "mcp_sample": {
+            "_meta": {
+              "io.modelcontextprotocol/serverInfo": {
+                "name": "risu-e7-reference-bridge",
+                "version": "1.0.0"
+              },
+              "org.risu.reference.source_http": {
+                "observed_http_status": 400,
+                "content_type": "application/problem+json"
+              }
+            },
+            "content": [
+              {
+                "type": "resource",
+                "resource": {
+                  "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Finvalid-body-property%22%2C%22title%22%3A%22Invalid%20body%20property%22%2C%22code%22%3A%22invalid-body-property%22%7D",
+                  "mimeType": "application/problem+json",
+                  "text": "{\"type\":\"https://example.test/problems/invalid-body-property\",\"title\":\"Invalid body property\",\"code\":\"invalid-body-property\"}"
+                }
+              }
+            ],
+            "isError": true
+          }
+        },
+        {
+          "check": {
+            "id": "P07-nested-validation-extension"
+          },
+          "source_sample": {
+            "status": 422,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/validation-error",
+              "title": "Validation failed",
+              "errors": [
+                {
+                  "detail": "must be a positive integer",
+                  "pointer": "#/age"
+                },
+                {
+                  "detail": "must be green, red, or blue",
+                  "pointer": "#/profile/color"
+                }
+              ]
+            }
+          },
+          "mcp_sample": {
+            "_meta": {
+              "io.modelcontextprotocol/serverInfo": {
+                "name": "risu-e7-reference-bridge",
+                "version": "1.0.0"
+              },
+              "org.risu.reference.source_http": {
+                "observed_http_status": 422,
+                "content_type": "application/problem+json"
+              }
+            },
+            "content": [
+              {
+                "type": "resource",
+                "resource": {
+                  "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fvalidation-error%22%2C%22title%22%3A%22Validation%20failed%22%2C%22errors%22%3A%5B%7B%22detail%22%3A%22must%20be%20a%20positive%20integer%22%2C%22pointer%22%3A%22%23%2Fage%22%7D%2C%7B%22detail%22%3A%22must%20be%20green%2C%20red%2C%20or%20blue%22%2C%22pointer%22%3A%22%23%2Fprofile%2Fcolor%22%7D%5D%7D",
+                  "mimeType": "application/problem+json",
+                  "text": "{\"type\":\"https://example.test/problems/validation-error\",\"title\":\"Validation failed\",\"errors\":[{\"detail\":\"must be a positive integer\",\"pointer\":\"#/age\"},{\"detail\":\"must be green, red, or blue\",\"pointer\":\"#/profile/color\"}]}"
+                }
+              }
+            ],
+            "isError": true
+          }
+        },
+        {
+          "check": {
+            "id": "P08-unknown-future-extension"
+          },
+          "source_sample": {
+            "status": 409,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/state-conflict",
+              "title": "State conflict",
+              "remediation": {
+                "actions": [
+                  {
+                    "rel": "refresh",
+                    "href": "/state/42"
+                  },
+                  {
+                    "rel": "retry",
+                    "after": "state-refresh"
+                  }
+                ]
+              }
+            }
+          },
+          "mcp_sample": {
+            "_meta": {
+              "io.modelcontextprotocol/serverInfo": {
+                "name": "risu-e7-reference-bridge",
+                "version": "1.0.0"
+              },
+              "org.risu.reference.source_http": {
+                "observed_http_status": 409,
+                "content_type": "application/problem+json"
+              }
+            },
+            "content": [
+              {
+                "type": "resource",
+                "resource": {
+                  "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fstate-conflict%22%2C%22title%22%3A%22State%20conflict%22%2C%22remediation%22%3A%7B%22actions%22%3A%5B%7B%22rel%22%3A%22refresh%22%2C%22href%22%3A%22%2Fstate%2F42%22%7D%2C%7B%22rel%22%3A%22retry%22%2C%22after%22%3A%22state-refresh%22%7D%5D%7D%7D",
+                  "mimeType": "application/problem+json",
+                  "text": "{\"type\":\"https://example.test/problems/state-conflict\",\"title\":\"State conflict\",\"remediation\":{\"actions\":[{\"rel\":\"refresh\",\"href\":\"/state/42\"},{\"rel\":\"retry\",\"after\":\"state-refresh\"}]}}"
+                }
+              }
+            ],
+            "isError": true
+          }
+        },
+        {
+          "check": {
+            "id": "P09-localized-human-text"
+          },
+          "source_sample": {},
+          "mcp_sample": [
+            {
+              "_meta": {
+                "io.modelcontextprotocol/serverInfo": {
+                  "name": "risu-e7-reference-bridge",
+                  "version": "1.0.0"
+                },
+                "org.risu.reference.source_http": {
+                  "observed_http_status": 403,
+                  "content_type": "application/problem+json",
+                  "content_language": "en"
+                }
+              },
+              "content": [
+                {
+                  "type": "resource",
+                  "resource": {
+                    "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fout-of-credit%22%2C%22title%22%3A%22Insufficient%20credit%22%2C%22detail%22%3A%22Add%20funds.%22%7D",
+                    "mimeType": "application/problem+json",
+                    "text": "{\"type\":\"https://example.test/problems/out-of-credit\",\"title\":\"Insufficient credit\",\"detail\":\"Add funds.\"}"
+                  }
+                }
+              ],
+              "isError": true
+            },
+            {
+              "_meta": {
+                "io.modelcontextprotocol/serverInfo": {
+                  "name": "risu-e7-reference-bridge",
+                  "version": "1.0.0"
+                },
+                "org.risu.reference.source_http": {
+                  "observed_http_status": 403,
+                  "content_type": "application/problem+json",
+                  "content_language": "ko"
+                }
+              },
+              "content": [
+                {
+                  "type": "resource",
+                  "resource": {
+                    "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fout-of-credit%22%2C%22title%22%3A%22%EC%9E%94%EC%95%A1%20%EB%B6%80%EC%A1%B1%22%2C%22detail%22%3A%22%EC%9E%94%EC%95%A1%EC%9D%84%20%EC%B6%94%EA%B0%80%ED%95%98%EC%84%B8%EC%9A%94.%22%7D",
+                    "mimeType": "application/problem+json",
+                    "text": "{\"type\":\"https://example.test/problems/out-of-credit\",\"title\":\"잔액 부족\",\"detail\":\"잔액을 추가하세요.\"}"
+                  }
+                }
+              ],
+              "isError": true
+            }
+          ]
+        },
+        {
+          "check": {
+            "id": "P10-no-prose-mining"
+          },
+          "source_sample": {
+            "status": 429,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/quota-exceeded",
+              "title": "Quota exceeded",
+              "detail": "Please try again in 30 seconds."
+            }
+          },
+          "mcp_sample": {
+            "_meta": {
+              "io.modelcontextprotocol/serverInfo": {
+                "name": "risu-e7-reference-bridge",
+                "version": "1.0.0"
+              },
+              "org.risu.reference.source_http": {
+                "observed_http_status": 429,
+                "content_type": "application/problem+json"
+              }
+            },
+            "content": [
+              {
+                "type": "resource",
+                "resource": {
+                  "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fquota-exceeded%22%2C%22title%22%3A%22Quota%20exceeded%22%2C%22detail%22%3A%22Please%20try%20again%20in%2030%20seconds.%22%7D",
+                  "mimeType": "application/problem+json",
+                  "text": "{\"type\":\"https://example.test/problems/quota-exceeded\",\"title\":\"Quota exceeded\",\"detail\":\"Please try again in 30 seconds.\"}"
+                }
+              }
+            ],
+            "isError": true
+          }
+        },
+        {
+          "check": {
+            "id": "P11-origin-status-survives-intermediary"
+          },
+          "source_sample": {
+            "status": 502,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/upstream-overloaded",
+              "status": 503,
+              "title": "Upstream overloaded"
+            }
+          },
+          "mcp_sample": {
+            "_meta": {
+              "io.modelcontextprotocol/serverInfo": {
+                "name": "risu-e7-reference-bridge",
+                "version": "1.0.0"
+              },
+              "org.risu.reference.source_http": {
+                "observed_http_status": 502,
+                "content_type": "application/problem+json"
+              }
+            },
+            "content": [
+              {
+                "type": "resource",
+                "resource": {
+                  "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fupstream-overloaded%22%2C%22status%22%3A503%2C%22title%22%3A%22Upstream%20overloaded%22%7D",
+                  "mimeType": "application/problem+json",
+                  "text": "{\"type\":\"https://example.test/problems/upstream-overloaded\",\"status\":503,\"title\":\"Upstream overloaded\"}"
+                }
+              }
+            ],
+            "isError": true
+          }
+        },
+        {
+          "check": {
+            "id": "P12-no-retryability-invention"
+          },
+          "source_sample": {
+            "status": 503,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/service-unavailable",
+              "title": "Service unavailable"
+            }
+          },
+          "mcp_sample": {
+            "_meta": {
+              "io.modelcontextprotocol/serverInfo": {
+                "name": "risu-e7-reference-bridge",
+                "version": "1.0.0"
+              },
+              "org.risu.reference.source_http": {
+                "observed_http_status": 503,
+                "content_type": "application/problem+json"
+              }
+            },
+            "content": [
+              {
+                "type": "resource",
+                "resource": {
+                  "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fservice-unavailable%22%2C%22title%22%3A%22Service%20unavailable%22%7D",
+                  "mimeType": "application/problem+json",
+                  "text": "{\"type\":\"https://example.test/problems/service-unavailable\",\"title\":\"Service unavailable\"}"
+                }
+              }
+            ],
+            "isError": true
+          }
+        }
+      ]
+    }
+  ]
+}
