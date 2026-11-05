@@ -1,6 +1,6 @@
 {
   "status": "FROZEN_CAPTURE_REUSE",
-  "description": "Historical real translator MCP captures normalized without editing result payloads; NOT fresh SDK execution.",
+  "description": "Prior externally executed converter snapshots; each multi-response case expanded. NOT fresh execution.",
   "targets": [
     {
       "target": "cnoe-codegen-frozen",
@@ -66,41 +66,59 @@
         },
         {
           "check": {
-            "id": "P03-same-status-different-type"
+            "id": "P03-same-status-different-type/variant1"
           },
-          "source_sample": {},
-          "mcp_sample": [
-            {
-              "_meta": null,
-              "content": [
-                {
-                  "type": "text",
-                  "text": "{\"error\":\"API request failed: 403\"}",
-                  "annotations": null,
-                  "_meta": null
-                }
-              ],
-              "structuredContent": {
-                "error": "API request failed: 403"
-              },
-              "isError": false
-            },
-            {
-              "_meta": null,
-              "content": [
-                {
-                  "type": "text",
-                  "text": "{\"error\":\"API request failed: 403\"}",
-                  "annotations": null,
-                  "_meta": null
-                }
-              ],
-              "structuredContent": {
-                "error": "API request failed: 403"
-              },
-              "isError": false
+          "source_sample": {
+            "status": 403,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/out-of-credit",
+              "title": "Insufficient credit"
             }
-          ]
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":\"API request failed: 403\"}",
+                "annotations": null,
+                "_meta": null
+              }
+            ],
+            "structuredContent": {
+              "error": "API request failed: 403"
+            },
+            "isError": false
+          }
+        },
+        {
+          "check": {
+            "id": "P03-same-status-different-type/variant2"
+          },
+          "source_sample": {
+            "status": 403,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/account-suspended",
+              "title": "Account suspended"
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":\"API request failed: 403\"}",
+                "annotations": null,
+                "_meta": null
+              }
+            ],
+            "structuredContent": {
+              "error": "API request failed: 403"
+            },
+            "isError": false
+          }
         },
         {
           "check": {
@@ -269,41 +287,61 @@
         },
         {
           "check": {
-            "id": "P09-localized-human-text"
+            "id": "P09-localized-human-text/variant1"
           },
-          "source_sample": {},
-          "mcp_sample": [
-            {
-              "_meta": null,
-              "content": [
-                {
-                  "type": "text",
-                  "text": "{\"error\":\"API request failed: 403\"}",
-                  "annotations": null,
-                  "_meta": null
-                }
-              ],
-              "structuredContent": {
-                "error": "API request failed: 403"
-              },
-              "isError": false
-            },
-            {
-              "_meta": null,
-              "content": [
-                {
-                  "type": "text",
-                  "text": "{\"error\":\"API request failed: 403\"}",
-                  "annotations": null,
-                  "_meta": null
-                }
-              ],
-              "structuredContent": {
-                "error": "API request failed: 403"
-              },
-              "isError": false
+          "source_sample": {
+            "status": 403,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/out-of-credit",
+              "title": "Insufficient credit",
+              "detail": "Add funds."
             }
-          ]
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":\"API request failed: 403\"}",
+                "annotations": null,
+                "_meta": null
+              }
+            ],
+            "structuredContent": {
+              "error": "API request failed: 403"
+            },
+            "isError": false
+          }
+        },
+        {
+          "check": {
+            "id": "P09-localized-human-text/variant2"
+          },
+          "source_sample": {
+            "status": 403,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/out-of-credit",
+              "title": "잔액 부족",
+              "detail": "잔액을 추가하세요."
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"error\":\"API request failed: 403\"}",
+                "annotations": null,
+                "_meta": null
+              }
+            ],
+            "structuredContent": {
+              "error": "API request failed: 403"
+            },
+            "isError": false
+          }
         },
         {
           "check": {
@@ -465,7 +503,7 @@
         },
         {
           "check": {
-            "id": "P03-same-status-different-type"
+            "id": "P03-same-status-different-type/variant1"
           },
           "source_sample": {
             "status": 403,
@@ -486,6 +524,38 @@
             "isError": true,
             "meta": {
               "requestId": "142de7b6-c707-4d24-aac1-1640927d230b",
+              "error": {
+                "code": "api_authorization_failed",
+                "source": "upstream",
+                "retryable": false,
+                "httpStatus": 403
+              }
+            }
+          }
+        },
+        {
+          "check": {
+            "id": "P03-same-status-different-type/variant2"
+          },
+          "source_sample": {
+            "status": 403,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/account-suspended",
+              "title": "Account suspended"
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API authorization failed: Request failed with status code 403"
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "440da267-738f-459b-8b78-881a406bc320",
               "error": {
                 "code": "api_authorization_failed",
                 "source": "upstream",
@@ -682,7 +752,7 @@
         },
         {
           "check": {
-            "id": "P09-localized-human-text"
+            "id": "P09-localized-human-text/variant1"
           },
           "source_sample": {
             "status": 403,
@@ -704,6 +774,39 @@
             "isError": true,
             "meta": {
               "requestId": "609065e2-7afa-438f-bc2d-86c50e2e3a57",
+              "error": {
+                "code": "api_authorization_failed",
+                "source": "upstream",
+                "retryable": false,
+                "httpStatus": 403
+              }
+            }
+          }
+        },
+        {
+          "check": {
+            "id": "P09-localized-human-text/variant2"
+          },
+          "source_sample": {
+            "status": 403,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/out-of-credit",
+              "title": "잔액 부족",
+              "detail": "잔액을 추가하세요."
+            }
+          },
+          "mcp_sample": {
+            "_meta": null,
+            "content": [
+              {
+                "type": "text",
+                "text": "API authorization failed: 잔액을 추가하세요."
+              }
+            ],
+            "isError": true,
+            "meta": {
+              "requestId": "494a9f66-cf15-4c71-858b-337aeef70b62",
               "error": {
                 "code": "api_authorization_failed",
                 "source": "upstream",
@@ -893,57 +996,75 @@
         },
         {
           "check": {
-            "id": "P03-same-status-different-type"
+            "id": "P03-same-status-different-type/variant1"
           },
-          "source_sample": {},
-          "mcp_sample": [
-            {
-              "_meta": {
-                "io.modelcontextprotocol/serverInfo": {
-                  "name": "risu-e7-reference-bridge",
-                  "version": "1.0.0"
-                },
-                "org.risu.reference.source_http": {
-                  "observed_http_status": 403,
-                  "content_type": "application/problem+json"
-                }
-              },
-              "content": [
-                {
-                  "type": "resource",
-                  "resource": {
-                    "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fout-of-credit%22%2C%22title%22%3A%22Insufficient%20credit%22%7D",
-                    "mimeType": "application/problem+json",
-                    "text": "{\"type\":\"https://example.test/problems/out-of-credit\",\"title\":\"Insufficient credit\"}"
-                  }
-                }
-              ],
-              "isError": true
-            },
-            {
-              "_meta": {
-                "io.modelcontextprotocol/serverInfo": {
-                  "name": "risu-e7-reference-bridge",
-                  "version": "1.0.0"
-                },
-                "org.risu.reference.source_http": {
-                  "observed_http_status": 403,
-                  "content_type": "application/problem+json"
-                }
-              },
-              "content": [
-                {
-                  "type": "resource",
-                  "resource": {
-                    "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Faccount-suspended%22%2C%22title%22%3A%22Account%20suspended%22%7D",
-                    "mimeType": "application/problem+json",
-                    "text": "{\"type\":\"https://example.test/problems/account-suspended\",\"title\":\"Account suspended\"}"
-                  }
-                }
-              ],
-              "isError": true
+          "source_sample": {
+            "status": 403,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/out-of-credit",
+              "title": "Insufficient credit"
             }
-          ]
+          },
+          "mcp_sample": {
+            "_meta": {
+              "io.modelcontextprotocol/serverInfo": {
+                "name": "risu-e7-reference-bridge",
+                "version": "1.0.0"
+              },
+              "org.risu.reference.source_http": {
+                "observed_http_status": 403,
+                "content_type": "application/problem+json"
+              }
+            },
+            "content": [
+              {
+                "type": "resource",
+                "resource": {
+                  "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fout-of-credit%22%2C%22title%22%3A%22Insufficient%20credit%22%7D",
+                  "mimeType": "application/problem+json",
+                  "text": "{\"type\":\"https://example.test/problems/out-of-credit\",\"title\":\"Insufficient credit\"}"
+                }
+              }
+            ],
+            "isError": true
+          }
+        },
+        {
+          "check": {
+            "id": "P03-same-status-different-type/variant2"
+          },
+          "source_sample": {
+            "status": 403,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/account-suspended",
+              "title": "Account suspended"
+            }
+          },
+          "mcp_sample": {
+            "_meta": {
+              "io.modelcontextprotocol/serverInfo": {
+                "name": "risu-e7-reference-bridge",
+                "version": "1.0.0"
+              },
+              "org.risu.reference.source_http": {
+                "observed_http_status": 403,
+                "content_type": "application/problem+json"
+              }
+            },
+            "content": [
+              {
+                "type": "resource",
+                "resource": {
+                  "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Faccount-suspended%22%2C%22title%22%3A%22Account%20suspended%22%7D",
+                  "mimeType": "application/problem+json",
+                  "text": "{\"type\":\"https://example.test/problems/account-suspended\",\"title\":\"Account suspended\"}"
+                }
+              }
+            ],
+            "isError": true
+          }
         },
         {
           "check": {
@@ -1148,59 +1269,79 @@
         },
         {
           "check": {
-            "id": "P09-localized-human-text"
+            "id": "P09-localized-human-text/variant1"
           },
-          "source_sample": {},
-          "mcp_sample": [
-            {
-              "_meta": {
-                "io.modelcontextprotocol/serverInfo": {
-                  "name": "risu-e7-reference-bridge",
-                  "version": "1.0.0"
-                },
-                "org.risu.reference.source_http": {
-                  "observed_http_status": 403,
-                  "content_type": "application/problem+json",
-                  "content_language": "en"
-                }
-              },
-              "content": [
-                {
-                  "type": "resource",
-                  "resource": {
-                    "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fout-of-credit%22%2C%22title%22%3A%22Insufficient%20credit%22%2C%22detail%22%3A%22Add%20funds.%22%7D",
-                    "mimeType": "application/problem+json",
-                    "text": "{\"type\":\"https://example.test/problems/out-of-credit\",\"title\":\"Insufficient credit\",\"detail\":\"Add funds.\"}"
-                  }
-                }
-              ],
-              "isError": true
-            },
-            {
-              "_meta": {
-                "io.modelcontextprotocol/serverInfo": {
-                  "name": "risu-e7-reference-bridge",
-                  "version": "1.0.0"
-                },
-                "org.risu.reference.source_http": {
-                  "observed_http_status": 403,
-                  "content_type": "application/problem+json",
-                  "content_language": "ko"
-                }
-              },
-              "content": [
-                {
-                  "type": "resource",
-                  "resource": {
-                    "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fout-of-credit%22%2C%22title%22%3A%22%EC%9E%94%EC%95%A1%20%EB%B6%80%EC%A1%B1%22%2C%22detail%22%3A%22%EC%9E%94%EC%95%A1%EC%9D%84%20%EC%B6%94%EA%B0%80%ED%95%98%EC%84%B8%EC%9A%94.%22%7D",
-                    "mimeType": "application/problem+json",
-                    "text": "{\"type\":\"https://example.test/problems/out-of-credit\",\"title\":\"잔액 부족\",\"detail\":\"잔액을 추가하세요.\"}"
-                  }
-                }
-              ],
-              "isError": true
+          "source_sample": {
+            "status": 403,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/out-of-credit",
+              "title": "Insufficient credit",
+              "detail": "Add funds."
             }
-          ]
+          },
+          "mcp_sample": {
+            "_meta": {
+              "io.modelcontextprotocol/serverInfo": {
+                "name": "risu-e7-reference-bridge",
+                "version": "1.0.0"
+              },
+              "org.risu.reference.source_http": {
+                "observed_http_status": 403,
+                "content_type": "application/problem+json",
+                "content_language": "en"
+              }
+            },
+            "content": [
+              {
+                "type": "resource",
+                "resource": {
+                  "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fout-of-credit%22%2C%22title%22%3A%22Insufficient%20credit%22%2C%22detail%22%3A%22Add%20funds.%22%7D",
+                  "mimeType": "application/problem+json",
+                  "text": "{\"type\":\"https://example.test/problems/out-of-credit\",\"title\":\"Insufficient credit\",\"detail\":\"Add funds.\"}"
+                }
+              }
+            ],
+            "isError": true
+          }
+        },
+        {
+          "check": {
+            "id": "P09-localized-human-text/variant2"
+          },
+          "source_sample": {
+            "status": 403,
+            "content_type": "application/problem+json",
+            "body": {
+              "type": "https://example.test/problems/out-of-credit",
+              "title": "잔액 부족",
+              "detail": "잔액을 추가하세요."
+            }
+          },
+          "mcp_sample": {
+            "_meta": {
+              "io.modelcontextprotocol/serverInfo": {
+                "name": "risu-e7-reference-bridge",
+                "version": "1.0.0"
+              },
+              "org.risu.reference.source_http": {
+                "observed_http_status": 403,
+                "content_type": "application/problem+json",
+                "content_language": "ko"
+              }
+            },
+            "content": [
+              {
+                "type": "resource",
+                "resource": {
+                  "uri": "data:application/problem+json,%7B%22type%22%3A%22https%3A%2F%2Fexample.test%2Fproblems%2Fout-of-credit%22%2C%22title%22%3A%22%EC%9E%94%EC%95%A1%20%EB%B6%80%EC%A1%B1%22%2C%22detail%22%3A%22%EC%9E%94%EC%95%A1%EC%9D%84%20%EC%B6%94%EA%B0%80%ED%95%98%EC%84%B8%EC%9A%94.%22%7D",
+                  "mimeType": "application/problem+json",
+                  "text": "{\"type\":\"https://example.test/problems/out-of-credit\",\"title\":\"잔액 부족\",\"detail\":\"잔액을 추가하세요.\"}"
+                }
+              }
+            ],
+            "isError": true
+          }
         },
         {
           "check": {
