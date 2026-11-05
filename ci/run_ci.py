@@ -182,6 +182,9 @@ def main():
                 'DIAGNOSTIC RETURNCODE '+str(debug.returncode)+'\\n'
                 +debug.stdout[-3000:]+'\\n'+debug.stderr[-7500:]+'\\n')
             raise
+        # Product uses a private 0600 output by default. This is synthetic-only
+        # CI evidence and must be readable by the host-side independent auditor.
+        (OUT/'V08_PRODUCT_VERIFICATION.json').chmod(0o644)
         result=json.loads((OUT/'V08_PRODUCT_VERIFICATION.json').read_text())
         assert result['status']=='CORROBORATED_BEHAVIOR'
         assert result['counts']=={'planned':4,'captured':4,'fixture_gets':12,
@@ -199,6 +202,6 @@ def main():
             'sandbox':{'nonroot':True,'network':'none','root_filesystem':'read-only',
                        'capabilities':'all dropped','credentials':'none'},
             'cases':result['counts']},indent=2)+'\n')
-        print('ORIGINAL RISU PRODUCT ON REAL GENERATED CNOE PASS:',result['counts'])
+        print('AUTHENTICATED RISU v0.9 PATCHED PRODUCT ON REAL CNOE PASS:',result['counts'])
 
 if __name__=='__main__':main()
