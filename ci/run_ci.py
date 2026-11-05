@@ -72,7 +72,7 @@ def main():
     assert patch['changed_file']=='risu_verify.py'
     assert patch['original_sha256']==meta['modules_sha256']['risu_verify.py']
     assert patch['status']=='AUTHENTICATED_BASE_PLUS_EXACT_THREE_REPLACEMENTS'
-    assert len(patch['replacements'])==3
+    assert len(patch['replacements'])==4
     for path,digest in meta['modules_sha256'].items():
         expected=patch['patched_sha256'] if path==patch['changed_file'] else digest
         assert hashlib.sha256((BASE/'product'/path).read_bytes()).hexdigest()==expected,path
@@ -161,16 +161,10 @@ def main():
             import traceback as _tb
             (OUT/'ORIGINAL_CLIENT_DIRECT_LEGACY.json').write_text(
                 json.dumps({'status':'FAIL','traceback':_tb.format_exc()},indent=2)+'\n')
-        # Diagnostic-only launcher for the *same* CNOE interpreter: preserve
-        # stdout JSON-RPC and record otherwise-suppressed target stderr.
-        python_wrapper=root/'diagnostic-python'
-        python_wrapper.write_text(
-            '#!/bin/sh\nexec /opt/cnoe/bin/python "$@" 2>>/results/ACTUAL_CNOE_STDERR.txt\n')
-        python_wrapper.chmod(0o700)
         # THIS executes the original v0.8 product module, not a second verifier.
         try:
             command([sys.executable,'-B',product,'verify','--fixture',str(generated),
-                     '--allow-exec','--python',str(python_wrapper),
+                     '--allow-exec','--python','/opt/cnoe/bin/python',
                      '--out',str(OUT/'V08_PRODUCT_VERIFICATION.json')],
                     environment=subprocess_env(),log='PRODUCT_EXECUTION_LOG.txt',timeout=180)
         except RuntimeError:
@@ -198,7 +192,7 @@ def main():
         assert result['static_links'][0]['rule_id']=='RPY101'
         assert result['static_links'][0]['verdict']=='BEHAVIORALLY_CORROBORATED'
         (OUT/'EXECUTION_STATUS.json').write_text(json.dumps({
-            'status':'PASS','product':'RISU Probe v0.9 CNOE adapter (authenticated v0.8 base + 3-line patch)',
+            'status':'PASS','product':'RISU Probe v0.9 CNOE adapter (authenticated v0.8 base + 4-line patch)',
             'source_wheel_sha256':meta['source_wheel_sha256'],
             'protocol_fix_sha256':patch['patched_sha256'],
             'actual_cnoe_generator_commit':sha,
