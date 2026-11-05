@@ -57,5 +57,6 @@ jobs:
           path: |
             dist/risu_v09_source/*.py
             dist/risu_v09_source/pyproject.toml
+            dist/risu_v09_source/LICENSE
             dist/wheels/*.whl
           if-no-files-found: error
