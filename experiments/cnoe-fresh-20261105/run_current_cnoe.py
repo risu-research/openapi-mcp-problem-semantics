@@ -81,7 +81,7 @@ async def invoke(base,server):
     env.update({'RISUCHECK_API_URL':base,'RISUCHECK_TOKEN':'synthetic-no-secret',
                 'MCP_MODE':'stdio',
                 'PYTHONPATH':str(server.parent.parent)+os.pathsep+env.get('PYTHONPATH','')})
-    p=StdioServerParameters(command=sys.executable,args=['-u',str(server)],env=env)
+    p=StdioServerParameters(command=os.environ.get('RISU_CNOE_GENERATOR_PYTHON',sys.executable),args=['-u',str(server)],env=env)
     async with Client(p) as client:
         listing=await client.list_tools()
         catalog={t.name:t for t in listing.tools}
@@ -120,7 +120,7 @@ def main():
         with tempfile.TemporaryDirectory(prefix='risu-new-cnoe-') as tmp:
             root=Path(tmp); inp=root/'input';prepare(inp,base)
             generated=root/'output'
-            command=[sys.executable,'-m','openapi_mcp_codegen',
+            command=[os.environ.get('RISU_CNOE_GENERATOR_PYTHON',sys.executable),'-m','openapi_mcp_codegen',
                      '--spec-file',str(inp/'openapi.json'),'--output-dir',str(generated),
                      '--log-level','warning']
             subprocess.run(command,check=True,timeout=180,cwd=root)
