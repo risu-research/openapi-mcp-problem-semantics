@@ -1,4 +1,4 @@
-"""Apply the sole v0.9 compatibility delta after authenticating original v0.8 bytes.
+"""Apply the sole v0.9 compatibility delta after authenticating original v0.8 bytes; retain virtualenv executable path.
 
 CNOE FastMCP 3.4 speaks the legacy initialize era. The original v0.8
 CNOE adapter used auto discover and failed before tools/list. Do not modify
@@ -21,6 +21,8 @@ pairs=[
      "server_cmd=cmd,protocol='legacy')"),
     ("matrix=capture(plan['cases'],base,cmd,protocol='auto',recheck_source=True,",
      "matrix=capture(plan['cases'],base,cmd,protocol='legacy',recheck_source=True,"),
+    ("interpreter=str(exe.resolve())",
+     "interpreter=str(exe.absolute())"),
 ]
 for old,new in pairs:
     assert text.count(old)==1, f'Unexpected original source for {old!r}'
@@ -40,5 +42,5 @@ ledger={
 }
 (base/'product-bundle'/'V09_PATCH_MANIFEST.json').write_text(
     json.dumps(ledger,indent=2)+'\n',encoding='utf-8')
-print('v0.9 product patch applied with 3 exact source changes; SHA:',
+print('v0.9 product patch applied with 4 exact source changes; SHA:',
       ledger['patched_sha256'])
