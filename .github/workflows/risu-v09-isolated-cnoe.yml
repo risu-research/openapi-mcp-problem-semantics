@@ -1,5 +1,10 @@
 name: RISU v0.9 isolated original-v0.8-on-CNOE (manual)
 on:
+  push:
+    branches:
+      - experiment/risu-probe-v09-isolated-real-cnoe-20261105
+    paths:
+      - product/part_05.b64
   workflow_dispatch:
 permissions:
   contents: read
