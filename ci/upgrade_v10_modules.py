@@ -103,6 +103,7 @@ replace('risu_probe.py',
 replace('risu_probe.py',"VERSION = '0.9.0-experimental'","VERSION = '0.9.1-experimental'")
 for name in ('risu_process.py','risu_onboarding.py','pyproject.toml'):
     shutil.copy2(ROOT/'product_v10'/name,SOURCE/name)
+shutil.copy2(ROOT/'LICENSE',SOURCE/'LICENSE')
 
 print('RISU v0.9.1 experimental patch applied:')
 for name in ('risu_probe.py','risu_report.py','risu_process.py','risu_onboarding.py'):
