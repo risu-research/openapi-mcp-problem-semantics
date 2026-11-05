@@ -63,9 +63,30 @@ for change in patch['replacements']:
     else:
         assert change['before']=='interpreter=str(exe.resolve())'
         assert change['after']=='interpreter=str(exe.absolute())'
-patched=(root/'V09_PATCHED_RISU_VERIFY.py').read_bytes()
-assert patched==expected.encode('utf-8'), 'v0.9 adapter has unexpected modifications'
-assert hashlib.sha256(patched).hexdigest()==patch['patched_sha256']==status['protocol_fix_sha256']
+assert hashlib.sha256(expected.encode('utf-8')).hexdigest()==patch['patched_sha256']==status['protocol_fix_sha256']
+integrated=load('V09_INTEGRATION_MANIFEST.json')
+assert integrated['status']=='AUTHENTICATED_INTEGRATED_V09'
+assert integrated['product_version']==status['integrated_product_version']=='0.9.0-experimental'
+assert set(integrated['source_files'])=={'risu_probe.py','risu_verify.py'}
+verify_before=expected
+for change in integrated['source_files']['risu_verify.py']['additional_edits']:
+    assert verify_before.count(change['before'])==1
+    verify_before=verify_before.replace(change['before'],change['after'])
+verify_source=(root/'V09_INTEGRATED_RISU_VERIFY.py').read_bytes()
+assert verify_source==verify_before.encode('utf-8'), 'unexpected extra edit to integrated verifier'
+assert hashlib.sha256(verify_source).hexdigest()==integrated['source_files']['risu_verify.py']['sha256']=='4bdbae7da26ea308333f45d668176a65cfacb890f9bc30e0ca4a9ca583f612b0'
+with tarfile.open(fileobj=io.BytesIO(tar_bytes),mode='r:xz') as original_tar:
+    original_probe=original_tar.extractfile('risu_probe.py').read()
+assert hashlib.sha256(original_probe).hexdigest()==meta['modules_sha256']['risu_probe.py']
+probe_before=original_probe.decode('utf-8')
+for change in integrated['source_files']['risu_probe.py']['additional_edits']:
+    assert probe_before.count(change['before'])==1
+    probe_before=probe_before.replace(change['before'],change['after'])
+probe_source=(root/'V09_INTEGRATED_RISU_PROBE.py').read_bytes()
+assert probe_source==probe_before.encode('utf-8'), 'unexpected extra edit to integrated engine'
+assert hashlib.sha256(probe_source).hexdigest()==integrated['source_files']['risu_probe.py']['sha256']=='d2a9af2b19a17d33925d64f2ced8b0e52442577fcecba020bdcccd360bb070f1'
+assert status['integrated_source_sha256']=={n:v['sha256'] for n,v in integrated['source_files'].items()}
+assert result['probe_version']=='0.9.0-experimental'
 
 # v0.9 cross-server transport regression is from the same authenticated
 # product engine, with modern targets installed in their own pinned venv.
@@ -86,10 +107,11 @@ for row in cases:
 assert (root/'MULTI_SERVER_RUN_LOG.txt').is_file()
 
 assert (root/'GENERATOR_LOG.txt').is_file() and (root/'PRODUCT_EXECUTION_LOG.txt').is_file()
-finding={'verdict':'PASS','product':'RISU Probe v0.9 CNOE targeted legacy fix',
+finding={'verdict':'PASS','product':'RISU Probe v0.9 fully integrated source (exact authenticated build)',
          'generator_commit':status['actual_cnoe_generator_commit'],
          'source_wheel_sha256':meta['source_wheel_sha256'],
          'patched_adapter_sha256':patch['patched_sha256'],'patches':4,
+         'integrated_source_sha256':status['integrated_source_sha256'],'metadata_updates':4,
          'server_implementations_tested':['CNOE/FastMCP3.4','official MCP SDK2.3','FastMCP4.1.6','stdlib legacy'],
          'transport_cases_passed':6,
          'case_count':len(checks),'error_losses':3,
