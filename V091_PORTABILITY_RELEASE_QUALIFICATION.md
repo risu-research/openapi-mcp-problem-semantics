@@ -8,6 +8,8 @@ An independent cross-platform v0.9 audit exposed a real Python 3.11 syntax failu
 
 The fix is deliberately small: retain the v0.9 data-loss diagnostic engine, add a Python 3.11-compatible markdown report expression, bounded subprocess stdin writes, process-tree teardown, a safe offline `first-check` entry point, and a distributable wheel with its Apache-2.0 license.
 
+**Final 2026-11-05 qualification: PASS.** [GitHub Actions #42128201010](https://github.com/risu-research/openapi-mcp-problem-semantics/actions/runs/42128201010) completed **6/6 jobs successfully**: Windows and Ubuntu with Python 3.11, 3.12 and 3.13. Each job executed the 9 local regression tests, whole-source syntax check, preview wheel build and fresh virtualenv install. The Python 3.13 Windows and Ubuntu jobs additionally passed 6 real pinned SDK/FastMCP/legacy server calls each and the forced-modern negative control. GitHub artifact ID: `13460794835`. Independent download audit confirmed the 14 preview Python module bytes exactly match the packaged wheel, and wheel includes Apache-2.0 LICENSE. Wheel SHA-256: `7e8fc3d5aa32d3c8eb10489822d35aceab53424c8b3bd054a779728da312c1c9`.
+
 ## Provenance and reproducibility
 
 1. `ci/export_v09_source_portable.py` independently authenticates the original 12-module v0.8 source archive by SHA-256, reconstructs the exact four qualified compatibility fixes, and checks the two exact promoted v0.9 hashes.
