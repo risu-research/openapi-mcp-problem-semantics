@@ -29,6 +29,10 @@ jobs:
       - name: Capture source HTTP and generated MCP automatically
         run: |
           RISU_CNOE_REPO="$RUNNER_TEMP/cnoe-codegen" RISU_CNOE_OUTPUT="$RUNNER_TEMP/risu-results" RISU_CNOE_GENERATOR_PYTHON="$RUNNER_TEMP/risu-generator-env/bin/python" python experiments/cnoe-fresh-20261105/run_current_cnoe.py
+      - name: Independent fail-closed HTTP/MCP and generated-code evidence audit
+        run: |
+          git -C "$RUNNER_TEMP/cnoe-codegen" rev-parse HEAD > "$RUNNER_TEMP/risu-results/CNOE_HEAD.txt"
+          RISU_CNOE_OUTPUT="$RUNNER_TEMP/risu-results" python experiments/cnoe-fresh-20261105/audit_capture.py
       - name: Reproducibility metadata
         if: always()
         run: |
