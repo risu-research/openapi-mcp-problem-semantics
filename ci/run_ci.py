@@ -130,15 +130,15 @@ def main():
             boot=subprocess.Popen(['/opt/cnoe/bin/python','-u',str(pre['adapter']['server'])],
                                   stdin=subprocess.PIPE,stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE,text=True,env=boot_env)
-            boot.stdin.write(json.dumps(request)+'\\n')
+            boot.stdin.write(json.dumps(request)+'\n')
             boot.stdin.flush()
             _tt.sleep(2)
             code_before=boot.poll()
             if code_before is None:boot.terminate()
             raw_out,raw_err=boot.communicate(timeout=8)
             (OUT/('PROTOCOL_INITIALIZE_'+protocol_version+'.txt')).write_text(
-                'return_before_terminate='+str(code_before)+'\\nSTDOUT:\\n'+raw_out[-3500:]
-                +'\\nSTDERR:\\n'+raw_err[-5500:])
+                'return_before_terminate='+str(code_before)+'\nSTDOUT:\n'+raw_out[-3500:]
+                +'\nSTDERR:\n'+raw_err[-5500:])
         # THIS executes the original v0.8 product module, not a second verifier.
         try:
             command([sys.executable,'-B',product,'verify','--fixture',str(generated),
