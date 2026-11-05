@@ -103,6 +103,7 @@ def main():
         (OUT/'PREVIEW.json').write_text(json.dumps(preview,indent=2)+'\n')
         # Separate synthetic-only boot diagnostic: the original v0.8 client
         # intentionally suppresses target stderr, so distinguish startup failure.
+        sys.path.insert(0,str(BASE/'product'))
         from risu_verify import prepare as _prepare, _restricted_env as _restricted_env
         import time as _time
         pre=_prepare(generated)
