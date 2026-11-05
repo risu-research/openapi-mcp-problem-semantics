@@ -34,7 +34,7 @@ ALLOWED_PROJECTS={'cnoe','fastmcp','mcpgen'}
 def run(command, *,env=None,cwd=None,timeout=120):
     r=subprocess.run(command,env=env,cwd=cwd,capture_output=True,text=True,timeout=timeout)
     if r.returncode:
-        raise RuntimeError(f"command {Path(command[0]).name} exited {r.returncode}: {r.stderr[-700:]}")
+        raise RuntimeError(f"command {Path(command[0]).name} exited {r.returncode}; stdout={r.stdout[-2500:]}; stderr={r.stderr[-4000:]}")
     return r.stdout
 
 def interpreter_env(python_path=None, *, base=None,root=None):
@@ -45,13 +45,15 @@ def interpreter_env(python_path=None, *, base=None,root=None):
     env['PYTHONUNBUFFERED']='1'
     env['PYTHONDONTWRITEBYTECODE']='1'
     env['PYTHON_DOTENV_DISABLED']='1'
+    env['XDG_CACHE_HOME']='/tmp/cache'
+    env['PYTHONPATH']='/opt/risu/product'
     if base:env['API_BASE_URL']=base
     if root:env['PYTHONPATH']=str(root)
     return env
 
 def create_spec(root):
     spec={
-        'openapi':'3.1.0','info':{'title':'RISU Read-only Fixture','version':'1.0.0'},
+        'openapi':'3.1.0','info':{'title':'Risucheck API','version':'1.0.0'},
         'paths':{'/orders/{id}':{'get':{
            'operationId':'get_order','summary':'Read one synthetic order',
            'parameters':[{'name':'id','in':'path','required':True,
