@@ -21,6 +21,8 @@ jobs:
         run: python experiments/fastmcp-long-error-20261105/experiment.py
       - name: Audit evidence independently and reject false-green runs
         run: python experiments/fastmcp-long-error-20261105/audit_evidence.py
+      - name: Check masking, generic JSON errors, and HTML suppression over real stdio
+        run: python experiments/fastmcp-long-error-20261105/policy_probe.py
       - name: Capture environment for reproduction
         if: always()
         shell: bash
@@ -45,5 +47,6 @@ jobs:
             experiments/fastmcp-long-error-20261105/results/evidence.json
             experiments/fastmcp-long-error-20261105/results/SUMMARY.md
             experiments/fastmcp-long-error-20261105/results/AUDIT.json
+            experiments/fastmcp-long-error-20261105/results/POLICY.json
             experiments/fastmcp-long-error-20261105/results/ENVIRONMENT.txt
           if-no-files-found: warn
