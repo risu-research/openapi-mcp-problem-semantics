@@ -1,0 +1,17 @@
+{
+  "project": "modelcontextprotocol/servers/src/time",
+  "distribution": "mcp-server-time",
+  "source": "PyPI published wheel (isolated installed environment)",
+  "releases": {
+    "2026.10.19": {
+      "wheel_sha256": "5c099a001c6ca78260bda419f2e9b2aabee1adc4fe6ca56d8959871ad8da58a1",
+      "publisher_source_commit": "51b6382a3e827aceb6bce430b1208d69b93d95ea"
+    },
+    "2026.11.4": {
+      "wheel_sha256": "536388fc6f19adec845f0d3a194d696aca3260a626c041cb97a9988e1a18444a",
+      "publisher_source_commit": "36380287ed3b15d115b55f546617d723072b1296"
+    }
+  },
+  "scope": "Offline read-only MCP tools/call and actual stdio tools/list; no live upstream service calls",
+  "caveat": "PyPI wheel SHA-256 binds top-level wheel, not unpinned transitive dependency wheels. Versions are recorded."
+}
