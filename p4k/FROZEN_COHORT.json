@@ -1,0 +1,195 @@
+{
+  "schema": "risu-p4k-public-developer-capture-metrics-prereg-v1",
+  "frozen_date": "2026-11-06",
+  "baseline": {
+    "product": "RISU Probe v0.9.10 experimental",
+    "ref": "qualification/p4j-causal-trust-gate-20261106",
+    "unchanged": true
+  },
+  "scope": "Original third-party public HAR/MCP capture files from unrelated repositories. Not proof of genuine same-call OpenAPI-to-MCP causality. No user-owned secrets, live calls, or network in analyzer.",
+  "source_selection": "P4-I 10 previously frozen plus 9 additional independent developers' HAR/MCP artifacts; fixed before CI analysis",
+  "sources": [
+    {
+      "id": "har_tap_sample",
+      "repo": "aaronhg/har-tap",
+      "commit": "19fbfbdad1a902111e1819b35a95bf9d2668f7a6",
+      "path": "test/fixtures/sample.har",
+      "sha1": "2b40d4e80861ce6ed92991bbd03a77ac04f2d90d",
+      "type": "har"
+    },
+    {
+      "id": "harvest_hackernews",
+      "repo": "suislanchez/HARvest",
+      "commit": "d8107f21e7a9fecfd723740bdd3d886950bd5f95",
+      "path": "test-fixtures/captured/hackernews-firebase.har",
+      "sha1": "3cc6a161d45e5486ac7fd0f6093b2d1bbe1de9e3",
+      "type": "har"
+    },
+    {
+      "id": "harvest_restcountries",
+      "repo": "suislanchez/HARvest",
+      "commit": "d8107f21e7a9fecfd723740bdd3d886950bd5f95",
+      "path": "test-fixtures/captured/restcountries.har",
+      "sha1": "05bb12b59f862de5f96ce2859570a79c8bb46571",
+      "type": "har"
+    },
+    {
+      "id": "harvest_openmeteo",
+      "repo": "suislanchez/HARvest",
+      "commit": "d8107f21e7a9fecfd723740bdd3d886950bd5f95",
+      "path": "test-fixtures/captured/open-meteo-weather.har",
+      "sha1": "ffb4ee56a6a3e2baa36e271de4fb56403481d142",
+      "type": "har"
+    },
+    {
+      "id": "harvest_minimal",
+      "repo": "suislanchez/HARvest",
+      "commit": "d8107f21e7a9fecfd723740bdd3d886950bd5f95",
+      "path": "e2e/fixtures/minimal.har",
+      "sha1": "bb9ac345fc7417ecdc85f078b2585517b31622c3",
+      "type": "har"
+    },
+    {
+      "id": "uniview_mcp",
+      "repo": "samirsawarkar/uniview",
+      "commit": "7daea8aa35f1894132cda2a5e53ad36aec0246b5",
+      "path": "fixtures/mcp/tools-2025-06-18.jsonl",
+      "sha1": "c1a7e287af090363d08fbd5388d43e9f285e15b3",
+      "type": "mcp"
+    },
+    {
+      "id": "tekeskernel_mcp",
+      "repo": "TekesApps/TekesKernel",
+      "commit": "477d9d66899a426b0e7c6ea2941a80c025820b54",
+      "path": "fixtures/mcp-runtime/tool-call.jsonl",
+      "sha1": "8ba0470ac3c9660064b11f645890ceef0da88123",
+      "type": "mcp"
+    },
+    {
+      "id": "mcpdrift_mcp",
+      "repo": "3zz77/mcpdrift",
+      "commit": "f44cb909704c259d2d123210ae37d9d40a7d5074",
+      "path": "fixtures/verify-v1.jsonl",
+      "sha1": "ea5d95d1bbc8ac576926643660f03d3b269b6f77",
+      "type": "mcp"
+    },
+    {
+      "id": "qmlagent_mcp",
+      "repo": "penk/qmlagent",
+      "commit": "f6449ac9e38c4e7bdd009077484f8cf4f4ec446a",
+      "path": "fixtures/mcp/persistent-workflow.jsonl",
+      "sha1": "6312371f51e82110ab67b14719b21d2612384579",
+      "type": "mcp"
+    },
+    {
+      "id": "kitesurf_mcp",
+      "repo": "meoyawn/kitesurf",
+      "commit": "146bf04e1ad96e0b7304496d6dc8d6c073e20379",
+      "path": "tests/fixtures/mcp-session.jsonl",
+      "sha1": "2e0a1658251d1c0a2e360cc824eae5af7d7dab13",
+      "type": "mcp"
+    },
+    {
+      "id": "chromehar_example",
+      "type": "har",
+      "repo": "ericduran/chromeHAR",
+      "commit": "a590b173709e6e6937734b92a75d8cad72ad344e",
+      "path": "sample.har",
+      "sha1": "f6418413c52be8863f04b4ff648916268b520f6d",
+      "origin_label": "third-party-author-fixture"
+    },
+    {
+      "id": "harsharp_example",
+      "type": "har",
+      "repo": "giacomelli/HarSharp",
+      "commit": "b023da935d5329b32e62f798b1edd5d44706b310",
+      "path": "src/HarSharp.UnitTests/Hars/Sample.har",
+      "sha1": "fe2e0bd93750996c44750c8949c6617aadc5e584",
+      "origin_label": "third-party-author-fixture"
+    },
+    {
+      "id": "edgio_har_example",
+      "type": "har",
+      "repo": "Edgio/har-tools",
+      "commit": "7c33c88f403d4c91f47dfacb5da6f6d796781253",
+      "path": "api/example.har",
+      "sha1": "cc6c0dabddb0f93041794c1eadac008f1abde449",
+      "origin_label": "third-party-author-fixture"
+    },
+    {
+      "id": "netlogs_har_example",
+      "type": "har",
+      "repo": "Artboomy/netlogs",
+      "commit": "5d59ec6372a9a0d34b91d522905d567f123697e5",
+      "path": "e2e/fixtures/sample.har",
+      "sha1": "cad58293948252001ce7313631e77e7bba4e6cf7",
+      "origin_label": "third-party-author-fixture"
+    },
+    {
+      "id": "deja_mcp",
+      "type": "mcp",
+      "repo": "sandipandutta21/deja",
+      "commit": "42ad2cb2734981e7af9b2674bdaa002b5583f832",
+      "path": "conformance/ts-written.jsonl",
+      "sha1": "d629a2451cbd83afa094d74640f95d296828b14c",
+      "origin_label": "third-party-mcp-trajectory-fixture"
+    },
+    {
+      "id": "runx_mcp",
+      "type": "mcp",
+      "repo": "runxhq/runx",
+      "commit": "e05cdf515dab5eb262dd9357ac85f923b4cb21b1",
+      "path": "fixtures/runtime/adapters/mcp/wire-contract/error-paths.responses.jsonl",
+      "sha1": "a50b5403fcc324d7789423149e7682d67323e255",
+      "origin_label": "third-party-mcp-response-fixture"
+    },
+    {
+      "id": "rosetta_mcp",
+      "type": "mcp",
+      "repo": "rosetta-bindings/rosetta",
+      "commit": "2ebbf9823ca71123fae805caaf3f1c1cbb05106a",
+      "path": "examples/pendulum/mcp_session.jsonl",
+      "sha1": "9eb4012d4468f3d139f53a8021f6b569817da56d",
+      "origin_label": "third-party-mcp-session-fixture"
+    },
+    {
+      "id": "tekes_tasks_mcp",
+      "type": "mcp",
+      "repo": "TekesApps/TekesKernel",
+      "commit": "477d9d66899a426b0e7c6ea2941a80c025820b54",
+      "path": "fixtures/mcp-runtime/tasks-extension-tool-call.jsonl",
+      "sha1": "1eeac4392d5a6246110aaa6dbe1c43e2c4c4b3d2",
+      "origin_label": "third-party-mcp-trajectory-fixture"
+    },
+    {
+      "id": "uniview_202503_mcp",
+      "type": "mcp",
+      "repo": "samirsawarkar/uniview",
+      "commit": "7daea8aa35f1894132cda2a5e53ad36aec0246b5",
+      "path": "fixtures/mcp/tools-2025-03-26.jsonl",
+      "sha1": "c79e6533b744c953c58feaff20cb78674c7a31c4",
+      "origin_label": "third-party-mcp-trajectory-fixture"
+    }
+  ],
+  "cases": {
+    "direct": "Each exact public source file supplied directly to installed risu-probe analyze --recovery: exit 2 expected for 19 missing matrix/pairs; no loss asserted",
+    "unpaired": "All Cartesian products of HAR sources and MCP sources (9x10=90). Copy original files unmodified into separate folders, omit pairs.json. Exit 2 expected; this deliberately does not claim a real HTTP/MCP pairing.",
+    "adversarial": "For a single held-out, explicitly fake mismatched pair drawn from independent public HAR and MCP fixtures: if analysis can complete, require CONFIRMED_LOSS=0 and conditional outcome if legacy LOSS. This is a causality defense test, excluded from real-world FPR denominator.",
+    "internal_controls": "Use previously signed P4-J local SDK replay as a positive-control on CONFIRMED_LOSS, and same capture without trust store as a conditional control. These are NOT external field data."
+  },
+  "preregistered_statistics": {
+    "rejection_denominator": "raw+unpaired complete attempted inputs, including unexpected failures distinctly",
+    "analysis_success_denominator": "all attempted inputs; report native paired truth-grounded success separately",
+    "conditional_rate": "conditional among analyzed inputs; undefined (null) if no analyzed independent input",
+    "confirmed_loss_count": "confirmed on third-party-origin independent captures only; do not mix internal positive control",
+    "field_fpr": "FP/(FP+TN) only if an independent genuine paired field corpus with fully adjudicated no-loss (TN) ground truth exists; else null, never 0%",
+    "adversarial_confirmed_fp_rate": "confirmed incorrect losses among intentional provably unrelated joins; labeled synthetic negative-control metric, NOT field FPR",
+    "confidence": "do not produce unjustified CI or statistical confidence bounds from zero-denominator samples"
+  },
+  "protect": {
+    "provenance": "fetch exact commit URL and verify git blob SHA1; no rescraping mutable HEAD",
+    "report": "report aggregate outcome, ids and error categories only; exclude raw capture body, headers, urls, personal data",
+    "execution": "All output comparisons offline. GitHub network only fetching frozen public files and installing original pinned SDK/package if needed. Do not execute foreign repository code.",
+    "no_remediation": "Do not change existing P4-J logic based on one external nonpaired rejection. Flag real defects for a separate patch."
+  }
+}
