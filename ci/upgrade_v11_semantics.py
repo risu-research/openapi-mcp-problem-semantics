@@ -54,6 +54,12 @@ replace('risu_verify.py',
 replace('pyproject.toml','0.9.1.dev0','0.9.3.dev0')
 replace('pyproject.toml','"risu_process", "risu_onboarding"',
  '"risu_process", "risu_onboarding", "risu_evidence"')
+replace('risu_verify.py',
+ "        analysis=analyze({'targets':matrix['targets']},profile='json-errors')",
+ "        from risu_evidence import assess as calibrated_assess\n        counterfactual_rejections=0\n        for row in matrix['targets'][0]['checks']:\n            mutated=copy.deepcopy(row['source_sample'])\n            if not isinstance(mutated.get('body'),dict) or 'risu_fixture_marker' not in mutated['body']:\n                raise FixtureError('fixture body lacks synthetic marker for counterfactual')\n            mutated['body']['risu_fixture_marker']='RISU_COUNTERFACTUAL_NOT_PRESENT'\n            proof=calibrated_assess(mutated,row['mcp_sample'])\n            if proof['body_recovery'] in ('EXACT_MACHINE','EXACT_JSON_TEXT'):\n                raise FixtureError('counterfactual source was falsely certified as exact')\n            counterfactual_rejections+=1\n        analysis=analyze({'targets':matrix['targets']},profile='json-errors')")
+replace('risu_verify.py',
+ "'error_losses':len(confirmed)}",
+ "'error_losses':len(confirmed),'counterfactual_rejections':counterfactual_rejections}")
 shutil.copy2(ROOT/'product_v11'/'risu_evidence.py',SOURCE/'risu_evidence.py')
 print('RISU 0.9.3 product restored from pinned v0.9.1:')
 for name in (*PINNED,'risu_evidence.py'):
