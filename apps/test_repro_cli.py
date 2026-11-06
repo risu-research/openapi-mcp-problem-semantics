@@ -64,7 +64,7 @@ class CLI(unittest.TestCase):
         result=subprocess.run([sys.executable,str(p),'--version'],
                               capture_output=True,text=True,timeout=10)
         self.assertEqual(result.returncode,0)
-        self.assertIn('0.9.6-experimental',result.stdout)
+        self.assertIn('0.9.7-experimental',result.stdout)
 
 if __name__=='__main__':
     unittest.main(verbosity=2)
