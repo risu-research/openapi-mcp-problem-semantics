@@ -34,7 +34,7 @@ class PortableRegression(unittest.TestCase):
         self.assertEqual(p.returncode,0,p.stderr)
         obj=json.loads(p.stdout)
         self.assertEqual(obj['execution'],'NONE')
-        self.assertEqual(obj['version'],'0.9.5-experimental')
+        self.assertEqual(obj['version'],'0.9.6-experimental')
         self.assertEqual(obj['network_requests'],0)
         self.assertEqual(obj['files_examined'],1)
 
@@ -43,7 +43,7 @@ class PortableRegression(unittest.TestCase):
             p=subprocess.run([sys.executable,str(SOURCE/'risu_probe.py'),flag],
                              text=True,capture_output=True,timeout=8)
             self.assertEqual(p.returncode,0,p.stderr)
-            self.assertIn('0.9.5',p.stdout)
+            self.assertIn('0.9.6',p.stdout)
 
     def test_modern_legacy_and_auto(self):
         program="""import json,sys
@@ -128,7 +128,7 @@ for line in sys.stdin:
         self.assertIsNotNone(proc.poll())
 
     def test_source_version(self):
-        self.assertEqual(VERSION,'0.9.5-experimental')
+        self.assertEqual(VERSION,'0.9.6-experimental')
 
 if __name__=='__main__':
     unittest.main(verbosity=2)
