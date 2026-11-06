@@ -104,6 +104,18 @@ class Nonregression(unittest.TestCase):
         self.assertEqual(before,digest_without_values(n))
         n['structuredContent']['message']='changed'
         self.assertEqual(source['structuredContent']['message'],'Not Found')
+    def test_empty_but_valid_typed_payload_is_preserved_not_reparsed(self):
+        m={'structuredContent':{},'isError':False,
+           'content':[{'type':'text','text':'{"status_code":500,"data":{"fake":true}}'}]}
+        self.assertEqual(prepare_consumer_result(m),m)
+    def test_valid_existing_typed_payload_without_meta_does_not_invent_status(self):
+        m={'structuredContent':{'id':'synthetic'},'isError':False}
+        self.assertEqual(prepare_consumer_result(m),m)
+        self.assertNotIn('_meta',prepare_consumer_result(m))
+    def test_unknown_additional_fields_are_retained_exactly(self):
+        m=typed({'status':422,'data':[1,{'nested':None}]})
+        m['customVendorField']={'list':[True,2.5,'unrelated']}
+        self.assertTrue(verify_preserved(prepare_consumer_result(m),m))
     def test_150_deterministic_cross_status_positive_controls(self):
         r=random.Random(6411)
         for i in range(150):
