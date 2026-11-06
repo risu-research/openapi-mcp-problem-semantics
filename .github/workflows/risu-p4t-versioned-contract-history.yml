@@ -574,7 +574,7 @@ jobs:
               assert d['causal_gate_v1']['summary']['CONFIRMED_LOSS']==0
           print('P4S_SEPARATE_OPERATOR_SCHEMA_CLAIM_EXIT_CODES_1_0_1_PASS')
           PY
-      - name: P4-T upgrade installed wheel and 50 local adversarial regression tests
+      - name: P4-T upgrade installed wheel and 60 independent regression tests
         shell: bash
         run: |
           set -euo pipefail
@@ -596,9 +596,13 @@ jobs:
             --tool get_jpo_progress --policy p4s/fixtures/jpo_obligation_policy.json \
             --version observed-P4S-pinned-replay \
             --out p4t/results/observed_snapshot.json
+          python p4t/upgrade_scenario.py \
+            --observed p4t/results/observed_snapshot.json \
+            --schema-out p4t/results/derived_upgrade_schema.json \
+            --policy-out p4t/results/derived_upgrade_policy.json
           "$CLI" contract-history snapshot \
-            --schema p4t/fixtures/upgrade_schema.json \
-            --tool get_jpo_progress --policy p4t/fixtures/operator_new.json \
+            --schema p4t/results/derived_upgrade_schema.json \
+            --tool get_jpo_progress --policy p4t/results/derived_upgrade_policy.json \
             --version hypothetical-upgrade \
             --previous p4t/results/observed_snapshot.json \
             --out p4t/results/hypothetical_snapshot.json
@@ -622,7 +626,9 @@ jobs:
           assert obs['tool']=='get_jpo_progress'
           assert {'summary','items','provenance'}.issubset(obs['schema']['required'])
           assert tl['verified_hash_links']==1
-          assert diff['summary']['potential_breaking']>=1
+          assert diff['summary']=={'direct_schema_events':4,'inherited_effects':4,'operator_policy_events':6,'potential_breaking':3},diff['summary']
+          assert obs['operator_policy']['schema']=='risu-explicit-field-obligation-policy-v1'
+          assert len(obs['operator_policy']['cases'][0]['obligations'])==7
           pre=json.loads(Path('p4n/results/normal/p4s_contract_obligations.json').read_text())
           assert pre['causal_gate_v1']['summary']['CONFIRMED_LOSS']==0
           print('P4T_REAL_P4S_OBSERVED_BASELINE_WITH_EXPLICIT_HYPOTHETICAL_UPGRADE_PASS',diff['summary'],flush=True)
@@ -656,6 +662,7 @@ jobs:
             p4t/risu_contract_history.py
             p4t/risu_p4t_cli.py
             p4t/apply_upgrade.py
+            p4t/upgrade_scenario.py
             p4t/tests/test_contract_history.py
             p4t/fixtures/*.json
             p4t/fixtures/build_scenarios.py
