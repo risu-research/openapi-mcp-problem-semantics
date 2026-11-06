@@ -1,0 +1,169 @@
+name: RISU Probe v0.9.7 bounded OpenAPI discovery paired P4-B
+on:
+  push:
+    branches:
+      - experiment/risu-probe-v097-bounded-openapi-compat-20261105
+    paths:
+      - ci/upgrade_v15_openapi_compat.py
+      - ci/test_v097_compat.py
+      - ci/test_v093_evidence.py
+      - ci/test_v094_decision_witness.py
+      - ci/test_v10_regressions.py
+      - apps/test_repro_cli.py
+      - p4b/**
+      - .github/workflows/risu-v097-paired-ten.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  portable-regressions:
+    name: Portable regression on ${{ matrix.os }} Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 22
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.11','3.12','3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Restore exact v0.9.6 and apply only pinned bounded OpenAPI compatibility
+        shell: bash
+        run: |
+          python ci/export_v09_source_portable.py
+          python ci/upgrade_v10_modules.py
+          python ci/upgrade_v11_semantics.py
+          python ci/upgrade_v12_decision_witness.py
+          python ci/upgrade_v13_repro.py
+          python ci/upgrade_v14_fixverify.py
+          python ci/upgrade_v15_openapi_compat.py
+          python -m compileall -q dist/risu_v09_source ci/test_v097_compat.py
+      - name: Test wheel, all inherited policy/consumer/fix cases, scanner safety controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -q --upgrade setuptools wheel
+          python -m pip install --disable-pip-version-check -q PyYAML==6.0.2
+          python -m pip wheel --no-deps --no-build-isolation --wheel-dir dist/wheels dist/risu_v09_source
+          python -m pip install --no-index --no-deps --force-reinstall dist/wheels/risu_probe_preview-0.9.7.dev0-py3-none-any.whl
+          python ci/test_v093_evidence.py
+          python ci/test_v094_decision_witness.py
+          python apps/test_repro_unit.py
+          python apps/test_repro_cli.py
+          python apps/test_v096_fixverify.py
+          python ci/test_v10_regressions.py
+          python ci/test_v097_compat.py
+          risu-probe --version
+      - name: Archive qualified wheel and source
+        if: matrix.os == 'ubuntu-latest' && matrix.python == '3.13'
+        uses: actions/upload-artifact@v4
+        with:
+          name: risu-v097-compat-source-wheel
+          path: |
+            dist/wheels/risu_probe_preview-0.9.7.dev0-py3-none-any.whl
+            dist/risu_v09_source/**
+            ci/export_v09_source_portable.py
+            ci/upgrade_v10_modules.py
+            ci/upgrade_v11_semantics.py
+            ci/upgrade_v12_decision_witness.py
+            ci/upgrade_v13_repro.py
+            ci/upgrade_v14_fixverify.py
+            ci/upgrade_v15_openapi_compat.py
+            ci/test_v093_evidence.py
+            ci/test_v094_decision_witness.py
+            ci/test_v10_regressions.py
+            ci/test_v097_compat.py
+            apps/test_repro_unit.py
+            apps/test_repro_cli.py
+            apps/test_v096_fixverify.py
+          if-no-files-found: error
+  exact-frozen-ten-paired:
+    name: Source-authenticated ten frozen public OpenAPI, before and after
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Reconstruct unchanged v0.9.6 and copy SHA-pinned baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          python ci/export_v09_source_portable.py
+          python ci/upgrade_v10_modules.py
+          python ci/upgrade_v11_semantics.py
+          python ci/upgrade_v12_decision_witness.py
+          python ci/upgrade_v13_repro.py
+          python ci/upgrade_v14_fixverify.py
+          mkdir -p dist/risu_v096_baseline
+          cp -a dist/risu_v09_source/. dist/risu_v096_baseline/
+          python dist/risu_v096_baseline/risu_probe.py --version
+          python ci/upgrade_v15_openapi_compat.py
+          python dist/risu_v09_source/risu_probe.py --version
+          python -m compileall -q dist/risu_v096_baseline dist/risu_v09_source p4a p4b
+      - name: Fetch only SAME ten pinned official OpenAPI files with strict Git hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p inputs results
+          date +%s > results/start_unix.txt
+          python p4a/fetch_frozen.py inputs
+          chmod -R a+rX inputs
+          chmod 0777 results
+      - name: Build isolated runner, no external project code
+        shell: bash
+        run: |
+          docker build --pull -f p4b/Dockerfile -t risu-v097-paired-ten .
+      - name: Compare BOTH versions on SAME ten committed files, with NO NETWORK
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user 65534:65534 \
+            --pids-limit 128 --memory 3g --cpus 2 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=256m,mode=1777 \
+            --mount type=bind,src="$PWD/inputs",dst=/inputs,readonly \
+            --mount type=bind,src="$PWD/results",dst=/results \
+            risu-v097-paired-ten /inputs /results
+          date +%s > results/end_unix.txt
+      - name: Independently audit original files, denominators and before-after results
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m p4b.independent_audit inputs results
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('results/P4B_PAIRED_VERDICT.json').read_text())
+          print('P4B_PUBLIC_COMPARISON',json.dumps({
+            'before':r['main_baseline_auto_recognized'],
+            'after':r['candidate_auto_recognized'],
+            'goal_8_of_10':r['goal_reached'],
+            'no_regressions':r['zero_candidate_project_regressions'],
+            'live_consumer_defects_proven':r['newly_verified_real_consumer_contract_defects']}))
+          PY
+      - name: Archive complete paired results, including unsupported inputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: risu-v097-ten-unchanged-sources-paired-audit
+          path: |
+            p4a/FROZEN_PREREGISTRATION.json
+            p4a/fetch_frozen.py
+            p4a/run_offline.py
+            p4a/inventory.py
+            p4b/paired_run.py
+            p4b/independent_audit.py
+            p4b/Dockerfile
+            inputs/download_report.json
+            results/baseline_v096/P4A_10_PROJECT_RESULTS.json
+            results/patched_v097/P4A_10_PROJECT_RESULTS.json
+            results/P4B_PAIRED_VERDICT.json
+            results/P4B_INDEPENDENT_AUDIT.json
+            results/start_unix.txt
+            results/end_unix.txt
+          if-no-files-found: warn
