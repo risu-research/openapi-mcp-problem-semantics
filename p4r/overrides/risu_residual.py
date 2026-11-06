@@ -142,6 +142,10 @@ def _rule(r,body,mcp,structured):
         if not isinstance(target,dict) or set(target)!=set(r['expected_target_fields']) or not all(type(value) is str and value=='' for value in target.values()):
             return 'CONTRADICTED','DEFAULT_MODEL_EXPANSION_SHAPE_OR_VALUE_DIFFERENT',False,False
         return 'VERIFIED_EMPTY_STRUCTURAL_EXPANSION','EMPTY_OBJECT_REPRESENTED_BY_DECLARED_DEFAULT_FIELDS',False,True
+    # An unfinished or tool-error response cannot prove that a successful
+    # adapter deliberately excluded metadata from its structured result.
+    if mcp.get('isError') is not False:
+        return 'INSUFFICIENT','SUCCESSFUL_MCP_RESULT_NOT_OBSERVED',False,False
     # Actual absence in *the observed MCP result*, not a causal loss finding.
     aliases=set(r['field_aliases'])
     ok,pieces=_parse_text_content(mcp)
