@@ -71,6 +71,24 @@ def audit_case(case,root,external,check_bytes=True):
     assert report["mcp_call_content_types"]==[c.get("type") for c in result["content"]]
     canonical=json.dumps(result,ensure_ascii=False,sort_keys=True,separators=(",",":")).encode()
     assert hashlib.sha256(canonical).hexdigest()==report["mcp_call_result_json_sha256"]
+    # Semantic checks are grounded in the *third-party tool's actual wire*.
+    # Status 107 is explicitly a successful HTTP 200 empty lookup; it must
+    # NOT be treated as a generic MCP isError loss.
+    structured=result.get("structuredContent")
+    assert isinstance(structured,dict)
+    assert result.get("isError",False) is False
+    if case=="normal":
+        assert len(structured.get("items",[]))==1
+        assert structured["items"][0].get("application_number")==cfg["application_number"]
+        assert structured.get("not_found")==[]
+    elif case=="logical_not_found":
+        assert structured.get("items")==[]
+        assert structured.get("not_found")==[cfg["application_number"]]
+        assert "no data" in structured.get("summary","").lower()
+    # Raw protocol must not accidentally echo OAuth credentials or auth headers.
+    assert b"REDACTED_ACCESS_TOKEN" not in wire
+    assert b"REDACTED_PASSWORD" not in wire
+    assert b"Authorization:" not in wire
     assert report["external_original_commit"]==FROZEN["original_commit"]
     assert report["external_original_repo"]==FROZEN["original_repo"]
     return {"case":case,
