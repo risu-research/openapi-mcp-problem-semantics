@@ -1,0 +1,79 @@
+name: RISU P4-E Second Independent DeepL FastMCP PydanticAI Integration
+on:
+  push:
+    branches:
+      - qualification/p4e-deepl-fastmcp-pydanticai-20261106
+    paths:
+      - p4e/**
+      - .github/workflows/risu-p4e-second-independent.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+
+jobs:
+  authentic-second-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Static source and frozen preregistration preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m compileall -q p4e
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          p=json.loads(Path('p4e/FROZEN_PROTOCOL.json').read_text())
+          assert p['source']['repo']=='DeepL/openapi'
+          assert p['source']['operation']=='GET /v2/usage'
+          assert p['converter']['repo']=='PrefectHQ/fastmcp'
+          assert p['consumer']['repo']=='pydantic/pydantic-ai'
+          assert [x['status'] for x in p['cases']]==[200,456,429]
+          assert all(x['path']=='/v2/usage' for x in p['cases'])
+          assert all(x['body_source']=='schema-conforming synthetic' for x in p['cases'][1:])
+          print('P4E_PINNED_THREE_EXTERNAL_SYSTEMS_FROZEN')
+          PY
+      - name: Build pinned public upstream source and isolated runtime environments
+        run: |
+          set -euo pipefail
+          docker build --pull --file p4e/Dockerfile --tag risu-p4e-independent:local .
+      - name: Execute original API contract through actual FastMCP stdio and PydanticAI mapper offline
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p results
+          chmod 0777 results
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user 65534:65534 \
+            --pids-limit 128 --memory 3g --cpus 2 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=256m,mode=1777 \
+            --mount type=bind,src="$PWD/results",dst=/results \
+            risu-p4e-independent:local --out /results/full_chain.json
+      - name: Independently audit original HTTP, real MCP results, real consumer and six falsifications
+        run: |
+          set -euo pipefail
+          python p4e/audit.py results/full_chain.json results/independent_audit.json
+      - name: Ensure immutable input did not change during evidence generation
+        run: |
+          set -euo pipefail
+          git status --porcelain -- p4e/ | tee results/input_status.txt
+          test ! -s results/input_status.txt
+      - name: Preserve full independent integration evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: risu-p4e-deepl-fastmcp-pydanticai-full-chain
+          path: |
+            p4e/FROZEN_PROTOCOL.json
+            p4e/server.py
+            p4e/run_integration.py
+            p4e/audit.py
+            p4e/Dockerfile
+            results/full_chain.json
+            results/independent_audit.json
+            results/input_status.txt
+          if-no-files-found: warn
