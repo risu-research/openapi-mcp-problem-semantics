@@ -102,7 +102,7 @@ def local_replay(success):
             blob=json.dumps(item['body'],separators=(',',':'),ensure_ascii=False).encode()
             state['trace'].append({'id':item['id'],'method':'GET','path':self.path,
                                    'status':item['status'],'body':item['body'],
-                                   'raw_sha256':digest(blob)})
+                                   'raw_sha256':digest(blob),'raw_http_body_utf8':blob.decode('utf-8')})
             self.send_response(item['status'])
             self.send_header('Content-Type','application/json')
             self.send_header('Content-Length',str(len(blob)))
@@ -210,7 +210,7 @@ def classify(state,rows,source_sha,derived):
              'TYPED_ERROR_PRESERVED_ACROSS_CHAIN' if len(preserved)==2 else
              'MIXED_OR_INCONCLUSIVE')
     return {'schema':'risu-p4e-second-independent-full-chain-v1',
-      'outcome':outcome,'pins':PIN,
+      'outcome':outcome,'pins':PIN,'derived_spec':derived,
       'execution':{'source':'ORIGINAL_DEEPL_OPENAPI_SINGLE_OPERATION_LOCAL_PROJECTION',
           'converter':'REAL_FASTMCP_4_1_6_FROM_OPENAPI_STDIO_SERVER',
           'transport':'REAL_MCP_SDK_STDIO_SESSION_AND_LOCALHOST_HTTP',
@@ -251,6 +251,7 @@ async def main():
             server.shutdown();server.server_close();thread.join(timeout=5)
     a.out.parent.mkdir(parents=True,exist_ok=True)
     a.out.write_text(json.dumps(report,ensure_ascii=False,sort_keys=True,indent=2)+'\n')
+    (a.out.parent/'vendor_openapi.json').write_bytes(SOURCE.read_bytes())
     print('RISU_P4E_RESULT',report['outcome'],
           'HTTP',[(x['case'],x['status']) for x in report['results']],
           'ERROR_FLAGS',report['checks']['error_flags'],
