@@ -17,6 +17,7 @@ RUN git init -q /opt/cnoe-source \
  && test "$(git -C /opt/cnoe-source rev-parse HEAD)" = 8c2b065497cf32ecbb7cf7e28dad3a99c6706c3f \
  && python -m venv /opt/cnoe \
  && /opt/cnoe/bin/python -m pip install --no-cache-dir -e /opt/cnoe-source \
+ && /opt/cnoe/bin/python -m pip install --no-cache-dir 'ruff==0.14.5' \
  && /opt/cnoe/bin/python -m pip check
 RUN git init -q /opt/langchain-source \
  && git -C /opt/langchain-source remote add origin https://github.com/langchain-ai/langchain.git \
