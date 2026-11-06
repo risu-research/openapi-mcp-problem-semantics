@@ -165,6 +165,24 @@ class Consumer(unittest.TestCase):
         m['content'][0]['text']='For your information: '+m['content'][0]['text']
         p=witness(SRC,m,['/status'])
         self.assertEqual(p['models']['json-text-data']['outcome'],'FAIL')
+    def test_consumer_cannot_search_for_correct_second_json_chunk(self):
+        # A model must follow its declared reading algorithm, never choose
+        # a matching answer by consulting the source oracle.
+        first={'status_code':422,'data':{'status':409}}
+        second={'status_code':422,'data':BODY}
+        m={'content':[{'type':'text','text':json.dumps(first)},
+                      {'type':'text','text':json.dumps(second)}],
+           'isError':True}
+        proof=witness(SRC,m,['/status'])
+        self.assertEqual(proof['models']['json-text-data']['outcome'],'FAIL')
+        self.assertEqual(proof['models']['json-text-data']['exact_fields'],0)
+    def test_plain_body_with_data_key_not_unwrapped_without_status_code(self):
+        src={'status':200,'content_type':'application/json',
+             'body':{'data':{'id':'inner'},'id':'outer'}}
+        m={'content':[{'type':'text','text':json.dumps(src['body'])}],
+           'isError':False}
+        proof=witness(src,m,['/id'])
+        self.assertEqual(proof['models']['json-text-data']['outcome'],'PASS')
     def test_metadata_only_may_be_exact_but_both_readers_fail(self):
         p=witness(SRC,{'_meta':{'data':BODY},'isError':True},['/status'])
         self.assertTrue(all(x['outcome']=='FAIL' for x in p['models'].values()))
