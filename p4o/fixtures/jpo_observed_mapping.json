@@ -1,0 +1,75 @@
+{
+  "schema": "risu-observed-semantic-mapping-v1",
+  "cases": [
+    {
+      "case_id": "JPO_normal",
+      "rules": [
+        {
+          "id": "jpo_found_state_and_application",
+          "kind": "lookup_transition",
+          "status_path": "/result/statusCode",
+          "source_data_path": "/result/data",
+          "expected_status": "100",
+          "outcome": "found",
+          "argument": "application_number",
+          "source_id_path": "/result/data/applicationNumber",
+          "target_id_path": "/items/0/application_number",
+          "target_items_path": "/items",
+          "target_not_found_path": "/not_found"
+        },
+        {
+          "id": "design_article_alias",
+          "kind": "equal_paths",
+          "source_path": "/result/data/designArticle",
+          "target_path": "/items/0/design_article"
+        },
+        {
+          "id": "design_class_alias",
+          "kind": "equal_paths",
+          "source_path": "/result/data/designClass",
+          "target_path": "/items/0/design_class"
+        },
+        {
+          "id": "filing_date_alias",
+          "kind": "equal_paths",
+          "source_path": "/result/data/filingDate",
+          "target_path": "/items/0/filing_date"
+        },
+        {
+          "id": "registration_number_alias",
+          "kind": "equal_paths",
+          "source_path": "/result/data/registrationNumber",
+          "target_path": "/items/0/registration_number"
+        },
+        {
+          "id": "first_applicant_code_alias",
+          "kind": "equal_paths",
+          "source_path": "/result/data/applicantAttorney/0/applicantAttorneyCd",
+          "target_path": "/items/0/applicant_attorney/0/applicant_attorney_cd"
+        },
+        {
+          "id": "first_bibliography_number_alias",
+          "kind": "equal_paths",
+          "source_path": "/result/data/bibliographyInformation/0/number",
+          "target_path": "/items/0/bibliography_information/0/number"
+        }
+      ]
+    },
+    {
+      "case_id": "JPO_logical_not_found",
+      "rules": [
+        {
+          "id": "jpo_107_no_data_state",
+          "kind": "lookup_transition",
+          "status_path": "/result/statusCode",
+          "source_data_path": "/result/data",
+          "expected_status": "107",
+          "outcome": "not_found",
+          "argument": "application_number",
+          "target_items_path": "/items",
+          "target_not_found_path": "/not_found"
+        }
+      ]
+    }
+  ]
+}
