@@ -129,6 +129,11 @@ jobs:
                      'causal_outcome':d['results'][0]['causal_v1']['outcome'],
                      'confirmed_loss':d['causal_gate_v1']['summary']['CONFIRMED_LOSS']})
           PY
+      - name: Audit the product's raw syntactic LOSS against original JPO semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4n/qualify_semantics.py --out p4n/results
       - name: Upload raw actual STDIO JSON-RPC wire from our REPLAY, not third-party original wire
         if: always()
         uses: actions/upload-artifact@v4
@@ -138,9 +143,11 @@ jobs:
             p4n/FROZEN_SOURCES.json
             p4n/drive_wire.py
             p4n/export_native.py
+            p4n/qualify_semantics.py
             p4n/replay_original_jpo_subserver.py
             p4n/independent_audit.py
             p4n/results/summary.json
+            p4n/results/product_semantic_interpretation.json
             p4n/results/independent_audit.json
             p4n/results/normal/observed_stdio_wire.jsonl
             p4n/results/normal/case_report.json
