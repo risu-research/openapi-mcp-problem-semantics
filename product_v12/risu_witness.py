@@ -49,8 +49,8 @@ def _evaluate(src,mcp,paths,reader,require_error_flag,require_http_status):
     status=src['status']
     body=src['body']
     if reader=='structured-only':
-        candidates=[(mcp['structuredContent'],mcp.get('_meta'),'structuredContent')]
-                    if 'structuredContent' in mcp else []
+        candidates=([(mcp['structuredContent'],mcp.get('_meta'),'structuredContent')]
+                    if 'structuredContent' in mcp else [])
     else:
         candidates=list(_json_reader_candidates(mcp,body))
     if len(candidates)>MAX_TEXT_PARTS*3+2:
