@@ -1,0 +1,111 @@
+{
+  "schema": "risu-p4i-preregistered-independent-third-party-capture-study-v1",
+  "created_utc": "2026-11-06",
+  "baseline": "P4-H v0.9.9.dev0 unchanged",
+  "data_note": "Third-party repository fixtures and recorded files are not the same as independently observed causal HTTP-to-MCP pairs. Source labels do not attest a real HTTP->MCP mapping.",
+  "sources": [
+    {
+      "id": "har_tap_sample",
+      "type": "har",
+      "label": "third-party-authored-fixture",
+      "repo": "aaronhg/har-tap",
+      "commit": "19fbfbdad1a902111e1819b35a95bf9d2668f7a6",
+      "path": "test/fixtures/sample.har",
+      "sha1": "2b40d4e80861ce6ed92991bbd03a77ac04f2d90d"
+    },
+    {
+      "id": "harvest_hackernews",
+      "type": "har",
+      "label": "third-party-browser-network-capture",
+      "repo": "suislanchez/HARvest",
+      "commit": "d8107f21e7a9fecfd723740bdd3d886950bd5f95",
+      "path": "test-fixtures/captured/hackernews-firebase.har",
+      "sha1": "3cc6a161d45e5486ac7fd0f6093b2d1bbe1de9e3"
+    },
+    {
+      "id": "harvest_restcountries",
+      "type": "har",
+      "label": "third-party-browser-network-capture",
+      "repo": "suislanchez/HARvest",
+      "commit": "d8107f21e7a9fecfd723740bdd3d886950bd5f95",
+      "path": "test-fixtures/captured/restcountries.har",
+      "sha1": "05bb12b59f862de5f96ce2859570a79c8bb46571"
+    },
+    {
+      "id": "harvest_openmeteo",
+      "type": "har",
+      "label": "third-party-browser-network-capture",
+      "repo": "suislanchez/HARvest",
+      "commit": "d8107f21e7a9fecfd723740bdd3d886950bd5f95",
+      "path": "test-fixtures/captured/open-meteo-weather.har",
+      "sha1": "ffb4ee56a6a3e2baa36e271de4fb56403481d142"
+    },
+    {
+      "id": "harvest_minimal",
+      "type": "har",
+      "label": "third-party-authored-fixture",
+      "repo": "suislanchez/HARvest",
+      "commit": "d8107f21e7a9fecfd723740bdd3d886950bd5f95",
+      "path": "e2e/fixtures/minimal.har",
+      "sha1": "bb9ac345fc7417ecdc85f078b2585517b31622c3"
+    },
+    {
+      "id": "uniview_mcp",
+      "type": "mcp",
+      "label": "third-party-authored-protocol-fixture",
+      "repo": "samirsawarkar/uniview",
+      "commit": "7daea8aa35f1894132cda2a5e53ad36aec0246b5",
+      "path": "fixtures/mcp/tools-2025-06-18.jsonl",
+      "sha1": "c1a7e287af090363d08fbd5388d43e9f285e15b3"
+    },
+    {
+      "id": "tekeskernel_mcp",
+      "type": "mcp",
+      "label": "third-party-authored-protocol-fixture",
+      "repo": "TekesApps/TekesKernel",
+      "commit": "477d9d66899a426b0e7c6ea2941a80c025820b54",
+      "path": "fixtures/mcp-runtime/tool-call.jsonl",
+      "sha1": "8ba0470ac3c9660064b11f645890ceef0da88123"
+    },
+    {
+      "id": "mcpdrift_mcp",
+      "type": "mcp",
+      "label": "third-party-recorded-protocol-transcript",
+      "repo": "3zz77/mcpdrift",
+      "commit": "f44cb909704c259d2d123210ae37d9d40a7d5074",
+      "path": "fixtures/verify-v1.jsonl",
+      "sha1": "ea5d95d1bbc8ac576926643660f03d3b269b6f77"
+    },
+    {
+      "id": "qmlagent_mcp",
+      "type": "mcp",
+      "label": "third-party-authored-protocol-fixture",
+      "repo": "penk/qmlagent",
+      "commit": "f6449ac9e38c4e7bdd009077484f8cf4f4ec446a",
+      "path": "fixtures/mcp/persistent-workflow.jsonl",
+      "sha1": "6312371f51e82110ab67b14719b21d2612384579"
+    },
+    {
+      "id": "kitesurf_mcp",
+      "type": "mcp",
+      "label": "third-party-author-harness-commands-NOT-jsonrpc-transcript",
+      "repo": "meoyawn/kitesurf",
+      "commit": "146bf04e1ad96e0b7304496d6dc8d6c073e20379",
+      "path": "tests/fixtures/mcp-session.jsonl",
+      "sha1": "2e0a1658251d1c0a2e360cc824eae5af7d7dab13"
+    }
+  ],
+  "predefined_tests": {
+    "direct_original_file": "10 original bytes, no RISU matrix conversion; expected REJECT due absent paired observation schema",
+    "missing_manifest": "all 5x5 across-source HAR+MCP directories, no pairs.json; expected REJECT; these are intentionally NOT causally linked",
+    "counterfactual_pair": "one deliberately spliced HTTP GET JSON entry from public third-party HAR and third-party MCP tools/call; developer-supplied pair deliberately FALSE; this is an adversarial provenance test, not evidence of a real converter",
+    "full_third_party_paired": true
+  },
+  "predefined_metrics": {
+    "reject": "CLI exit 2",
+    "analysis_success": "CLI exit 0 or exit 1 for --fail-on-loss, with valid JSON report",
+    "false_positive": "only calculable for independently adjudicated genuinely paired true-negative cases; empty denominator => null, never 0%",
+    "false_loss_on_counterfactual": "separate adversarial causality hazard metric; never treat as normal precision estimate"
+  },
+  "source_security": "Inspect only metadata and bounded parsing; do not export raw HAR, credentials, request URLs, or response bodies; upstream source fetch during CI only; analyzer offline."
+}
