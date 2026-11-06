@@ -1,0 +1,113 @@
+{
+  "schema": "risu-p4c-consumer-prereg-v1",
+  "date": "2026-11-05",
+  "purpose": "Discover or refute reproducible downstream MCP response information/accessibility differences in original independent consumer implementations; never claim novel ecosystem defects without issue history",
+  "products_under_test": [
+    {
+      "name": "LangChain current MCP",
+      "repo": "langchain-ai/langchain",
+      "commit": "bb6a25a878527136dcb1a20507d5c20049427f96",
+      "source": "libs/langchain_v1/langchain/mcp/tools.py",
+      "git_blob": "ad0c6b0c65226f88432246bad0edcebc63496623",
+      "entrypoint": "langchain.mcp.tools._convert_call_tool_result and as_langchain_tool",
+      "known_public_issue": "https://github.com/langchain-ai/langchain/issues/40471",
+      "known_fix_pr": "https://github.com/langchain-ai/langchain/pull/41566",
+      "notice": "Previously reported failure; no originality claim"
+    },
+    {
+      "name": "OpenAI Agents Python MCP",
+      "repo": "openai/openai-agents-python",
+      "commit": "d4f07df2915ddb029d7076595bb7d4ce89322308",
+      "source": "src/agents/mcp/util.py",
+      "git_blob": "d51a773342c93239a1b79f1056ca889f37599d57",
+      "entrypoint": "agents.mcp.util.MCPUtil.invoke_mcp_tool",
+      "notice": "Code documents explicit error-content precedence; changed fields may represent deliberate policy; should not be labeled vendor defect solely due to loss of structured-only error details"
+    },
+    {
+      "name": "PydanticAI MCP",
+      "repo": "pydantic/pydantic-ai",
+      "commit": "61db3e988851c8905bc16c8f518a1052deccec5d",
+      "source": "pydantic_ai_slim/pydantic_ai/mcp.py",
+      "git_blob": "e00e00cd395da3b23a7ffff07dc47317aba0f4f0",
+      "entrypoint": "pydantic_ai.mcp._map_mcp_call_tool_result",
+      "notice": "Negative control preserving structuredContent errors"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "E1",
+      "mcp": {
+        "content": [],
+        "structuredContent": {
+          "code": "RATE_LIMITED",
+          "retry_after": 30
+        },
+        "isError": true
+      },
+      "scope": "RFC-valid structured-content-only synthetic error; no production API; some specs recommend accompanying text but not mandatory"
+    },
+    {
+      "id": "E2",
+      "mcp": {
+        "content": [
+          {
+            "type": "text",
+            "text": "rate limited"
+          }
+        ],
+        "structuredContent": {
+          "code": "RATE_LIMITED",
+          "retry_after": 30
+        },
+        "isError": true
+      },
+      "scope": "Structured error with generic text"
+    },
+    {
+      "id": "S1",
+      "mcp": {
+        "content": [
+          {
+            "type": "text",
+            "text": "ok"
+          }
+        ],
+        "structuredContent": {
+          "code": "RATE_LIMITED",
+          "retry_after": 30
+        },
+        "isError": false
+      },
+      "scope": "Same structured payload but successful result, branch control"
+    },
+    {
+      "id": "T1",
+      "mcp": {
+        "content": [
+          {
+            "type": "text",
+            "text": "rate limited"
+          }
+        ],
+        "isError": true
+      },
+      "scope": "Text-only error (legitimate no-structured case)"
+    }
+  ],
+  "safety": [
+    "No external API/server/LLM calls",
+    "Pinned public source git clone during build only",
+    "Offline testing with fake local in-process MCP result or local in-memory server; no credentials",
+    "No security vulnerability exploitation or auth bypass",
+    "No automatic GitHub issues or PRs"
+  ],
+  "classification": [
+    "OBSERVED_EXTERNAL_CONSUMER_BEHAVIOR",
+    "KNOWN_PUBLICLY_REPORTED",
+    "DOCUMENTED_POLICY_CHOICE",
+    "UNVERIFIED/UNSUPPORTED",
+    "NEW_CANDIDATE_REQUIRES_REVIEW"
+  ],
+  "success_gate": "At least one real unmodified external consumer code path can be executed with independent synthetic MCP result, values and branch controls, with no unsupported claims; if already known, quantify/reproduce but do not market as new discovery",
+  "refusal_to_infer": "Model-visible output empty is a consumer policy result, not proof that complete MCP message or underlying HTTP body has been destroyed. No P4 real-user adoption inferred."
+}
