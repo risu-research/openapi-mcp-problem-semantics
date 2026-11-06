@@ -20,7 +20,7 @@ CAPTURE=Path(os.getenv('P4R_CAPTURE',str(ROOT/'p4n/results/risu_native_inputs/no
 BASE=Path(os.getenv('P4R_BASE_REPORT',str(ROOT/'p4n/results/normal/p4q_array_diagnosis.json')))
 CONTRACT=HERE/'fixtures/jpo_residual_fields.json'
 SEM=HERE/'fixtures/jpo_semantic_normal_only.json'
-ARRAY=HERE/'fixtures/jpo_arrays.json'
+ARRAY=ROOT/'p4q/jpo_arrays.json' if (ROOT/'p4q/jpo_arrays.json').is_file() else HERE/'fixtures/jpo_arrays.json'
 
 
 def source():
