@@ -141,6 +141,7 @@ async def one_chain(server_py,base):
     from types import SimpleNamespace
     server_env={k:v for k,v in os.environ.items() if k in ('HOME','PATH','TMPDIR','LANG','LC_ALL','SYSTEMROOT')}
     server_env.update({'HOME':'/tmp','TMPDIR':'/tmp','API_BASE_URL':base,'MEILISEARCH_API_URL':base,
+                       'MEILISEARCH_TOKEN':'RISU_LOCAL_REPLAY_DUMMY',
                        'PYTHONDONTWRITEBYTECODE':'1','PYTHONUNBUFFERED':'1',
                        'PYTHONPATH':str(server_py.parent.parent),'PYTHON_DOTENV_DISABLED':'1'})
     class ActualMCPClient:
