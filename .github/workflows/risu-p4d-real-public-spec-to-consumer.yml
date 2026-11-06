@@ -1,0 +1,64 @@
+name: RISU P4-D Real Public API Spec To External Consumer
+on:
+  push:
+    branches:
+      - qualification/p4d-meilisearch-cnoe-langchain-20261106
+    paths:
+      - p4d/**
+      - .github/workflows/risu-p4d-real-public-spec-to-consumer.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  authentic-public-openapi-mcp-consumer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile harness and validate pins
+        run: |
+          set -euo pipefail
+          python -m compileall -q p4d
+          python - <<'PY'
+          import json
+          p=json.load(open('p4d/FROZEN_PROTOCOL.json'))
+          assert p['source']['repo']=='meilisearch/open-api'
+          assert p['converter']['repo']=='cnoe-io/openapi-mcp-codegen'
+          assert p['consumer']['repo']=='langchain-ai/langchain'
+          print('RISU_P4D_PRECOMMITTED_THREE_INDEPENDENT_ORIGINS')
+          PY
+      - name: Build exact pinned vendor, generator, and consumer source
+        run: |
+          set -euo pipefail
+          docker build --pull -f p4d/Dockerfile -t risu-p4d-public-to-consumer .
+      - name: Run full offline local API through real MCP stdio to real LangChain
+        run: |
+          set -euo pipefail
+          mkdir -p results
+          chmod 0777 results
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user 65534:65534 \
+            --pids-limit 128 --memory 3g --cpus 2 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=256m,mode=1777 \
+            --mount type=bind,src="$PWD/results",dst=/results \
+            risu-p4d-public-to-consumer
+      - name: Independent audit of upstream, conversion, and consumer evidence
+        run: |
+          set -euo pipefail
+          python p4d/audit.py results/full_chain.json results/INDEPENDENT_AUDIT.json
+      - name: Preserve exact reproducible evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: risu-p4d-real-meilisearch-cnoe-langchain
+          path: |
+            p4d/FROZEN_PROTOCOL.json
+            p4d/Dockerfile
+            p4d/run_integration.py
+            p4d/audit.py
+            results/full_chain.json
+            results/INDEPENDENT_AUDIT.json
+          if-no-files-found: warn
