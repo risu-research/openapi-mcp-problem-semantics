@@ -30,8 +30,8 @@ patch("risu_probe.py","VERSION = '0.9.11-experimental'","VERSION = '0.9.12-exper
 patch("pyproject.toml","0.9.11.dev0","0.9.12.dev0")
 patch("pyproject.toml",'"risu_semantics"','"risu_semantics", "risu_coverage"')
 patch("risu_analyze.py",
-    "    p.add_argument('--semantic-map',type=Path,help='opt-in operator-declared observed field/lookup mappings; only native captures')",
-    "    p.add_argument('--semantic-map',type=Path,help='opt-in operator-declared observed field/lookup mappings; only native captures')\n"
+    "    p.add_argument('--semantic-map',type=Path,help='operator-declared mappings, native captures only')",
+    "    p.add_argument('--semantic-map',type=Path,help='operator-declared mappings, native captures only')\n"
     "    p.add_argument('--field-coverage',action='store_true',help='count all original JSON leaves and mapping-verified source fields; requires --semantic-map')\n"
     "    p.add_argument('--fail-on-coverage-gap',action='store_true',help='exit 1 if any original source leaf lacks a verified declared mapping; requires --field-coverage')")
 patch("risu_analyze.py",
