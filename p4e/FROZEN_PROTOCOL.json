@@ -1,0 +1,101 @@
+{
+  "schema": "risu-p4e-second-independent-integration-prereg-v1",
+  "date_utc": "2026-11-06",
+  "goal": "Independently reproduce public vendor OpenAPI contract -> different authentic converter -> actual MCP wire call -> different unmodified external consumer mapper; no live vendor traffic",
+  "baseline": "P4-D used Meilisearch + CNOE + LangChain; all three organizations differ here",
+  "source": {
+    "repo": "DeepL/openapi",
+    "commit": "2b5e50f83888960923bf7c842e75ef2dbf309e96",
+    "file": "openapi.json",
+    "blob_git_sha1": "f1029f7003e08ce82c3322bd3f6d9ad97f594ee2",
+    "api_version": "3.14.0",
+    "operation": "GET /v2/usage",
+    "operation_id": "getUsage",
+    "declared_statuses": [
+      200,
+      400,
+      403,
+      404,
+      413,
+      429,
+      456,
+      500,
+      504,
+      529
+    ],
+    "tested_statuses": [
+      200,
+      456,
+      429
+    ],
+    "vendor_success_example": "responses.200.content.application/json.examples.free.value",
+    "vendor_error_schema": "components.schemas.ErrorResponse",
+    "error_note": "ErrorResponse defines required message and optional code. Concrete code values in local 429 and 456 fixtures are SYNTHETIC. They were not observed from DeepL production."
+  },
+  "converter": {
+    "repo": "PrefectHQ/fastmcp",
+    "distribution": "fastmcp",
+    "version": "4.1.6",
+    "entrypoint": "FastMCP.from_openapi(openapi_spec=derived,client=real_local_http_client)",
+    "upstream_mutation": "none"
+  },
+  "consumer": {
+    "repo": "pydantic/pydantic-ai",
+    "commit": "61db3e988851c8905bc16c8f518a1052deccec5d",
+    "file": "pydantic_ai_slim/pydantic_ai/mcp.py",
+    "blob_git_sha1": "e00e00cd395da3b23a7ffff07dc47317aba0f4f0",
+    "entrypoint": "_map_mcp_call_tool_result(real_result, prefer_structured=True)",
+    "scope": "Actual MCP consumer result mapper, not a full agent/model run"
+  },
+  "cases": [
+    {
+      "id": "S200",
+      "status": 200,
+      "path": "/v2/usage",
+      "body_source": "verbatim vendor free example",
+      "body": null
+    },
+    {
+      "id": "E456",
+      "status": 456,
+      "path": "/v2/usage",
+      "body_source": "schema-conforming synthetic",
+      "body": {
+        "message": "Local synthetic character quota exhausted",
+        "code": "RISU_SYNTH_QUOTA_EXCEEDED"
+      }
+    },
+    {
+      "id": "E429",
+      "status": 429,
+      "path": "/v2/usage",
+      "body_source": "schema-conforming synthetic",
+      "body": {
+        "message": "Local synthetic request rate limit",
+        "code": "RISU_SYNTH_RATE_LIMITED"
+      }
+    }
+  ],
+  "controls": [
+    "MCP original structured-only error maps to typed object under same PydanticAI code",
+    "Normal HTTP 200 result must survive",
+    "All cases flow over actual stdio MCP and loopback HTTP",
+    "No calls during generation and no unexpected HTTP methods or paths"
+  ],
+  "adjustments": [
+    "Extract original declared GET operation with its complete transitive component references; no change to its responses or schemas",
+    "Replace server with loopback replay and remove vendor auth requirements in projected local-only copy",
+    "Deterministic synthetic code values use permitted optional code field, not attributed to DeepL operations"
+  ],
+  "safety": [
+    "No external vendor API, API key, LLM, write request, or account token",
+    "Network enabled only for pinned public source/dependency installation during Docker build",
+    "Offline nonroot runtime with no network, read-only filesystem, dropped capabilities",
+    "No automatic upstream bug report or modification"
+  ],
+  "possible_outcomes": [
+    "TYPED_ERROR_LOSS_ACROSS_CHAIN",
+    "TYPED_ERROR_PRESERVED_ACROSS_CHAIN",
+    "MIXED_OR_INCONCLUSIVE"
+  ]
+}
