@@ -106,15 +106,6 @@ jobs:
           python -m pip wheel --no-deps --no-build-isolation -w p4n/results/installer dist/risu_v09_source
           uv pip install --python p4n/external_upstream/.venv/bin/python --no-deps --reinstall \
             p4n/results/installer/risu_probe_preview-0.9.10.dev0-py3-none-any.whl
-            p4n/results/installer/risu_probe_preview-0.9.11.dev0-py3-none-any.whl
-            p4o/overrides/risu_semantics.py
-            p4o/fixtures/jpo_observed_mapping.json
-            p4o/apply_upgrade.py
-            p4o/tests/test_real_jpo_semantics.py
-            p4o/independent_audit.py
-            p4n/results/normal/p4o_semantic_diagnosis.json
-            p4n/results/logical_not_found/p4o_semantic_diagnosis.json
-            p4n/results/p4o_independent_audit.json
       - name: Use native RISU CLI once per original HTTP plus actual MCP wire pair
         shell: bash
         run: |
@@ -220,4 +211,13 @@ jobs:
             p4n/results/risu_native_inputs/normal/DERIVATION_PROVENANCE.json
             p4n/results/risu_native_inputs/logical_not_found/DERIVATION_PROVENANCE.json
             p4n/results/installer/risu_probe_preview-0.9.10.dev0-py3-none-any.whl
+            p4n/results/installer/risu_probe_preview-0.9.11.dev0-py3-none-any.whl
+            p4o/overrides/risu_semantics.py
+            p4o/fixtures/jpo_observed_mapping.json
+            p4o/apply_upgrade.py
+            p4o/tests/test_real_jpo_semantics.py
+            p4o/independent_audit.py
+            p4n/results/normal/p4o_semantic_diagnosis.json
+            p4n/results/logical_not_found/p4o_semantic_diagnosis.json
+            p4n/results/p4o_independent_audit.json
           if-no-files-found: warn
