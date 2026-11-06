@@ -26,7 +26,10 @@ def blob(data):
 
 async def read_frame(process,seq,timeout=55):
     line=await asyncio.wait_for(process.stdout.readline(),timeout=timeout)
-    assert line and len(line)<2_000_000,("INVALID_STDIO_WIRE_FRAME",seq)
+    if not line:
+        error=(await asyncio.wait_for(process.stderr.read(),timeout=10)).decode("utf-8","replace")
+        raise RuntimeError("P4N_EARLY_STDIO_SERVER_EXIT "+str(seq)+" STDERR "+error[-4500:])
+    assert len(line)<2_000_000,("INVALID_STDIO_WIRE_FRAME",seq)
     value=json.loads(line)
     assert isinstance(value,dict) and value.get("jsonrpc")=="2.0"
     return line,value
