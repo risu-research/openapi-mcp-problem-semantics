@@ -1,0 +1,78 @@
+name: RISU P4-M Third-Party Original Execution Artifact Qualification
+on:
+  push:
+    branches:
+      - qualification/p4m-original-third-party-execution-artifacts-20261106
+    paths:
+      - p4m/**
+      - .github/workflows/risu-p4m-original-execution-artifacts.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  qualify-third-party-originals:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Freeze original commit and evidence definitions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m compileall -q p4m
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('p4m/FROZEN_SOURCES.json').read_text())
+          assert len(p['original_replay']['files'])==2
+          assert len(p['original_replay']['source_code'])==3
+          assert p['qualification_thresholds']['tier1_causal_pair_success']==0
+          assert p['qualification_thresholds']['tier1_causal_pair_error']==0
+          print('P4M_PREDECLARED_THIRD_PARTY_ORIGINALS',len(p['original_replay']['files']))
+          PY
+      - name: Install safe parser only, never execute external project
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check 'PyYAML==6.0.2'
+      - name: Retrieve exact third-party original upstream HTTP VCR and original dispatch source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -u p4m/qualify_originals.py --fetch
+      - name: Qualify recorded upstream HTTP success and logical API error with no invented MCP wire
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -u p4m/qualify_originals.py --inspect
+      - name: Independent SHA source verification and nine forged-evidence mutations
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4m/independent_audit.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('p4m/results/qualified_originals.json').read_text())
+          a=json.loads(Path('p4m/results/independent_audit.json').read_text())
+          assert a['status']=='PASS' and len(a['adversarial_false_evidence_cases_detected'])==9
+          assert p['original_full_wire_http_to_mcp_success']==p['original_full_wire_http_to_mcp_error']==0
+          assert p['field_fpr'] is None
+          print('P4M_ORIGINAL_ARTIFACTS_STRICT_BOUNDARY_PASS')
+          PY
+      - name: Preserve only source pins and independent receipt, never original VCR HTTP bodies
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: risu-p4m-original-third-party-http-execution-qualification
+          path: |
+            p4m/FROZEN_SOURCES.json
+            p4m/qualify_originals.py
+            p4m/independent_audit.py
+            p4m/results/source_inventory.json
+            p4m/results/qualified_originals.json
+            p4m/results/independent_audit.json
+          if-no-files-found: warn
