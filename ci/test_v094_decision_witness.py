@@ -218,6 +218,46 @@ class Consumer(unittest.TestCase):
             p=command('witness',str(matrix),'--path','/status',
                       '--fail-on-consumer','structured-only')
             self.assertEqual(p.returncode,1,p.stderr)
+    def test_all_three_entrypoints_use_same_policy_and_exit(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d)
+            source=root/'http.json'; mcp=root/'mcp.json'; cases=root/'cases.json'
+            source.write_text(json.dumps(SRC))
+            mcp.write_text(json.dumps(make_mcp()))
+            row={'id':'case','source':{'response':SRC},'mcp_result':make_mcp()}
+            cases.write_text(json.dumps({'cases':[row]}))
+            config=root/'risu-probe.json'
+            config.write_text(json.dumps({'version':1,'cases':[row],
+                                          'error_profile':'json-errors'}))
+            script=Path(sys.modules['risu_probe'].__file__)
+            options=[
+                ('compare',str(source),str(mcp),'--error-profile','json-errors','--format','json'),
+                (str(cases),'--error-profile','json-errors','--format','sarif','--fail-on-loss'),
+                ('check',str(root),'--format','json'),
+            ]
+            for entry in options:
+                with self.subTest(entry=entry[0]):
+                    base=subprocess.run([sys.executable,str(script),*entry],
+                                        text=True,capture_output=True,timeout=10)
+                    strict=subprocess.run([sys.executable,str(script),*entry,
+                                           '--policy','strict-carrier'],
+                                          text=True,capture_output=True,timeout=10)
+                    self.assertEqual(base.returncode,0,base.stderr)
+                    self.assertEqual(strict.returncode,1,strict.stderr)
+                    self.assertIn('REVIEW',base.stdout)
+                    self.assertIn('FAIL',strict.stdout)
+    def test_saved_project_review_block_opt_in(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);config=root/'risu-probe.json'
+            config.write_text(json.dumps({'version':1,'error_profile':'json-errors',
+                                           'cases':[{'id':'case','source':{'response':SRC},
+                                                     'mcp_result':make_mcp()}]}))
+            script=Path(sys.modules['risu_probe'].__file__)
+            result=subprocess.run([sys.executable,str(script),'check',str(root),
+                                   '--fail-on-review','--format','markdown'],
+                                  text=True,capture_output=True,timeout=10)
+            self.assertEqual(result.returncode,1,result.stderr)
+            self.assertIn('| REVIEW',result.stdout)
     def test_two_models_are_not_actual_llm_evaluation(self):
         p=witness(SRC,make_mcp(),['/status'])
         self.assertIn('no LLM behavior inferred',p['claim_boundary'])
