@@ -33,7 +33,7 @@ def report(mcp,source=SRC,policy='calibrated'):
 
 class Policy(unittest.TestCase):
     def test_v094(self):
-        self.assertEqual(VERSION,'0.9.6-experimental')
+        self.assertEqual(VERSION,'0.9.7-experimental')
     def test_json_text_legacy_loss_but_no_false_data_destruction_alert(self):
         r=report(make_mcp())
         item=r['results'][0]
