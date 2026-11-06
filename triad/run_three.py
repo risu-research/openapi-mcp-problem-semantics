@@ -145,8 +145,10 @@ def evaluate_result(adapter,matrix,expected_paths,counters,unexpected,elapsed):
         ev=row.get('evidence_v1')
         assert ev and ev['schema']=='risu-evidence-v1' and ev['scope']=='FULL_JSON_BODY',(adapter,row)
         altered=json.loads(json.dumps(source))
-        assert 'risu_fixture_marker' in altered['body'],(adapter,status)
-        altered['body']['risu_fixture_marker']='RISU_COUNTERFACTUAL_NOT_PRESENT'
+        body=altered['body']
+        carrier=body if 'risu_fixture_marker' in body else body.get('details',{})
+        assert isinstance(carrier,dict) and 'risu_fixture_marker' in carrier,(adapter,status)
+        carrier['risu_fixture_marker']='RISU_COUNTERFACTUAL_NOT_PRESENT'
         rejected=calibrated_assess(altered,rec['mcp_sample'])
         assert rejected['body_recovery'] not in ('EXACT_MACHINE','EXACT_JSON_TEXT'),(adapter,status,rejected)
         metamorphic_rejections+=1
