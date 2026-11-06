@@ -24,11 +24,19 @@ class RealJpoWireSemanticContract(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.root=Path(self.tmp.name)
         self.data=self.root/'data';shutil.copytree(NATIVE/'normal',self.data)
-        self.mapping=self.root/'map.json';self.mapping.write_bytes(MAP.read_bytes())
+        self.mapping=self.root/'map.json';self.select_map('normal')
+
+    def select_map(self,name):
+        cfg=json.loads(MAP.read_text())
+        case_id='JPO_'+name
+        cfg['cases']=[x for x in cfg['cases'] if x['case_id']==case_id]
+        assert len(cfg['cases'])==1
+        self.mapping.write_text(json.dumps(cfg))
 
     def use_case(self,name):
         shutil.rmtree(self.data)
         shutil.copytree(NATIVE/name,self.data)
+        self.select_map(name)
 
     def cli(self,*flags):
         return subprocess.run([str(CLI),'analyze',str(self.data),'--recovery','--format','json',
