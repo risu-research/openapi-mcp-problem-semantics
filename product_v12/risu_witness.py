@@ -22,7 +22,12 @@ def _strict_status(root,expected):
     observed=[root[k] for k in STATUS_KEYS if k in root and type(root[k]) is int]
     return bool(observed) and all(x==expected for x in observed)
 
-def _json_reader_candidates(mcp,body):
+def _json_reader_candidates(mcp):
+    """First parseable JSON text, chosen without consulting source values.
+
+    A documented status_code + data wrapper is the only envelope this
+    simulated consumer unwraps. No oracle-guided search over responses.
+    """
     chunks=mcp.get('content')
     if not isinstance(chunks,list):return
     for chunk in chunks[:MAX_TEXT_PARTS]:
@@ -30,20 +35,15 @@ def _json_reader_candidates(mcp,body):
         txt=chunk.get('text')
         if not isinstance(txt,str) or len(txt)>MAX_TEXT_CHARS:continue
         for _,candidate in _json_text_candidates(txt):
-            try: root=_parse_json(candidate)
+            try:root=_parse_json(candidate)
             except (ValueError,TypeError):continue
-            if _strict_same(root,body):
-                yield root,root,'json-text:direct'
-            elif isinstance(root,dict) and 'data' in root and isinstance(root['data'],(dict,list)):
-                # Explicit data envelope, NOT arbitrary recursive search or
-                # prose parsing. Exact original body is a certified path.
-                payload=root['data']
-                if _strict_same(payload,body):
-                    yield payload,root,'json-text:data'
-                else:
-                    yield payload,root,'json-text:data-partial'
+            if (isinstance(root,dict) and
+                type(root.get('status_code')) is int and
+                isinstance(root.get('data'),(dict,list))):
+                yield root['data'],root,'json-text:data'
             else:
-                yield root,root,'json-text:direct-partial'
+                yield root,root,'json-text:direct'
+            return
 
 def _evaluate(src,mcp,paths,reader,require_error_flag,require_http_status):
     status=src['status']
@@ -52,7 +52,7 @@ def _evaluate(src,mcp,paths,reader,require_error_flag,require_http_status):
         candidates=([(mcp['structuredContent'],mcp.get('_meta'),'structuredContent')]
                     if 'structuredContent' in mcp else [])
     else:
-        candidates=list(_json_reader_candidates(mcp,body))
+        candidates=list(_json_reader_candidates(mcp))
     if len(candidates)>MAX_TEXT_PARTS*3+2:
         candidates=candidates[:MAX_TEXT_PARTS*3+2]
     flag_ok=(mcp.get('isError') is True if status>=400 else
