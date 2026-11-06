@@ -194,6 +194,6 @@ class Evidence(unittest.TestCase):
         self.assertEqual(report['action_summary']['EMIT_STRUCTURED_CONTENT'],1)
 
     def test_version(self):
-        self.assertEqual(VERSION,'0.9.4-experimental')
+        self.assertEqual(VERSION,'0.9.5-experimental')
 
 if __name__=='__main__':unittest.main(verbosity=2)
