@@ -32,4 +32,9 @@ finally:
     except Exception:pass
     try:proc.wait(timeout=3)
     except Exception:proc.kill()
-    log.close()\n    stderr.close()\n    # The parent SDK closes stdin on session shutdown. This proxy has a daemon\n    # forwarding thread blocked on stdin, so avoid Python buffered-stdin\n    # finalizer deadlock after the child exits. No Python cleanup remains.\n    os._exit(proc.returncode if proc.returncode is not None else 0)
+    log.close()
+    stderr.close()
+    # The parent SDK closes stdin on session shutdown. This proxy has a daemon
+    # forwarding thread blocked on stdin, so avoid Python buffered-stdin
+    # finalizer deadlock after the child exits. No Python cleanup remains.
+    os._exit(proc.returncode if proc.returncode is not None else 0)
