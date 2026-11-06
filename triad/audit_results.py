@@ -31,7 +31,7 @@ assert report['pinned_projects']=={
 assert set(report['reference_controls'].values())=={'PRESERVED'}
 assert len(report['original_product_sha256'])==64
 for target in report['projects']:
-    assert target['version']=='0.9.5-experimental'
+    assert target['version']=='0.9.6-experimental'
     assert target['execution']=='REAL_LOCALHOST_HTTP_AND_EXTERNAL_MCP'
     assert target['first_diagnosis_under_ten_minutes_after_dependencies_ready'] is True
     assert 0 < target['seconds_after_dependencies_ready'] < 600
