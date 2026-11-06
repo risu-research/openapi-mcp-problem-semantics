@@ -1,0 +1,100 @@
+name: RISU P4-N Pinned Original JPO VCR to Real MCP Stdio Wire
+on:
+  push:
+    branches:
+      - qualification/p4n-jpo-original-vcr-mcp-stdio-replay-20261106
+    paths:
+      - p4n/**
+      - .github/workflows/risu-p4n-real-jpo-mcp-stdio-replay.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pinned-third-party-replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Freeze and validate source/trust boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m compileall -q p4n
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('p4n/FROZEN_SOURCES.json').read_text())
+          assert p['original_commit']=='e7f0bcf2175823baaceb4844e84f9fc10ef00b40'
+          assert len(p['cases'])==2
+          assert p['cases']['normal']['upstream_http_status']==200
+          assert p['cases']['logical_not_found']['upstream_http_status']==200
+          assert p['cases']['logical_not_found']['application_status_code']=='107'
+          print('P4N_FROZEN_SOURCE_AND_REPLAY_BOUNDARY_PASS')
+          PY
+      - name: Checkout exact original third-party project commit, never mutable HEAD
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p p4n/external_upstream
+          git -C p4n/external_upstream init -q
+          git -C p4n/external_upstream remote add origin https://github.com/parkerhancock/patent-client-agents.git
+          git -C p4n/external_upstream -c protocol.version=2 fetch --no-tags --depth 1 origin e7f0bcf2175823baaceb4844e84f9fc10ef00b40
+          git -C p4n/external_upstream checkout -q --detach FETCH_HEAD
+          test "$(git -C p4n/external_upstream rev-parse HEAD)" = "e7f0bcf2175823baaceb4844e84f9fc10ef00b40"
+          echo "P4N_PINNED_EXTERNAL_PROJECT_GIT_CHECKOUT_PASS"
+      - name: Install external project's FROZEN dependency lock + original test VCR tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -q uv==0.11.10
+          cd p4n/external_upstream
+          uv sync --frozen --extra mcp --no-dev --python "$(command -v python)"
+          uv pip install --python .venv/bin/python 'vcrpy>=8.0,<9' 'pytest>=8,<10'
+          .venv/bin/python - <<'PY'
+          import importlib.metadata
+          import fastmcp, vcr
+          import patent_client_agents
+          print('P4N_THIRD_PARTY_ENV_READY',
+                importlib.metadata.version('fastmcp'),
+                importlib.metadata.version('vcrpy'),
+                importlib.metadata.version('patent-client-agents'))
+          PY
+      - name: Real stdio JSON-RPC MCP wire, with offline-only original HTTP cassette replay
+        shell: bash
+        env:
+          JPO_API_USERNAME: REDACTED_USERNAME
+          JPO_API_PASSWORD: REDACTED_PASSWORD
+          P4N_REPLAY_ONLY: '1'
+        run: |
+          set -euo pipefail
+          mkdir -p p4n/results
+          p4n/external_upstream/.venv/bin/python -u p4n/drive_wire.py \
+            --external p4n/external_upstream \
+            --out p4n/results
+          test -s p4n/results/normal/observed_stdio_wire.jsonl
+          test -s p4n/results/logical_not_found/observed_stdio_wire.jsonl
+      - name: Extract independent evidence receipt and assert no live upstream HTTP / causal overclaim
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4n/independent_audit.py --out p4n/results
+      - name: Upload raw actual STDIO JSON-RPC wire from our REPLAY, not third-party original wire
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: risu-p4n-new-real-wire-third-party-original-vcr-replay
+          path: |
+            p4n/FROZEN_SOURCES.json
+            p4n/drive_wire.py
+            p4n/replay_original_jpo_subserver.py
+            p4n/independent_audit.py
+            p4n/results/summary.json
+            p4n/results/independent_audit.json
+            p4n/results/normal/observed_stdio_wire.jsonl
+            p4n/results/normal/case_report.json
+            p4n/results/logical_not_found/observed_stdio_wire.jsonl
+            p4n/results/logical_not_found/case_report.json
+          if-no-files-found: warn
