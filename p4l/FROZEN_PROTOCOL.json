@@ -1,0 +1,79 @@
+{
+  "schema": "risu-p4l-third-party-dual-surface-qualification-frozen-v1",
+  "date": "2026-11-06",
+  "objective": "Locate and classify independently authored/recorded actual source-HTTP -> MCP tool response paired evidence for both success and error. Never replace causal evidence with two independently called equivalent APIs, MCP-over-HTTP transport or fabricated correlations.",
+  "product": {
+    "ref": "qualification/p4j-causal-trust-gate-20261106",
+    "engine_version": "v0.9.10 experimental",
+    "unchanged": true
+  },
+  "admission_standard": {
+    "tier1": "Genuine independent developer-published, contemporaneously captured single causal upstream REST HTTP request/response followed by corresponding MCP tools/call response, with verifiable correlation beyond matching payloads; normal and error tested as distinct cases.",
+    "tier2": "Independent developer's same-run two separate public HTTP and MCP interface calls to the same handler with matching arguments and outputs; semantic-parity evidence only, NOT causal upstream-to-MCP record.",
+    "tier3": "Independently recorded one-sided MCP success/error or externally authored forwarding test source. No direct causal pair.",
+    "tier4": "Written documentation of recorder potential with no committed observable output. Not counted."
+  },
+  "sources": [
+    {
+      "id": "monark_trace",
+      "repo": "KraidleAI/Monark",
+      "commit": "1b40647b185aa7664c47fbe8a575e42974e7679e",
+      "path": "fixtures/h5-e2e-trace.json",
+      "sha1": "15fe566ecd8ddfcc7c7a81b7c0478bade763d43e",
+      "kind": "external_recorded_two_interfaces"
+    },
+    {
+      "id": "monark_provenance",
+      "repo": "KraidleAI/Monark",
+      "commit": "1b40647b185aa7664c47fbe8a575e42974e7679e",
+      "path": "fixtures/PROVENANCE-h5-e2e-trace.md",
+      "sha1": "a927d71e49ee71954c0b729f22952a42c1e3f2c8",
+      "kind": "recording_provenance"
+    },
+    {
+      "id": "cisco_mcp_traffic",
+      "repo": "cisco-open/mcptoolkit-mock",
+      "commit": "552e4d4af006600ca068eda8291ffb261136bc1e",
+      "path": "tests/mock-data/traffic.jsonl",
+      "sha1": "6b5ca3fec55c15d6cb16a5b25030202e33a1022d",
+      "kind": "independently_recorded_mcp_only"
+    },
+    {
+      "id": "tyk_oas_mcp_test",
+      "repo": "TykTechnologies/tyk-mock-mcp-server",
+      "commit": "7a69c3dbf4d030fba125f00cbef18c9e6d3f078e",
+      "path": "oasmcp_test.go",
+      "sha1": "278967851fe2510ae36bf3fafbf0c5ee59270138",
+      "kind": "third_party_authored_original_http_forwarding_test_source"
+    },
+    {
+      "id": "meda_sdk_trace",
+      "repo": "meda-lang/meda",
+      "commit": "03321ff6f10d32bb2b7c42e2a967f61338c8fc16",
+      "path": "experiments/interop_d0/results/diagnostic-reruns.json",
+      "sha1": "c50a3fb7d1b76c93614257c56131273e10264c24",
+      "kind": "independent_sdk_mcp_transport_proxy_observation_only"
+    },
+    {
+      "id": "amiberry_semantic_parity_source",
+      "repo": "BlitterStudio/amiberry-mcp-server",
+      "commit": "f76234e0e6d12c294dd7eac29b5c869e1199e28b",
+      "path": "tests/test_gui_automation_parity.py",
+      "sha1": "79e53bfc91d732898f17a7567a71f4b2f076016f",
+      "kind": "third_party_authored_two_interface_test_source"
+    }
+  ],
+  "preregistered_checks": [
+    "All six source files fetched by immutable exact commit and git blob SHA",
+    "Monark MCP cascade step and independent HTTP mirror step have identical operation arguments and response objects",
+    "Monark two calls have distinct operations and separate steps; remain Tier2 not Tier1",
+    "Monark recorded error is a real MCP tools/call isError true with concrete code, without corresponding HTTP mirror error; Tier3 only",
+    "Cisco independent MCP requests and responses visible but no same-call upstream API HTTP",
+    "Tyk source test starts an HTTP upstream server and exercises its original handler with structured output, but no committed combined raw capture, and not full on-wire MCP",
+    "Meda independent proxy HTTP observations are MCP transport not upstream REST conversion",
+    "Do not infer raw HTTP response status for Monark mirrored interface where no status was recorded",
+    "FPR denominator requires independently adjudicated true negative causal pair; otherwise null",
+    "External confirmed success/error counted only Tier1 cases; Tier2 and 3 are never promoted"
+  ],
+  "security": "Offline evidence comparison; network used only for retrieving public SHA-pinned sources in CI; upload aggregate receipt and hashes, not raw traces or headers; never execute third-party source code."
+}
