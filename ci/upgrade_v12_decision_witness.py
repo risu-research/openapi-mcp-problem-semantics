@@ -139,7 +139,7 @@ replace('risu_analyze.py',
 section('risu_report.py','def to_sarif(', 'def to_markdown(', """def to_sarif(report: dict, *, case_file: str='risu-probe.json') -> dict:
     from risu_decision import decide
     spec={
-        'FAIL':('RISU201','Verified contract failure','error'),
+        'FAIL':('RISU201','Actionable failure or incomplete inspection','error'),
         'REVIEW':('RISU202','Potential compatibility problem requires review','warning'),
         'DEFERRED':('RISU203','MCP tool is awaiting input','note'),
     }
