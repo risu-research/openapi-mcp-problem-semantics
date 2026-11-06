@@ -26,8 +26,10 @@ mkdir -p "$(dirname "$DEST")"
 DEST="$(cd "$(dirname "$DEST")" && pwd)/$(basename "$DEST")"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
-mkdir -p "$TMP/repo" "$TMP/results"
-chmod 0777 "$TMP/results"
+mkdir -p "$TMP/repo" "$TMP/results/repro_package/fixtures" "$TMP/results/repro_package/control_fixtures"
+# Host-owned writable parents allow a nonroot (uid 65534) container to write
+# files while still letting the developer delete its temporary directory.
+chmod 0777 "$TMP/results" "$TMP/results/repro_package" "$TMP/results/repro_package/fixtures" "$TMP/results/repro_package/control_fixtures"
 if [[ "$MODE" == build ]];then
   command -v git >/dev/null && command -v tar >/dev/null || { echo 'git/tar required' >&2;exit 2; }
   # Only approved tracked source. No untracked credentials enter Docker context.
