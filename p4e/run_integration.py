@@ -64,7 +64,8 @@ def project_spec(original,base):
                     seen.add(ptr)
                     parts=ptr[2:].split('/')
                     assert len(parts)>=3
-                    node=refs.setdefault(parts[0],{})
+                    assert parts[0]=='components',parts
+                    node=refs
                     for part in parts[1:-1]:node=node.setdefault(part,{})
                     target=json.loads(json.dumps(get_ref(original,ptr)))
                     node[parts[-1]]=target
