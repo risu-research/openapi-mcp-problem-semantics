@@ -1,0 +1,105 @@
+name: RISU Probe P4-A frozen ten public OpenAPI blind qualification
+on:
+  push:
+    branches:
+      - qualification/p4a-frozen-10-public-openapi-20261105
+    paths:
+      - p4a/**
+      - .github/workflows/risu-p4a-frozen10.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+
+jobs:
+  blinded-ten-projects:
+    name: "Frozen sources, unchanged v0.9.6, independent audit"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Restore SHA-pinned validated RISU v0.9.6, no alterations
+        shell: bash
+        run: |
+          set -euo pipefail
+          python ci/export_v09_source_portable.py
+          python ci/upgrade_v10_modules.py
+          python ci/upgrade_v11_semantics.py
+          python ci/upgrade_v12_decision_witness.py
+          python ci/upgrade_v13_repro.py
+          python ci/upgrade_v14_fixverify.py
+          python -m compileall -q dist/risu_v09_source p4a
+          python dist/risu_v09_source/risu_probe.py --version
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          spec=json.loads(Path('p4a/FROZEN_PREREGISTRATION.json').read_text())
+          assert len(spec['fixed_targets'])==10
+          assert len({s['repository'] for s in spec['fixed_targets']})==10
+          assert all(len(x['commit'])==40 and len(x['blob_sha1'])==40 for x in spec['fixed_targets'])
+          print('RISU_P4A_TEN_TARGETS_FROZEN')
+          PY
+      - name: Fetch only pinned public GitHub RAW descriptions with strict Git-blob checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p inputs results
+          date +%s > results/start_unix.txt
+          python p4a/fetch_frozen.py inputs
+          chmod -R a+rX inputs
+          chmod 0777 results
+      - name: Build trusted scanner runtime; external specs cannot execute
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build --pull -f p4a/Dockerfile -t risu-p4a-frozen-ten .
+      - name: Run unchanged v0.9.6 scan and independent inventory, with NO NETWORK
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user 65534:65534 \
+            --pids-limit 128 --memory 3g --cpus 2 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=256m,mode=1777 \
+            --mount type=bind,src="$PWD/inputs",dst=/inputs,readonly \
+            --mount type=bind,src="$PWD/results",dst=/results \
+            risu-p4a-frozen-ten /inputs /results
+          date +%s > results/end_unix.txt
+      - name: Independent fail-closed audit; zero-findings and unsupported must remain counted
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4a/audit_results.py inputs results
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('results/P4A_10_PROJECT_RESULTS.json').read_text())
+          print('P4A_PUBLIC_SUMMARY',json.dumps({
+            'total':r['preregistered_project_count'],
+            'verified':r['verified_source_count'],
+            'risu_recognized':r['static_recognized_projects'],
+            'qualification_counts':r['qualification_counts'],
+            'total_GET':r['total_declared_GET_operations_in_parsed_specs'],
+            'confirmed_consumer_defects':r['confirmed_real_consumer_mismatches'],
+          }))
+          PY
+      - name: Archive all 10 results, source provenance and runnable audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: risu-p4a-frozen-ten-audited-results
+          path: |
+            p4a/FROZEN_PREREGISTRATION.json
+            p4a/fetch_frozen.py
+            p4a/run_offline.py
+            p4a/inventory.py
+            p4a/audit_results.py
+            p4a/Dockerfile
+            inputs/download_report.json
+            results/P4A_10_PROJECT_RESULTS.json
+            results/INDEPENDENT_P4A_AUDIT.json
+            results/start_unix.txt
+            results/end_unix.txt
+          if-no-files-found: warn
