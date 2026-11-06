@@ -1,0 +1,46 @@
+{
+  "schema": "risu-p4d-external-full-chain-prereg-v1",
+  "date_utc": "2026-11-06",
+  "goal": "One original public OpenAPI operation -> authentic open-source code generator -> real MCP stdio client -> unmodified third-party consumer",
+  "source": {
+    "repo": "meilisearch/open-api",
+    "commit": "0b0b0fdbb9d5821ec018a3db2777986a231eec37",
+    "file": "open-api.json",
+    "blob_git_sha1": "8e01bc5c07f4f17cc2f183ecfb427e2592ba333b",
+    "operation": "GET /indexes/{indexUid}",
+    "operation_id": "get_index",
+    "declared_http_cases": [200, 401, 404],
+    "tested_http_cases": [200, 404],
+    "caveat": "Original public vendor OpenAPI v1.15.2 archived in 2025; not a claim about current production behavior"
+  },
+  "converter": {
+    "repo": "cnoe-io/openapi-mcp-codegen",
+    "commit": "8c2b065497cf32ecbb7cf7e28dad3a99c6706c3f",
+    "mutation": "none to upstream code; derived spec contains this single original GET operation and dependent schema definitions"
+  },
+  "consumer": {
+    "repo": "langchain-ai/langchain",
+    "commit": "bb6a25a878527136dcb1a20507d5c20049427f96",
+    "file": "libs/langchain_v1/langchain/mcp/tools.py",
+    "blob_git_sha1": "ad0c6b0c65226f88432246bad0edcebc63496623",
+    "entrypoint": "as_langchain_tool; actual mcp stdio client and tool call"
+  },
+  "declared_protocol_adjustments": [
+    "Replace remote server URL with 127.0.0.1-only locally replayed API, preserving original GET route, operationId and response schemas",
+    "Remove vendor authorization requirement in the derived local test specification only; no remote access, token, account, bypass or production use",
+    "Use official 200 and 404 response examples as baseline, adjusting local index id in the descriptive message only"
+  ],
+  "outcomes_to_report": [
+    "EXTERNAL_FULL_CHAIN_CONFIRMED_WITH_LOSS",
+    "EXTERNAL_FULL_CHAIN_CONFIRMED_NO_LOSS",
+    "INCONCLUSIVE_TRANSPORT_OR_GENERATOR",
+    "INCONCLUSIVE_DIAGNOSTIC"
+  ],
+  "no_claims": [
+    "No new undisclosed upstream vulnerability or API defect claim",
+    "No real production API request or real user event",
+    "No wholesale security policy recommendation",
+    "No LLM dependence, credentials, payment, external write or untrusted arbitrary URLs",
+    "No inference that a reported MCP outcome violates normative MCP standards"
+  ]
+}
