@@ -1,0 +1,80 @@
+name: RISU P4-L Independently Recorded External HTTP MCP Evidence Qualification
+on:
+  push:
+    branches:
+      - qualification/p4l-third-party-paired-evidence-qualification-20261106
+    paths:
+      - p4l/**
+      - .github/workflows/risu-p4l-independent-paired-evidence.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  qualify-third-party-recordings:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Freeze original third-party source inventory and evidence thresholds before retrieval
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m compileall -q p4l
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('p4l/FROZEN_PROTOCOL.json').read_text())
+          assert len(p['sources'])==6 and len({x['repo'] for x in p['sources']})==5
+          assert p['admission_standard']['tier1'].startswith('Genuine independent')
+          print('P4L_FROZEN_ORIGINAL_SOURCES',len(p['sources']))
+          PY
+      - name: Download exact original public source bytes and verify Git blob hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -u p4l/qualify_external.py --fetch
+      - name: Compare actual third-party-recorded HTTP vs MCP, classify success/error provenance separately
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -u p4l/qualify_external.py --qualify
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          q=json.loads(Path('p4l/results/qualification.json').read_text())
+          c=q['adjudicated_counts']
+          assert c['independent_external_dual_surface_normal_parity']==1
+          assert c['independent_external_recorded_mcp_error_without_http_peer']>=1
+          assert c['independent_external_causal_upstream_http_to_mcp_normal']==0
+          assert c['independent_external_causal_upstream_http_to_mcp_error']==0
+          assert c['field_false_positive_rate'] is None
+          print('P4L_EXTERNAL_CANDIDATE_ADMITTED_BUT_CAUSAL_STANDARD_NOT_YET_MET',c)
+          PY
+      - name: Independently audit sources, exact evidence thresholds, and nine counterfeits
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4l/independent_audit.py
+      - name: Ensure external source contents have not been added to Git or published
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s p4l/results/independent_audit.json
+          ! git status --porcelain -- p4l/ | grep -E '^[ M?]{1}M '
+          test "$(find p4l/results/private_originals_do_not_upload -maxdepth 1 -type f | wc -l)" -eq 6
+      - name: Publish metadata + qualification only, never third-party raw source bodies
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: risu-p4l-external-two-surface-causal-threshold-audit
+          path: |
+            p4l/FROZEN_PROTOCOL.json
+            p4l/qualify_external.py
+            p4l/independent_audit.py
+            p4l/results/provenance_manifest.json
+            p4l/results/qualification.json
+            p4l/results/independent_audit.json
+          if-no-files-found: warn
