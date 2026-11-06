@@ -1,0 +1,20 @@
+{
+  "schema": "risu-declared-residual-disposition-v1",
+  "cases": [
+    {
+      "case_id": "JPO_normal",
+      "rules": [
+        {"id":"disappearance_date", "kind":"strict_equal", "source_path":"/result/data/disappearanceDate", "target_path":"/items/0/disappearance_date"},
+        {"id":"erasure_identifier", "kind":"strict_equal", "source_path":"/result/data/erasureIdentifier", "target_path":"/items/0/erasure_identifier"},
+        {"id":"expire_date", "kind":"strict_equal", "source_path":"/result/data/expireDate", "target_path":"/items/0/expire_date"},
+        {"id":"principal_design_application_number", "kind":"strict_equal", "source_path":"/result/data/principalDesignApplicationNumber", "target_path":"/items/0/principal_design_application_number"},
+        {"id":"priority_right_information", "kind":"strict_equal", "source_path":"/result/data/priorityRightInformation", "target_path":"/items/0/priority_right_information"},
+        {"id":"publication_date", "kind":"strict_equal", "source_path":"/result/data/publicationDate", "target_path":"/items/0/publication_date"},
+        {"id":"registration_date", "kind":"strict_equal", "source_path":"/result/data/registrationDate", "target_path":"/items/0/registration_date"},
+        {"id":"parent_application_empty_expanded", "kind":"empty_object_expanded", "source_path":"/result/data/parentApplicationInformation", "target_path":"/items/0/parent_application_information", "expected_target_fields":["filing_date","parent_application_category","parent_application_law_code","parent_application_number"]},
+        {"id":"source_error_message_envelope", "kind":"observed_not_exposed", "source_path":"/result/errorMessage", "field_aliases":["errorMessage","error_message"], "require_nonempty_source_absent":false},
+        {"id":"source_remaining_quota_envelope", "kind":"observed_not_exposed", "source_path":"/result/remainAccessCount", "field_aliases":["remainAccessCount","remain_access_count"], "require_nonempty_source_absent":true}
+      ]
+    }
+  ]
+}
