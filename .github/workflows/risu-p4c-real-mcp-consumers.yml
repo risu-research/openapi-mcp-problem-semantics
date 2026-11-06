@@ -1,0 +1,101 @@
+name: RISU P4-C Pinned Real MCP Consumer Paths Qualification
+on:
+  push:
+    branches:
+      - qualification/p4c-external-real-mcp-consumers-20261105
+    paths:
+      - p4c/**
+      - .github/workflows/risu-p4c-real-mcp-consumers.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+
+jobs:
+  authentic-external-consumers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Validate frozen external consumer inventory before execution
+        run: |
+          set -euo pipefail
+          python -m compileall -q p4c
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          p=json.loads(Path('p4c/FROZEN_EXTERNAL_CONSUMER_PROTOCOL.json').read_text())
+          assert len(p['products_under_test'])==3
+          assert len(p['scenarios'])==4
+          assert len({x['repo'] for x in p['products_under_test']})==3
+          assert all(len(x['commit'])==40 and len(x['git_blob'])==40 for x in p['products_under_test'])
+          print('RISU_P4C_THREE_PINNED_CONSUMERS_AND_FOUR_SCENARIOS_FROZEN')
+          PY
+      - name: Install exact pinned public source in isolated build-only image
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker build --pull -f p4c/Dockerfile -t risu-p4c-original-consumers .
+      - name: Execute original LangChain adapter with synthetic MCP results, no network
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p results
+          chmod 0777 results
+          date +%s > results/start_unix.txt
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user 65534:65534 \
+            --pids-limit 128 --memory 3g --cpus 2 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=256m,mode=1777 \
+            --mount type=bind,src="$PWD/results",dst=/results \
+            risu-p4c-original-consumers /opt/langchain-venv/bin/python \
+            -B /opt/risu/p4c/run_external_consumers.py \
+            --framework langchain --out /results/langchain.json
+      - name: Execute original OpenAI Agents SDK adapter with synthetic MCP results, no network
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user 65534:65534 \
+            --pids-limit 128 --memory 3g --cpus 2 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=256m,mode=1777 \
+            --mount type=bind,src="$PWD/results",dst=/results \
+            risu-p4c-original-consumers /opt/agents-venv/bin/python \
+            -B /opt/risu/p4c/run_external_consumers.py \
+            --framework openai --out /results/openai.json
+      - name: Execute original PydanticAI MCP result mapper, no network
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user 65534:65534 \
+            --pids-limit 128 --memory 3g --cpus 2 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=256m,mode=1777 \
+            --mount type=bind,src="$PWD/results",dst=/results \
+            risu-p4c-original-consumers /opt/pydantic-venv/bin/python \
+            -B /opt/risu/p4c/run_external_consumers.py \
+            --framework pydanticai --out /results/pydanticai.json
+      - name: Audit exact external consumer results, prior issues, and evidence boundaries
+        run: |
+          set -euo pipefail
+          date +%s > results/end_unix.txt
+          python p4c/audit_results.py results
+      - name: Preserve public source pins, original responses and independent audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: risu-p4c-actual-external-consumer-code-audit
+          path: |
+            p4c/FROZEN_EXTERNAL_CONSUMER_PROTOCOL.json
+            p4c/run_external_consumers.py
+            p4c/audit_results.py
+            p4c/Dockerfile
+            results/langchain.json
+            results/openai.json
+            results/pydanticai.json
+            results/INDEPENDENT_AUDIT.json
+            results/start_unix.txt
+            results/end_unix.txt
+          if-no-files-found: warn
