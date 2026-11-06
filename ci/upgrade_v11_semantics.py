@@ -9,6 +9,7 @@ PINNED={
  'risu_probe.py':'9cdc63bb1f1b832260bf6459dabb1c7f47995cf95aa96a5eac88bf327818e5b4',
  'risu_analyze.py':'2d213dbb7faccc5a5c4895394572b1c46847d589f8c37471f3632dc5464be32d',
  'risu_verify.py':'4bdbae7da26ea308333f45d668176a65cfacb890f9bc30e0ca4a9ca583f612b0',
+ 'risu_onboarding.py':'3feae8032b32603b1f8e369b7fd7a4a4e2de42f84cae984d09933ed870888454',
  'pyproject.toml':'47fd825b19f04826d1d98a4fe07cc67e98a600ebed44ae1e98e9a4642c3a6094'}
 for name,expected in PINNED.items():
     raw=(SOURCE/name).read_bytes()
@@ -57,6 +58,9 @@ replace('risu_analyze.py',
 replace('risu_verify.py',
  "'loss_count':len(row.get('losses',[]))})",
  "'loss_count':len(row.get('losses',[])),\n                                'evidence_v1':row.get('evidence_v1')})")
+replace('risu_onboarding.py',
+ "summary={'version':'0.9.1-experimental'",
+ "summary={'version':'0.9.3-experimental'")
 replace('pyproject.toml','0.9.1.dev0','0.9.3.dev0')
 replace('pyproject.toml','"risu_process", "risu_onboarding"',
  '"risu_process", "risu_onboarding", "risu_evidence"')
