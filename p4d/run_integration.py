@@ -114,6 +114,7 @@ def exec_codegen(inp,out):
     # Keep only basic process environment in runtime; no secrets passed to generator.
     env={k:v for k,v in os.environ.items() if k in ('HOME','PATH','TMPDIR','LANG','LC_ALL','SYSTEMROOT')}
     env['HOME']='/tmp';env['TMPDIR']='/tmp';env['PYTHON_DOTENV_DISABLED']='1'
+    env['PATH']='/opt/cnoe/bin:'+env.get('PATH','')
     result=subprocess.run(command,cwd=inp,env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,timeout=180)
     if result.returncode: raise RuntimeError('CNOE_GENERATION_FAILED:'+result.stderr[-1400:])
     generated=list(out.glob('mcp_*/server.py'))
