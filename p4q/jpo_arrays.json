@@ -1,0 +1,65 @@
+{
+  "schema": "risu-identity-array-groups-v1",
+  "cases": [
+    {
+      "case_id": "JPO_normal",
+      "groups": [
+        {
+          "id": "applicant_attorney",
+          "parent": null,
+          "source_array": "/result/data/applicantAttorney",
+          "target_array": "/items/0/applicant_attorney",
+          "naming": "DECLARED_CAMEL_TO_SNAKE_V1",
+          "identity": [
+            "applicantAttorneyCd"
+          ],
+          "fields": [
+            "applicantAttorneyCd",
+            "repeatNumber",
+            "name",
+            "applicantAttorneyClass"
+          ]
+        },
+        {
+          "id": "bibliography_information",
+          "parent": null,
+          "source_array": "/result/data/bibliographyInformation",
+          "target_array": "/items/0/bibliography_information",
+          "naming": "DECLARED_CAMEL_TO_SNAKE_V1",
+          "identity": [
+            "number",
+            "numberType"
+          ],
+          "fields": [
+            "numberType",
+            "number"
+          ]
+        },
+        {
+          "id": "document_list",
+          "parent": "bibliography_information",
+          "source_field": "documentList",
+          "target_field": "document_list",
+          "naming": "DECLARED_CAMEL_TO_SNAKE_V1",
+          "identity": [
+            "documentNumber",
+            "documentCode",
+            "legalDate"
+          ],
+          "fields": [
+            "legalDate",
+            "irirFlg",
+            "availabilityFlag",
+            "documentCode",
+            "documentDescription",
+            "documentNumber",
+            "versionNumber",
+            "documentSeparator",
+            "numberOfPages",
+            "sizeOfDocument"
+          ]
+        }
+      ]
+    }
+  ]
+}
