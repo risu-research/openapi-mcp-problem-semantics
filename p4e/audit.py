@@ -94,7 +94,7 @@ def audit_vendor_source(result, path):
     blob=path.read_bytes()
     pinned=result['pins']['source']
     assert hashlib.sha256(blob).hexdigest()==result['checks']['source_sha256']
-    git_blob=hashlib.sha1(b'blob '+str(len(blob)).encode()+b'\\0'+blob).hexdigest()
+    git_blob=hashlib.sha1(b'blob '+str(len(blob)).encode()+b'\0'+blob).hexdigest()
     assert git_blob==pinned['blob_git_sha1']
     vendor=json.loads(blob)
     assert vendor['info']['version']==pinned['api_version']

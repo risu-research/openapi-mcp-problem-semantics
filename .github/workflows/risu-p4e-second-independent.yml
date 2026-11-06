@@ -74,6 +74,7 @@ jobs:
             p4e/audit.py
             p4e/Dockerfile
             results/full_chain.json
+            results/vendor_openapi.json
             results/independent_audit.json
             results/input_status.txt
           if-no-files-found: warn
