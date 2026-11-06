@@ -1,0 +1,69 @@
+{
+  "schema": "risu-p4m-third-party-original-execution-artifacts-v1",
+  "frozen_at": "2026-11-06",
+  "objective": "Secure actual previously published original third-party upstream HTTP recordings for normal and application-error, plus a separately owned first-party-to-them original MCP CI artifact; never stitch these into a fabricated same-call evidence chain.",
+  "baseline_product": "RISU Probe v0.9.10 P4-J unchanged",
+  "original_replay": {
+    "repo": "parkerhancock/patent-client-agents",
+    "commit": "e7f0bcf2175823baaceb4844e84f9fc10ef00b40",
+    "recorder": "pytest VCR originals, redacted; third-party-authored tests; source reports dated real upstream JPO snapshots, not independently wire-notarized",
+    "files": [
+      {
+        "id": "jpo_tool_success_cassette",
+        "role": "HTTP upstream response recorded during MCP-tool dispatcher Python call",
+        "path": "tests/cassettes/tests_jpo_test_live_py_TestMcpDispatchLive_test_progress_design.yaml",
+        "git_blob_sha1": "e10ad7149bcf3d652cbbf16bc3c6107220e7ea5f",
+        "http_status": 200,
+        "application_status_code": "100",
+        "expected_path": "/api/design/v1/app_progress/2020015234",
+        "requires": "TEST_DISPATCH_FUNCTION_CALL_NO_MCP_WIRE"
+      },
+      {
+        "id": "jpo_client_logical_error_cassette",
+        "role": "HTTP upstream error in application payload recorded during direct SDK call, NOT a recorded MCP dispatch",
+        "path": "tests/cassettes/tests_jpo_test_live_py_TestPatentProgressLive_test_get_patent_progress_not_found.yaml",
+        "git_blob_sha1": "cc9682be6dda9547e2bb6a9d4b9f61c2a01d601d",
+        "http_status": 200,
+        "application_status_code": "107",
+        "expected_path": "/api/patent/v1/app_progress/9999999999",
+        "requires": "DIRECT_CLIENT_NOT_MCP_ERROR_NO_ISERROR"
+      }
+    ],
+    "source_code": [
+      {
+        "path": "tests/jpo/test_live.py",
+        "git_blob_sha1": "dfa9f2b6db6347f37ea52f83d52b635837ec362d"
+      },
+      {
+        "path": "src/patent_client_agents/mcp/tools/jpo.py",
+        "git_blob_sha1": "603ecc6fd1f1dba905bd34331b294b484a823ce6"
+      },
+      {
+        "path": "tests/conftest.py",
+        "git_blob_sha1": "674320177587088dd37809a3dfbdbf319576001b"
+      }
+    ]
+  },
+  "original_ci_artifact": {
+    "repository": "KryptosAI/mcp-observatory",
+    "workflow_run_id": 42245080723,
+    "job_id": 127985077420,
+    "artifact_id": 13517149890,
+    "artifact_name": "real-server-matrix-artifacts",
+    "published_date": "2026-11-06",
+    "reported_archive_size_bytes": 40009,
+    "downloaded_archive_sha256": "4e65a36b6fafcec504d116c6bab3b8b0b298b83c3f37be6560d1e6550cd380d2",
+    "local_archive_filename": "third_party_MCP_Observatory_2026-11-06_original_CI.zip",
+    "file_count": 16,
+    "inspection_only": "8 JSON results + 8 Markdown reports; MCP discovery checks; no proven upstream HTTP REST-to-MCP tool pair. CI original ZIP obtained unchanged from connected GitHub download."
+  },
+  "qualification_thresholds": {
+    "real_upstream_success": "JPO VCR success: recorded original external API HTTP 200, application statusCode 100, in an independently authored in-process MCP tool dispatcher test",
+    "real_upstream_logical_error": "JPO VCR application status 107 with HTTP 200, but observed in JpoClient test, not MCP invocation",
+    "independent_mcp_ci": "Original MCP Observatory publicly downloadable CI artifact with independently generated MCP server discovery reports",
+    "tier1_causal_pair_success": 0,
+    "tier1_causal_pair_error": 0,
+    "no_false_pairing": "No different external project's artifact joined to JPO VCR. No in-process MCP tool handler labeled as actual wire tools/call. HTTP 200 with application status 107 is not an HTTP non-2xx or MCP isError."
+  },
+  "security": "Original VCR contains HTTP headers and public patent response values; never upload raw cassettes to RISU CI artifacts; publish source hashes and aggregate extracted fields only. Original third-party CI artifact is linked and optionally shared separately for original provenance. No external code is executed."
+}
