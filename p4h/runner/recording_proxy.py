@@ -4,7 +4,8 @@ from pathlib import Path
 assert len(sys.argv)==4
 logfile,server_script,base=sys.argv[1:]
 assert base.startswith('http://127.0.0.1:')
-proc=subprocess.Popen([sys.executable,'-B',server_script,base],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,bufsize=0)
+stderr=Path(logfile+'.server_stderr').open('wb',buffering=0)
+proc=subprocess.Popen([sys.executable,'-B',server_script,base],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=stderr,bufsize=0)
 lock=threading.Lock()
 log=Path(logfile).open('ab',buffering=0)
 def record(line):
@@ -31,4 +32,4 @@ finally:
     except Exception:pass
     try:proc.wait(timeout=3)
     except Exception:proc.kill()
-    log.close()
+    log.close()\n    stderr.close()\n    # The parent SDK closes stdin on session shutdown. This proxy has a daemon\n    # forwarding thread blocked on stdin, so avoid Python buffered-stdin\n    # finalizer deadlock after the child exits. No Python cleanup remains.\n    os._exit(proc.returncode if proc.returncode is not None else 0)
