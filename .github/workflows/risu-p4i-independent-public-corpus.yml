@@ -1,0 +1,130 @@
+name: RISU P4-I Independent Public Capture Rejection and False-Positive Gate
+on:
+  push:
+    branches:
+      - qualification/p4i-independent-public-capture-audit-20261106
+    paths:
+      - p4i/**
+      - .github/workflows/risu-p4i-independent-public-corpus.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  third-party-corpus:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Preflight source manifests and test scripts
+        run: |
+          set -euo pipefail
+          python -m compileall -q p4i
+          python - <<'PY'
+          import json
+          p=json.load(open('p4i/FROZEN_COHORT.json'))
+          assert len(p['sources'])==10
+          assert sum(x['type']=='har' for x in p['sources'])==5
+          assert sum(x['type']=='mcp' for x in p['sources'])==5
+          assert len({x['repo'] for x in p['sources']})==7
+          print('P4I_FROZEN_COHORT_10_FROM_7_REPOS')
+          PY
+      - name: Restore original P4-H v0.9.9 source through exact hash-verified upgrade chain
+        shell: bash
+        run: |
+          set -euo pipefail
+          python ci/export_v09_source_portable.py
+          python ci/upgrade_v10_modules.py
+          python ci/upgrade_v11_semantics.py
+          python ci/upgrade_v12_decision_witness.py
+          python ci/upgrade_v13_repro.py
+          python ci/upgrade_v14_fixverify.py
+          python ci/upgrade_v15_openapi_compat.py
+          python p4g/apply_upgrade.py
+          python p4h/apply_upgrade.py
+          python -m compileall -q dist/risu_v09_source p4h/tests
+      - name: Build and install unchanged P4-H baseline wheel
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -q --upgrade setuptools wheel
+          mkdir -p p4i/results p4i/wheel
+          python -m pip wheel --no-deps --no-build-isolation --wheel-dir p4i/wheel dist/risu_v09_source
+          python -m pip install --no-index --no-deps --force-reinstall p4i/wheel/risu_probe_preview-0.9.9.dev0-py3-none-any.whl
+          test "$(risu-probe --version)" = "risu-probe 0.9.9-experimental"
+          PYTHONPATH=dist/risu_v09_source python -m unittest discover -s p4h/tests -p test_native_capture.py -q
+      - name: Download real third-party published files and verify pinned Git blob bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4i/field_trial.py --fetch --output p4i/results
+      - name: Evaluate unmodified public files, 25 unpaired cases, and explicitly false cross-source pairing
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4i/field_trial.py --evaluate --output p4i/results
+      - name: Independent result guard, clean source, and precise unmeasurable FPR
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,hashlib
+          from pathlib import Path
+          p=Path('p4i/results')
+          r=json.loads((p/'field_trial.json').read_text())
+          prereg=json.loads(Path('p4i/FROZEN_COHORT.json').read_text())
+          assert r['schema']=='risu-p4i-independent-public-corpus-v1'
+          assert len(r['sources'])==len(prereg['sources'])==10
+          for a,b in zip(r['sources'],prereg['sources']):
+              assert a['id']==b['id'] and a['git_blob']==b['sha1']
+              f=p/'raw_public_sources_DO_NOT_UPLOAD'/a['internal_name']
+              body=f.read_bytes()
+              assert hashlib.sha256(body).hexdigest()==a['sha256']
+              assert hashlib.sha1(b'blob '+str(len(body)).encode()+b'\0'+body).hexdigest()==b['sha1']
+          m=r['metrics']
+          assert m['distinct_external_publishers']==7
+          assert m['raw_file_input_refusal']==10 and m['raw_file_analysis_success']==0
+          assert m['unpaired_directories']==25 and m['unpaired_input_refusal']==25
+          assert m['unpaired_analysis_success']==0
+          assert m['authentic_independently_paired_http_to_mcp_captures']==0
+          assert m['ground_truthed_normal_true_negatives']==0
+          assert m['false_positive_rate'] is None
+          assert m['false_positive_rate_is_measurable'] is False
+          c=r['tests']['deliberate_invalid_join']
+          assert c['kind']=='KNOWN_FALSE_CAUSAL_PAIR'
+          assert c['causal_pair_ground_truth'] is False
+          assert c['pairing_manifest_authored_by_risu'] is True
+          assert c['exit'] in (0,1,2)
+          text=json.dumps(r)
+          assert 'Authorization' not in text and 'cookie' not in text.lower()
+          assert 'raw_http_body_utf8' not in text
+          (p/'audit.json').write_text(json.dumps({
+              'status':'PASS_AS_MEASUREMENT_ONLY',
+              'original_public_files_sha_checked':10,
+              'separate_publishers':7,
+              'missing_causal_pairing_correct_refusals':35,
+              'third_party_qualifying_end_to_end_pairs':0,
+              'real_world_fpr':None,
+              'counterfactual_join_accepted':c['exit'] in (0,1),
+              'counterfactual_unsubstantiated_loss':c['any_unsupported_loss_claim'],
+              'scope':'Source origin independently verifiable; no paired evidence; no estimate of FPR.'
+          },indent=2)+'\n')
+          print('P4I_INDEPENDENT_AUDIT_PASS_ORIGINAL_BYTES_10_REFUSALS_35_NO_FPR')
+          PY
+          git status --porcelain -- p4h p4g p4i/field_trial.py p4i/FROZEN_COHORT.json | tee p4i/results/repository_status.txt
+          test ! -s p4i/results/repository_status.txt
+      - name: Upload metadata and audit only, never private-looking raw external HAR or MCP bytes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: risu-p4i-independent-public-corpus-refusal-study
+          path: |
+            p4i/FROZEN_COHORT.json
+            p4i/field_trial.py
+            p4i/results/source_manifest.json
+            p4i/results/field_trial.json
+            p4i/results/audit.json
+            p4i/results/repository_status.txt
+          if-no-files-found: warn
