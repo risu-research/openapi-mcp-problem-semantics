@@ -50,6 +50,28 @@ def audit(directory):
         for label in ('E1','E2')
     )
     assert count==2
+    # Secondary, *post-hoc* mitigation test. Keep discovery results unaltered
+    # and do not reclassify model-visible text as typed artifact preservation.
+    mitigation={}
+    for name in paths:
+        file=directory/('mitigation_'+name+'.json')
+        m=json.loads(file.read_text(encoding='utf-8'))
+        assert m['schema']=='risu-p4c-posthoc-mitigation-v1'
+        assert m['status']=='PASS' and m['framework']==name
+        assert m['not_part_of_preregistered_discovery'] is True
+        rows={x['case']:x for x in m['result']}
+        assert set(rows)=={
+            'minimal_no_text','minimal_safe_text','success_control','existing_text_control'}
+        if name in ('langchain','openai'):
+            assert not rows['minimal_no_text']['model_visible_safe_hint']
+            assert rows['minimal_safe_text']['model_visible_safe_hint']
+            assert not rows['existing_text_control']['model_visible_safe_hint']
+        if name=='langchain':
+            assert rows['minimal_safe_text']['machine_artifact_exists'] is False
+            assert rows['success_control']['machine_artifact_exists'] is True
+        if name=='pydanticai':
+            assert all(x['mapped_equals_structured'] for x in rows.values())
+        mitigation[name]=hashlib.sha256(file.read_bytes()).hexdigest()
     report={
         'schema':'risu-p4c-audited-external-consumers-v1',
         'status':'PASS',
@@ -67,6 +89,9 @@ def audit(directory):
         'vendor_code_modified':False,
         'method':'Real pinned source code and dependency isolation; injected synthetic result via local fake transport; no actual vendor service or MCP server',
         'claim_boundary':'A real consumer-code compatibility behavior is reproduced, but the LangChain branch was already publicly reported, OpenAI policy is documented, and PydanticAI is a negative control. Novel upstream defect not yet established.',
+        'secondary_posthoc_mitigation_passed_on_3_original_consumers':True,
+        'secondary_not_a_fix_for_langchain_error_artifact':True,
+        'mitigation_evidence_sha256':mitigation,
         'evidence_sha256':{
             key:hashlib.sha256((directory/path).read_bytes()).hexdigest()
             for key,path in paths.items()},
