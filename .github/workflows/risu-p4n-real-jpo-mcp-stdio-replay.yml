@@ -80,7 +80,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python p4n/independent_audit.py --out p4n/results
+          python p4n/independent_audit.py --out p4n/results --external p4n/external_upstream
       - name: Upload raw actual STDIO JSON-RPC wire from our REPLAY, not third-party original wire
         if: always()
         uses: actions/upload-artifact@v4
