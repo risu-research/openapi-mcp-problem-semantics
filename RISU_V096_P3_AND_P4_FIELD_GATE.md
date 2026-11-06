@@ -30,9 +30,7 @@ unaltered pinned SDK logic (or original success body), and every control
 checks original structuredContent passthrough separately. The two initial
 failures remain independently replayable with 1-minimal input.
 
-The app code and direct artifact are on this branch; do not use unverified
-local results to claim success. CI record and evidence ZIP must pass before
-promotion. Runtime is intentionally offline, read-only, nonroot, and uses
+**Final qualified CI**: [run #42148255784](https://github.com/risu-research/openapi-mcp-problem-semantics/actions/runs/42148255784), 8/8 jobs PASS. Six Windows/Ubuntu × Python 3.11/3.12/3.13 matrix jobs each passed 113 unittest methods (678 method executions in total). The real two-SDK job passed 10 localhost GETs, six positive/negative controls, six typed nonregressions, two critical-field mutants and two original repaired failures. The separate one-command developer replay ran in CI and produced a second PASS independent audit. CNOE, FastMCP and MCPGen inherited three-project runtime test also passed 12 cases, 36 expected localhost GETs, and its independent audit. See the GitHub Action artifacts, or the verified master handoff ZIP. Runtime is intentionally offline, read-only, nonroot, and uses
 only GET over 127.0.0.1.
 
 ## Reproduce P3 without knowing the source API
