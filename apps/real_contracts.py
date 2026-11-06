@@ -39,13 +39,15 @@ def classify_real_sdk(contract:str, body:dict, status:int) ->str:
         return type(Requester.createException(status,{},body)).__name__
     if contract=='stripe-rate-limit-400':
         from stripe._api_requestor import APIRequestor
-        from stripe import error
-        # This directly invokes the official unmodified Stripe v1 parser.
-        if not isinstance(body.get('error'),dict):
-            return 'APIError_MISSING_ERROR_OBJECT'
-        value=APIRequestor.specific_v1_api_error(
-             None,json.dumps(body,sort_keys=True),status,body,{},body['error'])
-        return type(value).__name__
+        # Invoke the real official dispatcher for BOTH the native payload
+        # and the missing structured-content case; no invented fallback labels.
+        parser=object.__new__(APIRequestor)
+        try:
+            parser.handle_error_response(json.dumps(body,sort_keys=True),
+                                         status,body,{},'V1')
+        except Exception as exc:
+            return type(exc).__name__
+        raise AssertionError('Stripe error handler returned without an exception')
     raise ValueError('UNKNOWN_PINNED_SDK_CONTRACT')
 
 def contract_source(c):
