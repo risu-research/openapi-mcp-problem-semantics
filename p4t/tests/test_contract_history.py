@@ -107,6 +107,52 @@ class TestContractHistory(unittest.TestCase):
         self.assertTrue(p.exists())
     def test_49_input_canonical_utf8(self):self.assertIn('한글',canonical({'k':'한글'}).decode('utf-8'))
     def test_50_serialized_result(self):json.dumps(diff_snapshots(self.a,self.b))
+    def test_51_nested_p4s_cases_parsed(self):
+        source={'schema':'risu-explicit-field-obligation-policy-v1','cases':[{'case_id':'c','tool':'get_jpo_progress','obligations':[{'id':'x','basis':'OPERATOR_POLICY'}]}]}
+        self.assertIn('c::x',_policy_rules(source))
+    def test_52_nested_case_duplicate_id_rejected(self):
+        source={'cases':[{'case_id':'c','tool':'t','obligations':[{'id':'x'},{'id':'x'}]}]}
+        with self.assertRaises(ValueError):_policy_rules(source)
+    def test_53_missing_case_tool_rejected(self):
+        source={'cases':[{'case_id':'c','obligations':[{'id':'x'}]}]}
+        with self.assertRaises(ValueError):_policy_rules(source)
+    def test_54_unrecognized_policy_layout_rejected(self):
+        with self.assertRaises(ValueError):_policy_rules({'claims':[{'id':'x'}]})
+    def test_55_duplicate_case_rejected(self):
+        source={'cases':[{'case_id':'c','tool':'t','obligations':[]},{'case_id':'c','tool':'t','obligations':[]}]}
+        with self.assertRaises(ValueError):_policy_rules(source)
+    def test_56_same_rule_id_different_case_allowed(self):
+        source={'cases':[{'case_id':'a','tool':'t','obligations':[{'id':'x'}]}, {'case_id':'b','tool':'t','obligations':[{'id':'x'}]}]}
+        self.assertEqual(len(_policy_rules(source)),2)
+    def test_57_nest_specific_attribute_diff(self):
+        a=copy.deepcopy(self.a);b=copy.deepcopy(self.b)
+        a['operator_policy']={'cases':[{'case_id':'c','tool':'t','obligations':[{'id':'x','when':'SOURCE_NONEMPTY'}]}]}
+        b['operator_policy']={'cases':[{'case_id':'c','tool':'t','obligations':[{'id':'x','when':'ALWAYS'}]}]}
+        d=diff_snapshots(a,b)
+        self.assertEqual(d['summary']['operator_policy_events'],1)
+        self.assertEqual(d['operator_policy_events'][0]['attribute'],'when')
+    def test_58_synthetic_derived_from_real_shape(self):
+        from upgrade_scenario import build
+        observed=copy.deepcopy(self.a)
+        observed['schema']['properties']['not_found']['type']='array'
+        observed['operator_policy']={'schema':'risu-explicit-field-obligation-policy-v1','cases':[{'case_id':'JPO_normal','tool':'get_jpo_progress','obligations':[
+            {'id':'operator_quota_visible','basis':'OPERATOR_POLICY','when':'ALWAYS','importance':'HIGH'},
+            {'id':'operator_error_details_if_nonempty','basis':'OPERATOR_POLICY','when':'SOURCE_NONEMPTY','importance':'HIGH','importance_reason':'test'},
+        ]}]}
+        schema,policy=build(observed)
+        b=copy.deepcopy(observed);b['schema']=schema;b['operator_policy']=policy
+        self.assertEqual(diff_snapshots(observed,b)['summary'],{'direct_schema_events':4,'inherited_effects':4,'operator_policy_events':6,'potential_breaking':3})
+    def test_59_breaking_not_confirmed_runtime(self):
+        d=diff_snapshots(self.a,self.b)
+        self.assertNotIn('CONFIRMED_LOSS',json.dumps(d))
+    def test_60_p4s_policy_unchanged_after_scenario(self):
+        from upgrade_scenario import build
+        old=copy.deepcopy(self.a)
+        old['schema']['properties']['not_found']['type']='array'
+        old['operator_policy']={'schema':'risu-explicit-field-obligation-policy-v1','cases':[{'case_id':'JPO_normal','tool':'get_jpo_progress','obligations':[
+            {'id':'operator_quota_visible','basis':'OPERATOR_POLICY','when':'ALWAYS','importance':'HIGH'},
+            {'id':'operator_error_details_if_nonempty','basis':'OPERATOR_POLICY','when':'SOURCE_NONEMPTY','importance':'HIGH','importance_reason':'test'}]}]}
+        before=digest(old);build(old);self.assertEqual(digest(old),before)
     def eventset(self):return {(e['kind'],e['path']) for e in diff_snapshots(self.a,self.b)['publisher_schema_events']}
     def policykinds(self):return {e['kind'] for e in diff_snapshots(self.a,self.b)['operator_policy_events']}
 
