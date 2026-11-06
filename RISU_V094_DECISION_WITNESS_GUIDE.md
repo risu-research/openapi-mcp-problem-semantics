@@ -33,7 +33,7 @@ The witness reads an actual saved HTTP source and MCP tool response, never runs 
 
 Consumers compare explicitly declared RFC 6901 JSON Pointer fields to the upstream values with exact types and full nested values, optionally check \`isError\`, and optionally require the HTTP status as a separate consumer contract.
 
-Expected outcomes on the baseline controlled 12-case experiment (pending latest CI requalification after removing oracle-aided candidate selection):
+**Verified on final non-oracle consumer code**: GitHub Actions [run #42141715063](https://github.com/risu-research/openapi-mcp-problem-semantics/actions/runs/42141715063), **7/7 jobs PASS**, independent external-project audit PASS. Clean Docker dependency image build plus actual three-project execution: **155 seconds** on that hosted runner. 12 observed cases, 12 counterfactual source mutations rejected; 36 expected localhost GETs, zero unexpected requests. Calibrated policy results: **2 PASS, 3 FAIL, 7 REVIEW**. Consumer field-contract passes: **structured-only 2/12, json-text-data 6/12**; four divergent outcomes, all from MCPGen.
 
 | Project | 200 | 400 / 409 / 422 | Consumer delta |
 | --- | --- | --- | --- |
