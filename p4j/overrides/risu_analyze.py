@@ -99,6 +99,7 @@ def main(argv=None):
         from risu_causality import gate as causal_gate
         r['causal_gate_v1']=causal_gate(r,payload,args.matrix if args.matrix.is_dir() else None,args.causal_trust_store)
         r['legacy_verdicts_are_not_causal_proof']=True
+        r['primary_causal_summary']=r['causal_gate_v1']['summary']
         if args.recovery:
             if args.format=='sarif':
                 raise ValueError('--recovery is not supported with SARIF output; use --format json, text or markdown')
@@ -110,6 +111,8 @@ def main(argv=None):
             if args.format=='sarif' and args.matrix.is_dir():
                 raise ValueError('native-capture SARIF requires proof-aware severity mapping and is disabled; use JSON or Markdown')
             rendered=emit(r,args.format,case_file=args.matrix.name)
+            if args.format=='markdown':
+                rendered='## Primary evidence-gated findings\n\n'+str(r['primary_causal_summary'])+'\n\n## Legacy comparator (not causal proof)\n\n'+rendered
             if capture_metadata is not None and args.format=='markdown':
                 rendered+='\n*Input: native HAR + MCP JSON-RPC; pairing declared, not independently attested.*\n'
             if args.format=='markdown':
@@ -127,8 +130,10 @@ def main(argv=None):
                 ev=e.get('evidence_v1',{})
                 decision=e.get('decision_v1',{})
                 suffix=f" | decision={decision.get('outcome')} reason={decision.get('reason')} body={ev.get('body_recovery','NOT_ASSESSED')} flag={ev.get('error_flag','UNKNOWN')}"
-                lines.append(f"{e['target']}/{e['id']}: {e['verdict']}"+(f' [{codes}]' if codes else '')+suffix)
-            lines.append('Summary: '+str(r['summary']))
+                status=e['causal_v1']['outcome']
+                lines.append(f"{e['target']}/{e['id']}: {status} (legacy={e['verdict']})"+(f' [{codes}]' if codes else '')+suffix)
+            lines.append('Primary causal summary: '+str(r['primary_causal_summary']))
+            lines.append('Legacy comparator summary (not proof): '+str(r['summary']))
             lines.append('Diagnostics: '+str(r['diagnostic_summary']))
             lines.append('Evidence calibrated: '+str(r['evidence_summary']))
             lines.append('Decision (legacy P0; not independent causal proof): '+str(r['decision_summary']))
