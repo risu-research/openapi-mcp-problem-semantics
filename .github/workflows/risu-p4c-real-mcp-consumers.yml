@@ -77,6 +77,42 @@ jobs:
             risu-p4c-original-consumers /opt/pydantic-venv/bin/python \
             -B /opt/risu/p4c/run_external_consumers.py \
             --framework pydanticai --out /results/pydanticai.json
+      - name: Verify secondary allowlisted text mitigation on original LangChain (post-hoc)
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user 65534:65534 \
+            --pids-limit 128 --memory 3g --cpus 2 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=256m,mode=1777 \
+            --mount type=bind,src="$PWD/results",dst=/results \
+            risu-p4c-original-consumers /opt/langchain-venv/bin/python \
+            -B /opt/risu/p4c/run_secondary_mitigation.py \
+            --framework langchain --out /results/mitigation_langchain.json
+      - name: Verify secondary allowlisted text mitigation on original OpenAI Agents (post-hoc)
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user 65534:65534 \
+            --pids-limit 128 --memory 3g --cpus 2 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=256m,mode=1777 \
+            --mount type=bind,src="$PWD/results",dst=/results \
+            risu-p4c-original-consumers /opt/agents-venv/bin/python \
+            -B /opt/risu/p4c/run_secondary_mitigation.py \
+            --framework openai --out /results/mitigation_openai.json
+      - name: Verify secondary no-regression on original PydanticAI (post-hoc)
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user 65534:65534 \
+            --pids-limit 128 --memory 3g --cpus 2 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=256m,mode=1777 \
+            --mount type=bind,src="$PWD/results",dst=/results \
+            risu-p4c-original-consumers /opt/pydantic-venv/bin/python \
+            -B /opt/risu/p4c/run_secondary_mitigation.py \
+            --framework pydanticai --out /results/mitigation_pydanticai.json
       - name: Audit exact external consumer results, prior issues, and evidence boundaries
         run: |
           set -euo pipefail
@@ -91,10 +127,14 @@ jobs:
             p4c/FROZEN_EXTERNAL_CONSUMER_PROTOCOL.json
             p4c/run_external_consumers.py
             p4c/audit_results.py
+            p4c/run_secondary_mitigation.py
             p4c/Dockerfile
             results/langchain.json
             results/openai.json
             results/pydanticai.json
+            results/mitigation_langchain.json
+            results/mitigation_openai.json
+            results/mitigation_pydanticai.json
             results/INDEPENDENT_AUDIT.json
             results/start_unix.txt
             results/end_unix.txt
