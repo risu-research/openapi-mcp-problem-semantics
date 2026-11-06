@@ -148,6 +148,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          test ! -e p4j/src && ln -s ../dist/risu_v09_source p4j/src
           PYTHONPATH=dist/risu_v09_source python -m unittest discover -s p4j/tests -p test_causal_gate.py -v
           python -m unittest discover -s p4o/tests -p test_real_jpo_semantics.py -v
       - name: Verify all eight declared JPO field and lookup transitions using installed CLI
