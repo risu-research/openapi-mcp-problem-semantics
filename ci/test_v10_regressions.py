@@ -127,7 +127,7 @@ for line in sys.stdin:
         self.assertIsNotNone(proc.poll())
 
     def test_source_version(self):
-        self.assertEqual(VERSION,'0.9.1-experimental')
+        self.assertEqual(VERSION,'0.9.3-experimental')
 
 if __name__=='__main__':
     unittest.main(verbosity=2)
