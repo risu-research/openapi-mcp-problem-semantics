@@ -30,14 +30,16 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Restore cryptographically pinned baseline
+        shell: bash
         run: |
           python ci/export_v09_source_portable.py
           python ci/upgrade_v10_modules.py
           python ci/upgrade_v11_semantics.py
           python -m compileall -q dist/risu_v09_source
       - name: Run 24 semantic accuracy tests plus 150 metamorphic mutations
+        shell: bash
         run: |
-          python -m pip install --disable-pip-version-check -q setuptools wheel
+          python -m pip install --disable-pip-version-check -q --upgrade setuptools wheel
           python -m pip wheel --no-deps --no-build-isolation --wheel-dir dist/wheels dist/risu_v09_source
           python -m pip install --no-index --no-deps --force-reinstall dist/wheels/risu_probe_preview-0.9.3.dev0-py3-none-any.whl
           python ci/test_v093_evidence.py
