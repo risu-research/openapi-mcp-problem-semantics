@@ -21,6 +21,7 @@ PRODUCT=Path('/opt/risu/product')
 sys.path.insert(0,str(PRODUCT))
 from risu_probe import compare, VERSION
 from risu_evidence import assess as calibrated_assess
+from risu_witness import witness
 from risu_analyze import analyze
 from risu_collect import capture, digest
 from risu_verify import _server, prepare, verify_fixture
@@ -143,6 +144,8 @@ def evaluate_result(adapter,matrix,expected_paths,counters,unexpected,elapsed):
         meaningful+=int(loss)
         rec=next(r for r in matrix['targets'][0]['checks'] if r['check']['id']==row['id'])
         ev=row.get('evidence_v1')
+        decision=row.get('decision_v1')
+        assert decision and decision['schema']=='risu-decision-v1',(adapter,row)
         assert ev and ev['schema']=='risu-evidence-v1' and ev['scope']=='FULL_JSON_BODY',(adapter,row)
         altered=json.loads(json.dumps(source))
         body=altered['body']
@@ -152,7 +155,12 @@ def evaluate_result(adapter,matrix,expected_paths,counters,unexpected,elapsed):
         rejected=calibrated_assess(altered,rec['mcp_sample'])
         assert rejected['body_recovery'] not in ('EXACT_MACHINE','EXACT_JSON_TEXT'),(adapter,status,rejected)
         metamorphic_rejections+=1
+        proof=witness(source,rec['mcp_sample'],['/id'] if status==200 else ['/status'])
+        assert proof['schema']=='risu-consumer-witness-v1'
         if adapter=='mcpgen':
+            assert proof['models']['structured-only']['outcome']=='FAIL'
+            assert proof['models']['json-text-data']['outcome']=='PASS'
+            assert decision['outcome']=='REVIEW'
             assert ev['body_recovery']=='EXACT_JSON_TEXT',(adapter,status,ev)
             assert ev.get('envelope_path')=='/data',(adapter,status,ev)
             assert ev['http_status']=='TEXT_STATUS_RECOVERABLE',(adapter,status,ev)
@@ -161,7 +169,7 @@ def evaluate_result(adapter,matrix,expected_paths,counters,unexpected,elapsed):
         items.append({'id':row['id'],'status':status,'verdict':row['verdict'],
                       'diagnostic_codes':sorted(set(x['code'] for x in row.get('diagnostics',[]))),
                       'losses':row.get('losses',[])[:5],
-                      'evidence_v1':ev,
+                      'evidence_v1':ev,'decision_v1':decision,'witness_v1':proof,
                       'source_sha256':rec['source_sha256'],'mcp_sha256':rec['mcp_sha256']})
     assert sorted(x['status'] for x in items)==[200,400,409,422],adapter
     assert meaningful>0,'No meaningful loss detection on selected target'
@@ -176,7 +184,7 @@ def evaluate_result(adapter,matrix,expected_paths,counters,unexpected,elapsed):
 
 def main():
     os.chdir('/tmp')
-    assert VERSION=='0.9.3-experimental',VERSION
+    assert VERSION=='0.9.4-experimental',VERSION
     assert git_head('/opt/cnoe-source')==REPO_SHA['cnoe']
     assert git_head('/opt/mcpgen-source')==REPO_SHA['mcpgen']
     RESULTS.mkdir(exist_ok=True)
@@ -196,11 +204,16 @@ def main():
         cnoe_elapsed=time.monotonic()-cnoe_start+(cnoe_start-gen_start)
         assert cnoe['status']=='CORROBORATED_BEHAVIOR' and cnoe['counts']['unexpected_requests']==0
         assert cnoe['counts']['fixture_gets']==12 and cnoe['positive_control']=='PRESERVED'
+        cnoe_witness={r['check']['id']:witness(r['source_sample'],r['mcp_sample'],
+                                               ['/id'] if r['source_sample']['status']==200 else ['/status'])
+                      for r in cnoe['matrix']['targets'][0]['checks']}
         results.append({'project':'cnoe','execution':'REAL_LOCALHOST_HTTP_AND_EXTERNAL_MCP',
                         'version':VERSION,
                         'seconds_after_dependencies_ready':round(cnoe_elapsed,3),
                         'cases':[{'id':x['id'],'status':x['http_status'],'verdict':x['verdict'],
                                   'evidence_v1':x['evidence_v1'],
+                                  'decision_v1':x['decision_v1'],
+                                  'witness_v1':cnoe_witness[x['id']],
                                   'diagnostic_codes':x['diagnostic_codes']}
                                   for x in cnoe['evaluations']],
                         'observed_loss_count':cnoe['counts']['error_losses'],
@@ -258,12 +271,29 @@ def main():
                 typ=case['evidence_v1']['body_recovery']
                 calibrated_summary[typ]=calibrated_summary.get(typ,0)+1
         assert sum(calibrated_summary.values())==12
+        decision_summary={}
+        consumer_summary={reader:0 for reader in ('structured-only','json-text-data')}
+        divergent=0
+        for project in results:
+            for case in project['cases']:
+                state=case['decision_v1']['outcome']
+                decision_summary[state]=decision_summary.get(state,0)+1
+                proof=case['witness_v1']
+                divergent+=int(proof['divergent_outcomes'])
+                for reader in consumer_summary:
+                    consumer_summary[reader]+=int(proof['models'][reader]['outcome']=='PASS')
+        assert sum(decision_summary.values())==12
+        assert divergent>=4
+        assert consumer_summary['json-text-data']>=4
         assert sum(p['counterfactual_rejections'] for p in results)==12
         summary={'status':'PASS','fixture':'SYNTHETIC_GET_ONLY',
                  'network':'Docker --network none',
                  'original_product_sha256':hashlib.sha256((PRODUCT/'risu_probe.py').read_bytes()).hexdigest(),
                  'projects':results,'reference_controls':control,
                  'calibrated_summary':calibrated_summary,
+                 'decision_summary':decision_summary,
+                 'consumer_summary':consumer_summary,
+                 'consumer_divergent_cases':divergent,
                  'counterfactual_rejections':sum(p['counterfactual_rejections'] for p in results),
                  'pinned_projects':{**REPO_SHA,'fastmcp':'4.1.6','mcp':'2.3.0'},
                  'claim_boundary':'Legacy LOSS refers to machine-carrier failures, not necessarily destroyed content. New evidence_v1 distinguishes exact JSON text recovery, flags and actual preview clipping.',
