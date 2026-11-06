@@ -37,6 +37,7 @@ RUN git init -q /opt/pydantic-source \
  && test "$(git -C /opt/pydantic-source rev-parse HEAD)" = "$PYDANTIC_SHA" \
  && test "$(git -C /opt/pydantic-source hash-object pydantic_ai_slim/pydantic_ai/mcp.py)" = e00e00cd395da3b23a7ffff07dc47317aba0f4f0
 RUN python -m venv /opt/pydantic-venv \
+ && /opt/pydantic-venv/bin/python -m pip install --no-cache-dir -e /opt/pydantic-source/pydantic_graph \
  && /opt/pydantic-venv/bin/python -m pip install --no-cache-dir -e '/opt/pydantic-source/pydantic_ai_slim[mcp]' \
  && /opt/pydantic-venv/bin/python -m pip check
 
