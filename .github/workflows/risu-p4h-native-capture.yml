@@ -1,0 +1,106 @@
+name: RISU P4-H Native Developer Capture Gate
+on:
+  push:
+    branches:
+      - qualification/p4h-native-developer-capture-gate-20261106
+    paths:
+      - p4h/**
+      - .github/workflows/risu-p4h-native-capture.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  sdk-native-capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Restore pinned, unmodified original product source and verify original upgrade path
+        shell: bash
+        run: |
+          set -euo pipefail
+          python ci/export_v09_source_portable.py
+          python ci/upgrade_v10_modules.py
+          python ci/upgrade_v11_semantics.py
+          python ci/upgrade_v12_decision_witness.py
+          python ci/upgrade_v13_repro.py
+          python ci/upgrade_v14_fixverify.py
+          python ci/upgrade_v15_openapi_compat.py
+          python p4g/apply_upgrade.py
+          python -m compileall -q dist/risu_v09_source
+      - name: Apply SHA-frozen minimal native capture compatibility layer
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4h/apply_upgrade.py
+          python -m compileall -q dist/risu_v09_source p4h/runner p4h/tests
+          mkdir -p p4h/src p4h/dist p4h/results
+          cp -a dist/risu_v09_source/. p4h/src/
+      - name: Run independent native-capture compatibility and adversarial tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHONPATH=p4h/src python -m unittest discover -s p4h/tests -p test_native_capture.py -v
+      - name: Build and install genuine updated CLI wheel
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -q --upgrade setuptools wheel
+          python -m pip wheel --no-deps --no-build-isolation -w p4h/dist dist/risu_v09_source
+          python -m pip install --no-index --no-deps --force-reinstall p4h/dist/risu_probe_preview-0.9.9.dev0-py3-none-any.whl
+          risu-probe --version
+      - name: Generate genuinely on-wire native JSONRPC and HTTP HAR from external MCP SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check 'mcp==2.3.0'
+          python -m pip check
+          python -m pip freeze > p4h/results/installed_sdk_dependencies.txt
+          python -u p4h/runner/make_native_capture.py --out p4h/results/native_sdk_capture
+          test -s p4h/results/native_sdk_capture/capture.har
+          test -s p4h/results/native_sdk_capture/mcp.jsonl
+          test -s p4h/results/native_sdk_capture/pairs.json
+      - name: One-command CLI from native, never-RISU-matrix test capture, plus compatibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          risu-probe analyze p4h/results/native_sdk_capture --recovery --format json --out p4h/results/real_sdk_capture_diagnosis.json
+          risu-probe analyze p4g/evidence/saved_p4de.json --recovery --format json --out p4h/results/p4g_regression.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          n=json.loads(Path('p4h/results/real_sdk_capture_diagnosis.json').read_text())
+          assert n['version']=='0.9.9-experimental'
+          assert n['capture_bridge_v1']['input_kind']=='EXTERNAL_HAR_1_2_AND_NATIVE_MCP_JSONRPC_JSONL'
+          assert n['recovery_v1']['case_count']==2
+          print('NATIVE_SDK_TEST_RESULTS',json.dumps({
+            'base':n['summary'],
+            'decision':n['decision_summary'],
+            'recovery':n['recovery_v1']['summary'],
+            'cases':[{'id':r['id'],'verdict':r['v097_verdict'],'error_flag':r['error_flag'],
+                     'body':r['mcp']['full_body']} for r in n['recovery_v1']['cases']]},sort_keys=True))
+          g=json.loads(Path('p4h/results/p4g_regression.json').read_text())
+          assert g['summary']['LOSS']==3 and g['summary']['PRESERVED']==2
+          assert g['diagnostic_summary']['ERROR_FLAG_LOST']==1
+          assert g['recovery_v1']['summary']['consumer_unverified']==0
+          print('P4H_P4G_CROSS_VERSION_COMPATIBILITY_PASS')
+          PY
+      - name: Preserve exact raw developer-style captures and diagnosis
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: risu-p4h-real-sdk-native-har-jsonrpc
+          path: |
+            p4h/apply_upgrade.py
+            p4h/overrides/**
+            p4h/runner/**
+            p4h/tests/**
+            p4h/dist/risu_probe_preview-0.9.9.dev0-py3-none-any.whl
+            p4h/results/native_sdk_capture/**
+            p4h/results/real_sdk_capture_diagnosis.json
+            p4h/results/p4g_regression.json
+            p4h/results/installed_sdk_dependencies.txt
+          if-no-files-found: warn
