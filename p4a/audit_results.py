@@ -22,7 +22,7 @@ def audit(inputs:Path,out:Path):
     dby={x['id']:x for x in download['projects']}
     assert len(pby)==len(dby)==10
     counts={}
-    verified=recognized=total_get=total_error=0
+    verified=recognized=posthoc_recognized=total_get=total_error=0
     for target in fixed:
         id=target['id'];p=pby[id];d=dby[id]
         assert p['repository']==target['repository']==d['repository']
@@ -32,6 +32,13 @@ def audit(inputs:Path,out:Path):
         assert p['observed_runtime_mcp_calls']==p['external_consumer_calls']==0
         assert p['confirmed_consumer_contract_mismatch'] is False
         counts[p['qualification']]=counts.get(p['qualification'],0)+1
+        posthoc=p.get('posthoc_explicit_file_path')
+        if d['download_status']=='VERIFIED':
+            assert posthoc and posthoc['status']=='SECONDARY_POSTHOC_NOT_PREREGISTERED'
+            if posthoc['execution']=='COMPLETE':
+                summary=posthoc.get('summary',{})
+                assert summary['openapi_parsed'] in (0,1)
+                posthoc_recognized+=int(summary['openapi_parsed']>0)
         if d['download_status']=='VERIFIED':
             file=inputs/id/target['path']
             raw=file.read_bytes()
@@ -67,6 +74,8 @@ def audit(inputs:Path,out:Path):
     assert result['qualification_counts']==counts
     assert result['verified_source_count']==verified
     assert result['static_recognized_projects']==recognized
+    assert result['posthoc_direct_path_recognized_projects']==posthoc_recognized
+    assert result['posthoc_arm_can_change_primary_denominator'] is False
     assert result['total_declared_GET_operations_in_parsed_specs']==total_get
     assert result['total_declared_GETs_with_error_or_default']==total_error
     assert result['confirmed_real_consumer_mismatches']==0
@@ -80,6 +89,8 @@ def audit(inputs:Path,out:Path):
         'status':'PASS','preregistered_and_accounted_for':10,
         'source_blob_identity_matches':verified,
         'static_recognized':recognized,
+        'posthoc_direct_path_recognized':posthoc_recognized,
+        'posthoc_does_not_reclassify_original_results':True,
         'static_not_recognized_or_failed':10-recognized,
         'new_confirmed_consumer_defects':0,
         'unaffiliated_developer_adoption':False,
