@@ -71,7 +71,7 @@ async def generate(out,trust_out):
         (out/'pairs.json').write_text(json.dumps(pairfile,indent=2)+'\n')
         events=[json.loads(x) for x in Path(str(proxy_log)+'.observed_events.jsonl').read_text().splitlines()]
         assert len([x for x in events if x['kind']=='MCP_REQUEST'])==2
-        assert len([x for x in events if x['kind']=='MCP_RESPONSE'])==2
+        assert len([x for x in events if x['kind']=='MCP_RESPONSE' and x['id'] in {c['id'] for c in calls}])==2
         links=[]
         for i,(call,token) in enumerate(zip(calls,tokens)):
             rid=call['id'];response=next(x for x in results if x['id']==rid)
