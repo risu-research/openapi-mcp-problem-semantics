@@ -3,7 +3,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 ARG MCPGEN_SHA=30ee7cb9c2e923ce901e788b0d911f6547772866
 ARG PYGITHUB_SHA=5aeb43916b197a0fe8016600817b868fc894af5a
 ARG STRIPE_SHA=d97a68e28ec6553c3545fdf7e5322e871559cfdb
-RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends git ca-certificates patch && rm -rf /var/lib/apt/lists/*
 WORKDIR /opt/risu
 COPY dist/risu_v09_source/ /opt/risu/product/
 COPY apps/ /opt/risu/apps/
@@ -36,6 +36,7 @@ RUN git init -q /opt/stripe-source \
  && /opt/sdk/bin/python -m pip install --no-cache-dir -e /opt/stripe-source \
  && /opt/sdk/bin/python -m pip check
 RUN chmod -R a+rX /opt/risu /opt/mcpgen /opt/sdk /opt/pygithub-source /opt/stripe-source
+ENV PYTHONPATH="/opt/risu/product:/opt/risu/apps"
 ENV HOME=/tmp TMPDIR=/tmp XDG_CACHE_HOME=/tmp/cache PATH="/opt/sdk/bin:/usr/local/bin:/usr/bin:/bin"
 USER 65534:65534
 ENTRYPOINT ["/opt/sdk/bin/python","-B","/opt/risu/apps/run_live.py"]
