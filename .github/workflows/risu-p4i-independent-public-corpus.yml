@@ -115,6 +115,11 @@ jobs:
           PY
           git status --porcelain -- p4h p4g p4i/field_trial.py p4i/FROZEN_COHORT.json | tee p4i/results/repository_status.txt
           test ! -s p4i/results/repository_status.txt
+      - name: Independent offline audit plus nine fraudulent-result mutations
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4i/audit_offline.py p4i/FROZEN_COHORT.json p4i/results/field_trial.json p4i/results/offline_reaudit.json
       - name: Upload metadata and audit only, never private-looking raw external HAR or MCP bytes
         if: always()
         uses: actions/upload-artifact@v4
@@ -123,8 +128,10 @@ jobs:
           path: |
             p4i/FROZEN_COHORT.json
             p4i/field_trial.py
+            p4i/audit_offline.py
             p4i/results/source_manifest.json
             p4i/results/field_trial.json
             p4i/results/audit.json
+            p4i/results/offline_reaudit.json
             p4i/results/repository_status.txt
           if-no-files-found: warn
