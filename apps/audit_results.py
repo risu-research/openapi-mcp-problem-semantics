@@ -10,8 +10,11 @@ import hashlib,json,sys
 source=Path(sys.argv[1] if len(sys.argv)>1 else 'results')
 report=json.loads((source/'REAL_APPS_SUMMARY.json').read_text())
 assert report['status']=='PASS'
-assert report['product_version']=='0.9.5-experimental'
-assert report['synthetic_http_get_count']==4
+assert report['product_version']=='0.9.6-experimental'
+assert report['synthetic_http_get_count']==10
+assert report['real_control_mcp_replays']==6
+assert report['typed_passthrough_cases']==6
+assert report['critical_field_mutants_killed']==2
 assert report['unexpected_requests']==0
 assert report['real_minimal_mcp_replays']==2
 assert report['patch_applied_and_retested'] is True
@@ -26,6 +29,7 @@ sys.path.insert(0,'dist/risu_v09_source')
 from risu_repair import promote_text_json,read_structured
 from risu_witness import witness
 from risu_minimize import canonical,minimize
+from risu_fixverify import prepare_consumer_result,verify_preserved,digest_without_values
 
 fixtures=source/'repro_package'/'fixtures'
 for case in rows:
@@ -52,7 +56,7 @@ for case in rows:
         assert case['repository']=='stripe/stripe-python'
     assert len(canonical(data).encode())==case['minimal_bytes']
     mcp=o['mcp_result']
-    repaired=promote_text_json(mcp)
+    repaired=prepare_consumer_result(mcp)
     assert read_structured(mcp) is None
     assert read_structured(repaired)==data
     assert repaired['_meta']['observed_http_status']==o['status']
@@ -69,10 +73,48 @@ for case in rows:
                    if name=='pygithub-404' else
                    '6224c5e6d357043ff7a404cebefbbdef09ec9b7f')
     assert case['source_blob_sha']==expected_blob
+# Independent positive and negative controls, all collected from actual
+# generated MCP server calls in the isolated live job.
+expected_controls={
+    'pygithub-404-generic':('pygithub-404',404,'GithubException'),
+    'pygithub-401-credentials':('pygithub-404',401,'BadCredentialsException'),
+    'stripe-400-invalid-request':('stripe-rate-limit-400',400,'InvalidRequestError'),
+    'stripe-401-auth':('stripe-rate-limit-400',401,'AuthenticationError'),
+    'pygithub-200-success':('pygithub-404',200,'HTTP_200_OBJECT'),
+    'stripe-200-success':('stripe-rate-limit-400',200,'HTTP_200_OBJECT'),
+}
+controls=report['control_results']
+assert len(controls)==6 and {x['case'] for x in controls}==set(expected_controls)
+ctrl_root=source/'repro_package'/'control_fixtures'
+assert ctrl_root.is_dir() and len(list(ctrl_root.glob('*.json')))==6
+for control in controls:
+    key=control['case']
+    contract,status,expected=expected_controls[key]
+    fixture=json.loads((ctrl_root/(key+'.json')).read_text())
+    assert fixture['case']==key and fixture['contract']==contract
+    assert fixture['status']==status
+    assert fixture['expected_native']==expected
+    original=fixture['source_body']
+    mcp=fixture['mcp_result']
+    assert control['native']==expected and control['after']==expected
+    assert control['typed_passthrough_preserved'] is True
+    assert control['body_sha256']==digest_without_values(original)
+    assert control['actual_mcp_sha256']==digest_without_values(mcp)
+    assert read_structured(mcp) is None
+    converted=prepare_consumer_result(mcp)
+    assert read_structured(converted)==original
+    assert converted['_meta']['observed_http_status']==status
+    pretyped={'structuredContent':original,'isError':status>=400,
+              '_meta':{'observed_http_status':status},
+              'content':[{'type':'text','text':'do not parse'}]}
+    assert verify_preserved(prepare_consumer_result(pretyped),pretyped)
+    if key=='pygithub-404-generic':
+        assert control['before']==expected, 'pre-existing correct classification changed'
+    if status==200:assert mcp.get('isError') is not True
 patch=(source/'repro_package'/'consumer_bridge.patch').read_text()
 assert patch.count('--- consumer_bridge.py')==1
 assert patch.count('+++ consumer_bridge.py')==1
-assert 'promote_text_json' in patch
+assert 'prepare_consumer_result' in patch
 assert 'stripe/_api_requestor.py' not in patch
 assert 'github/Requester.py' not in patch
 start=int((source/'begin_unix.txt').read_text())
@@ -82,7 +124,10 @@ audit={'status':'PASS',
        'independent_audit':'QUALIFIED',
        'two_unmodified_external_sdk_dispatchers_run_in_live_job':True,
        'two_minimal_real_mcp_replays':True,
-       'bounded_synthetic_local_http_gets':4,
+       'bounded_synthetic_local_http_gets':10,
+       'independent_real_control_replays':6,
+       'typed_passthrough_nonregressions':6,
+       'discriminator_mutants_killed':2,
        'adapter_patch_safety':'FIXES_CONSUMER_BRIDGE_ONLY',
        'complete_image_build_and_validation_seconds':end-start,
        'summary_sha256':hashlib.sha256((source/'REAL_APPS_SUMMARY.json').read_bytes()).hexdigest(),
