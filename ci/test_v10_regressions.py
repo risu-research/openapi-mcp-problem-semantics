@@ -34,6 +34,7 @@ class PortableRegression(unittest.TestCase):
         self.assertEqual(p.returncode,0,p.stderr)
         obj=json.loads(p.stdout)
         self.assertEqual(obj['execution'],'NONE')
+        self.assertEqual(obj['version'],'0.9.3-experimental')
         self.assertEqual(obj['network_requests'],0)
         self.assertEqual(obj['files_examined'],1)
 
