@@ -1,0 +1,124 @@
+{
+  "schema": "risu-p4a-preregistration-v1",
+  "timestamp_context": "2026-11-05 America/New_York",
+  "selection_method": "Ten distinct public official project OpenAPI source files preselected before content analysis, pinned to exact commit and Git blob",
+  "fixed_targets": [
+    {
+      "id": "T01",
+      "repository": "swagger-api/swagger-petstore",
+      "path": "src/main/resources/openapi.yaml",
+      "commit": "5cb909fc7780bc708151bce0014939acba8b212a",
+      "blob_sha1": "eeba14e1505e02c292359b7f28cc5c2615c92bbb",
+      "expected_bytes": 23165
+    },
+    {
+      "id": "T02",
+      "repository": "meilisearch/specifications",
+      "path": "open-api.yaml",
+      "commit": "103221abb2458326ea89f32d5b904ba018c4f30e",
+      "blob_sha1": "97ab4ed896622b2813eaae1b8b9f7e2b0cedff66",
+      "expected_bytes": 167614
+    },
+    {
+      "id": "T03",
+      "repository": "digitalocean/openapi",
+      "path": "specification/DigitalOcean-public.v2.yaml",
+      "commit": "bd5b1ccb2f89a9451a90ccfe2aa6af911268a5ab",
+      "blob_sha1": "c8b54fca4762eb7c29f865d71e3d4de8e86ec709",
+      "expected_bytes": 146210
+    },
+    {
+      "id": "T04",
+      "repository": "stripe/openapi",
+      "path": "latest/openapi.spec3.json",
+      "commit": "e63fafc8ff863f2ec13d140a9ac95ce90cdd437e",
+      "blob_sha1": "9270d090ab4961efd0eb1a751410d210af929e99",
+      "expected_bytes": 5070331
+    },
+    {
+      "id": "T05",
+      "repository": "github/rest-api-description",
+      "path": "descriptions-next/api.github.com/api.github.com.2026-03-10.json",
+      "commit": "f63817a474b4c2963d6ffe2e6efaba90554cac66",
+      "blob_sha1": "6f7f833879589e8b3b085683a7c8b1ebb8f6aa9b",
+      "expected_bytes": 14160562
+    },
+    {
+      "id": "T06",
+      "repository": "twilio/twilio-oai",
+      "path": "spec/json/twilio_accounts_v1.json",
+      "commit": "6891362428239e2b29339718ffb7bd9fb86ff9cb",
+      "blob_sha1": "0dbcf49d85680b617c8abc9acc17d9c42cf04c3b",
+      "expected_bytes": 90784
+    },
+    {
+      "id": "T07",
+      "repository": "openai/openai-openapi",
+      "path": "openapi.json",
+      "commit": "9752a7f1fc51a0729e8fe544b315ec5018f78ada",
+      "blob_sha1": "2a7aaab16dfce66154f78f3481e6667040047813",
+      "expected_bytes": 5134456
+    },
+    {
+      "id": "T08",
+      "repository": "ory/kratos",
+      "path": ".schema/api.openapi.json",
+      "commit": "b86338da04a040247a07f46100a86dcfb3875909",
+      "blob_sha1": "4297cfe045e9be2bb7827c1eb90b94090378426e",
+      "expected_bytes": 115297
+    },
+    {
+      "id": "T09",
+      "repository": "plaid/plaid-openapi",
+      "path": "2020-09-14.yml",
+      "commit": "6ae3668333220d8c0a5e9cc94bdd562f1d29efac",
+      "blob_sha1": "8d73dcd74b4ed78cf2532a898a6e5d90fa5f2d0c",
+      "expected_bytes": 3346623
+    },
+    {
+      "id": "T10",
+      "repository": "go-gitea/gitea",
+      "path": "templates/swagger/v1-openapi3.generated.json",
+      "commit": "288d54951e6acaeebd54b33ba981cf15cbfdebdf",
+      "blob_sha1": "2d5376621da7455b99cf76f2583dd5d043ae0fea",
+      "expected_bytes": 1029818
+    }
+  ],
+  "scope": "READ_ONLY_PUBLIC_OPENAPI",
+  "prohibitions": [
+    "No requests to vendors' live API hosts or production servers",
+    "No authentication credentials or environment secrets",
+    "No fuzzing/exploit/vulnerability scans against services",
+    "No execution of third-party repository code",
+    "No auto-submitted issues or pull requests",
+    "No bypass of safety filters, permissions or access restrictions"
+  ],
+  "test_design": {
+    "phase_1": "Fetch each exact public pinned GitHub raw file once; SHA1 git-blob identity, exact size, SHA256 source fingerprint; no substitution if unavailable",
+    "phase_2": "Run unchanged qualified v0.9.6 offline risu-probe scan and first-check on each separate single-spec project directory; 512KiB per-file scanner limit retained",
+    "phase_3": "Independent read-only OpenAPI inventory: version, GET operation count, explicit non-2xx response coverage, local unreferenced example coverage; never call actual endpoints",
+    "phase_4": "Classify new evidence as observed scanner signal, unsupported, no finding, spec-only candidate; CONFIRMED_CONSUMER_MISMATCH requires actual pinned consumer code and independently replayed observation, not spec-only inference",
+    "phase_5": "Stop/pivot criterion: if zero verified consumer impact and poor support in ten, freeze rather than invent incidents or expand features",
+    "full_first_diagnosis_minutes": "NOT_MEASURED without independent developer; tool-only scan wall time measured separately",
+    "max_spec_bytes": 16000000,
+    "max_total_bytes": 35000000,
+    "no_spec_replacement": true,
+    "no_project_exclusion": true,
+    "outcomes": [
+      "FETCH_FAILED",
+      "SPEC_INVALID_OR_UNSUPPORTED",
+      "STATIC_UNVERIFIED",
+      "STATIC_PARTIAL",
+      "STATIC_NO_FINDINGS",
+      "STATIC_SUSPECTED",
+      "CONSUMER_CONFIRMED"
+    ]
+  },
+  "outcome_labels_not_equal": [
+    "OpenAPI GET candidate != actual bug",
+    "No static findings != behavior preservation",
+    "Text-only MCP output != spec violation",
+    "Source-derived synthetic example != production observation",
+    "Harness execution time != independent developer first-diagnosis time"
+  ]
+}
