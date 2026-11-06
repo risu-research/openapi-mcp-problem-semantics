@@ -26,7 +26,7 @@ assert len(SOURCES)==19
 assert len({x['id'] for x in SOURCES})==19
 
 def blobsha(data):
-    return hashlib.sha1(b'blob '+str(len(data)).encode()+b'\\0'+data).hexdigest()
+    return hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest()
 
 def fetch_source(s,cache):
     assert re.fullmatch('[0-9a-f]{40}',s['commit'])
@@ -53,7 +53,7 @@ def fetch_all(cache,out):
     for i,s in enumerate(SOURCES):
         results.append(fetch_source(s,cache))
         print('SOURCE_AUTHENTICATED',i+1,len(SOURCES),s['id'],flush=True)
-    (out/'source_manifest.json').write_text(json.dumps(results,indent=2,sort_keys=True)+'\\n')
+    (out/'source_manifest.json').write_text(json.dumps(results,indent=2,sort_keys=True)+'\n')
     return results
 
 def invoke(cli,input_path,output_path,trust=None):
@@ -155,7 +155,7 @@ def evaluate(cache,manifest,cli):
                'pairs':[{'case_id':'KNOWN_UNRELATED_CROSS_PROJECT',
                          'target':'P4K_PROVEN_NONCAUSAL_NEGATIVE',
                          'http_entry':idx,'mcp_call_id':7,'tool':'echo'}]}
-            (folder/'pairs.json').write_text(json.dumps(declaration)+'\\n')
+            (folder/'pairs.json').write_text(json.dumps(declaration)+'\n')
             result=invoke(cli,folder,temp/'diagnostic.json')
             negative.append({'har':h['id'],'mcp':chosen_mcp['id'],
                  'ground_truth':'NO_HTTP_TO_MCP_CAUSAL_LINK_DIFFERENT_PROJECTS',
@@ -236,7 +236,7 @@ def main():
         manifest=json.loads((a.out/'source_manifest.json').read_text())
         binary=shutil.which(a.cli) or a.cli
         report=evaluate(a.cache,manifest,binary)
-        (a.out/'metrics.json').write_text(json.dumps(report,sort_keys=True,indent=2)+'\\n')
+        (a.out/'metrics.json').write_text(json.dumps(report,sort_keys=True,indent=2)+'\n')
         print('P4K_EXTERNAL_COHORT_METRICS',json.dumps(report['metrics'],sort_keys=True),flush=True)
 
 if __name__=='__main__':main()
