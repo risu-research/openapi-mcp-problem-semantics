@@ -11,14 +11,20 @@ PINNED={
  'risu_verify.py':'4bdbae7da26ea308333f45d668176a65cfacb890f9bc30e0ca4a9ca583f612b0',
  'pyproject.toml':'47fd825b19f04826d1d98a4fe07cc67e98a600ebed44ae1e98e9a4642c3a6094'}
 for name,expected in PINNED.items():
-    actual=hashlib.sha256((SOURCE/name).read_bytes()).hexdigest()
+    raw=(SOURCE/name).read_bytes()
+    if name=='pyproject.toml':
+        canonical=raw.replace(b'\r\n',b'\n')
+        assert b'\r' not in canonical, 'unexpected carriage return in project metadata'
+        raw=canonical
+        (SOURCE/name).write_bytes(canonical)
+    actual=hashlib.sha256(raw).hexdigest()
     assert actual==expected,(name,'baseline unexpectedly changed',expected,actual)
 
 def replace(name,before,after):
     path=SOURCE/name
     value=path.read_text(encoding='utf-8')
     assert value.count(before)==1,(name,'upgrade anchor missing or ambiguous',before[:80])
-    path.write_text(value.replace(before,after),encoding='utf-8')
+    path.write_bytes(value.replace(before,after).encode('utf-8'))
 
 replace('risu_probe.py',
  'from risu_diagnostics import detect as detect_diagnostics',
