@@ -81,6 +81,54 @@ jobs:
         run: |
           set -euo pipefail
           p4n/external_upstream/.venv/bin/python p4n/independent_audit.py --out p4n/results --external p4n/external_upstream
+      - name: Derive HAR 1.2 and MCP JSONL with explicit replay-only provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          p4n/external_upstream/.venv/bin/python p4n/export_native.py \
+            --external p4n/external_upstream --out p4n/results
+      - name: Rebuild the unmodified P4-J RISU Probe from SHA-pinned upgrades
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -q setuptools wheel PyYAML==6.0.2 cryptography
+          python ci/export_v09_source_portable.py
+          python ci/upgrade_v10_modules.py
+          python ci/upgrade_v11_semantics.py
+          python ci/upgrade_v12_decision_witness.py
+          python ci/upgrade_v13_repro.py
+          python ci/upgrade_v14_fixverify.py
+          python ci/upgrade_v15_openapi_compat.py
+          python p4g/apply_upgrade.py
+          python p4h/apply_upgrade.py
+          python p4j/apply_upgrade.py
+          mkdir -p p4n/results/installer
+          python -m pip wheel --no-deps --no-build-isolation -w p4n/results/installer dist/risu_v09_source
+          uv pip install --python p4n/external_upstream/.venv/bin/python --no-deps --reinstall \
+            p4n/results/installer/risu_probe_preview-0.9.10.dev0-py3-none-any.whl
+      - name: Use native RISU CLI once per original HTTP plus actual MCP wire pair
+        shell: bash
+        run: |
+          set -euo pipefail
+          CLI=p4n/external_upstream/.venv/bin/risu-probe
+          "$CLI" analyze p4n/results/risu_native_inputs/normal --recovery \
+            --format json --out p4n/results/normal/risu_product_diagnosis.json
+          "$CLI" analyze p4n/results/risu_native_inputs/logical_not_found --recovery \
+            --format json --out p4n/results/logical_not_found/risu_product_diagnosis.json
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          for name in ('normal','logical_not_found'):
+              p=Path('p4n/results')/name/'risu_product_diagnosis.json'
+              d=json.loads(p.read_text())
+              assert len(d['results'])==1
+              assert d['causal_gate_v1']['summary']['CONFIRMED_LOSS']==0
+              assert d['capture_v1']['source_inference'] is False if 'capture_v1' in d else True
+              print('P4N_ONE_COMMAND_PRODUCT_DIAGNOSIS',name,
+                    {'raw_verdict':d['results'][0]['verdict'],
+                     'causal_outcome':d['results'][0]['causal_v1']['outcome'],
+                     'confirmed_loss':d['causal_gate_v1']['summary']['CONFIRMED_LOSS']})
+          PY
       - name: Upload raw actual STDIO JSON-RPC wire from our REPLAY, not third-party original wire
         if: always()
         uses: actions/upload-artifact@v4
@@ -89,6 +137,7 @@ jobs:
           path: |
             p4n/FROZEN_SOURCES.json
             p4n/drive_wire.py
+            p4n/export_native.py
             p4n/replay_original_jpo_subserver.py
             p4n/independent_audit.py
             p4n/results/summary.json
@@ -97,4 +146,9 @@ jobs:
             p4n/results/normal/case_report.json
             p4n/results/logical_not_found/observed_stdio_wire.jsonl
             p4n/results/logical_not_found/case_report.json
+            p4n/results/normal/risu_product_diagnosis.json
+            p4n/results/logical_not_found/risu_product_diagnosis.json
+            p4n/results/risu_native_inputs/normal/DERIVATION_PROVENANCE.json
+            p4n/results/risu_native_inputs/logical_not_found/DERIVATION_PROVENANCE.json
+            p4n/results/installer/risu_probe_preview-0.9.10.dev0-py3-none-any.whl
           if-no-files-found: warn
