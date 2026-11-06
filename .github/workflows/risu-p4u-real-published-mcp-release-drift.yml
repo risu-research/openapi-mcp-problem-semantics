@@ -1,0 +1,95 @@
+name: RISU P4-U - Real published external MCP server version drift
+on:
+  push:
+    branches:
+      - qualification/p4u-real-external-mcp-release-drift-20261106
+    paths:
+      - p4u/**
+      - .github/workflows/risu-p4u-real-published-mcp-release-drift.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-published-external-mcp-release-pair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify P4-T trusted comparator source is unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'f9201c7f5889e978d61e85dcf7450a1c6997b9295a6e1f5c1528e7f898355087  p4t/risu_contract_history.py' | sha256sum --check
+          python -m unittest discover -s p4u/tests -v
+      - name: Verify and install real external 2026.10.19 wheel
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p p4u/results/2026.10.19 p4u/results/distribution
+          python -m venv "$RUNNER_TEMP/p4u-old-env"
+          PY="$RUNNER_TEMP/p4u-old-env/bin/python"
+          "$PY" -m pip download --no-deps --only-binary=:all: --index-url https://pypi.org/simple 'mcp-server-time==2026.10.19' -d p4u/results/distribution
+          echo '5c099a001c6ca78260bda419f2e9b2aabee1adc4fe6ca56d8959871ad8da58a1  p4u/results/distribution/mcp_server_time-2026.10.19-py3-none-any.whl' | sha256sum --check
+          "$PY" -m pip install --disable-pip-version-check p4u/results/distribution/mcp_server_time-2026.10.19-py3-none-any.whl
+          "$PY" -m pip freeze > p4u/results/2026.10.19/installed_dependencies.txt
+          "$PY" p4u/capture_version.py --version 2026.10.19 --out p4u/results/2026.10.19
+      - name: Verify and install real external 2026.11.4 wheel
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p p4u/results/2026.11.4
+          python -m venv "$RUNNER_TEMP/p4u-new-env"
+          PY="$RUNNER_TEMP/p4u-new-env/bin/python"
+          "$PY" -m pip download --no-deps --only-binary=:all: --index-url https://pypi.org/simple 'mcp-server-time==2026.11.4' -d p4u/results/distribution
+          echo '536388fc6f19adec845f0d3a194d696aca3260a626c041cb97a9988e1a18444a  p4u/results/distribution/mcp_server_time-2026.11.4-py3-none-any.whl' | sha256sum --check
+          "$PY" -m pip install --disable-pip-version-check p4u/results/distribution/mcp_server_time-2026.11.4-py3-none-any.whl
+          "$PY" -m pip freeze > p4u/results/2026.11.4/installed_dependencies.txt
+          "$PY" p4u/capture_version.py --version 2026.11.4 --out p4u/results/2026.11.4
+      - name: P4-T compare actual MCP output schemas, input changes, tool additions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4u/evaluate_versions.py --captures p4u/results
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('p4u/results/p4u_real_release_report.json').read_text())
+          assert r['captured_tools_list_directly'] and not r['fabricated_upgrade_schema']
+          assert r['operator_policies_supplied'] is False
+          assert r['versioned_output_schema']['convert_time']['diff']['direct_schema_events']>=1
+          assert r['is_new_output_obligation'] is False
+          print('P4U_EVIDENCE_BOUNDARY_REAL_PUBLISHED_MCP_PAIR_PASS')
+          PY
+      - name: Re-run mutation tests and audit raw wire file hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s p4u/tests -v
+          python - <<'PY'
+          import json,hashlib
+          from pathlib import Path
+          for v in ('2026.10.19','2026.11.4'):
+              root=Path('p4u/results')/v
+              m=json.loads((root/'capture_manifest.json').read_text())
+              for field,file in [('wire_sha256','mcp_stdio_wire.jsonl'),('tools_list_sha256','tools_list.json'),('tool_calls_sha256','tool_calls.json')]:
+                  assert hashlib.sha256((root/file).read_bytes()).hexdigest()==m[field]
+              assert len((root/'installed_dependencies.txt').read_text().strip())>100
+          print('P4U_TWO_PUBLISHED_RELEASES_RAW_WIRE_MANIFEST_HASHES_PASS')
+          PY
+      - name: Upload genuine external MCP wire, package hashes, P4-T snapshots and report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: risu-p4u-real-external-mcp-published-release-pair
+          path: |
+            p4u/results/**
+            p4u/release_pins.json
+            p4u/capture_version.py
+            p4u/evaluate_versions.py
+            p4u/tests/test_real_release_contract.py
+            p4t/risu_contract_history.py
+          if-no-files-found: warn
+          retention-days: 30
