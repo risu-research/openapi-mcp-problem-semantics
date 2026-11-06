@@ -81,8 +81,8 @@ new="""        if args.fail_new_only:
 replace('risu_probe.py',old,new)
 # Two entrypoints share exactly the same policy.
 replace('risu_probe.py',
- "    p.add_argument('--error-profile',choices=('problem-only','json-errors'),default='problem-only')\n    args=p.parse_args(argv)",
- "    p.add_argument('--error-profile',choices=('problem-only','json-errors'),default='problem-only')\n    p.add_argument('--policy',choices=('calibrated','strict-carrier'),default='calibrated')\n    args=p.parse_args(argv)")
+ "    p.add_argument('--format',choices=('text','json'),default='text')\n    p.add_argument('--error-profile',choices=('problem-only','json-errors'),default='problem-only')\n    args=p.parse_args(argv)",
+ "    p.add_argument('--format',choices=('text','json'),default='text')\n    p.add_argument('--error-profile',choices=('problem-only','json-errors'),default='problem-only')\n    p.add_argument('--policy',choices=('calibrated','strict-carrier'),default='calibrated')\n    args=p.parse_args(argv)")
 replace('risu_probe.py',
  "        report={'tool':'RISU Probe','version':VERSION,'summary':s,'results':[entry]}",
  "        report=apply_decisions({'tool':'RISU Probe','version':VERSION,'summary':s,'results':[entry]},args.policy)")
