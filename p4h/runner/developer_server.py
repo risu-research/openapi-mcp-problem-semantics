@@ -6,13 +6,13 @@ for testing capture ingestion, not an alleged bug in any third-party project.
 import json, sys
 from urllib.request import urlopen
 from urllib.error import HTTPError
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 from mcp.types import CallToolResult,TextContent
 
 assert len(sys.argv)==2
 base=sys.argv[1]
 assert base.startswith('http://127.0.0.1:')
-app=FastMCP('Independent simulated developer native capture server')
+app=MCPServer('Independent simulated developer native capture server')
 
 @app.tool(name='fetch_record')
 def fetch_record(record_id:str)->CallToolResult:
