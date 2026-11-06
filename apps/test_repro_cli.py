@@ -5,6 +5,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import risu_probe
 
 class CLI(unittest.TestCase):
     def setUp(self):
