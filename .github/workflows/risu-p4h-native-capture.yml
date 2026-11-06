@@ -88,6 +88,11 @@ jobs:
           assert g['recovery_v1']['summary']['consumer_unverified']==0
           print('P4H_P4G_CROSS_VERSION_COMPATIBILITY_PASS')
           PY
+      - name: Independent audit without importing RISU Probe implementation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4h/independent_audit.py p4h/results p4h/results/independent_audit.json
       - name: Preserve exact raw developer-style captures and diagnosis
         if: always()
         uses: actions/upload-artifact@v4
@@ -95,12 +100,14 @@ jobs:
           name: risu-p4h-real-sdk-native-har-jsonrpc
           path: |
             p4h/apply_upgrade.py
+            p4h/independent_audit.py
             p4h/overrides/**
             p4h/runner/**
             p4h/tests/**
             p4h/dist/risu_probe_preview-0.9.9.dev0-py3-none-any.whl
             p4h/results/native_sdk_capture/**
             p4h/results/real_sdk_capture_diagnosis.json
+            p4h/results/independent_audit.json
             p4h/results/p4g_regression.json
             p4h/results/installed_sdk_dependencies.txt
           if-no-files-found: warn
