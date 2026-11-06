@@ -759,7 +759,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # The inherited P4-T compiler created Python-version-specific .pyc files.
+          # Source-only distribution: wheel must be reproducible across Python 3.11+.
+          find dist/risu_v09_source -type d -name __pycache__ -prune -exec rm -rf {} +
+          find dist/risu_v09_source -type f -name '*.pyc' -delete
           python -m pip wheel --no-deps --no-build-isolation -w p4n/results/installer dist/risu_v09_source
+          python - <<'PY'
+          import zipfile, pathlib
+          wheel=pathlib.Path('p4n/results/installer/risu_probe_preview-0.9.17.dev0-py3-none-any.whl')
+          with zipfile.ZipFile(wheel) as z:
+              invalid=[p for p in z.namelist() if '__pycache__/' in p or p.endswith('.pyc')]
+          assert invalid==[],invalid
+          print('P5A_CLEAN_SOURCE_ONLY_WHEEL_NO_COMPILED_CACHES_PASS',wheel.stat().st_size)
+          PY
           python -m venv p5a/product_venv
           uv pip install --python p5a/product_venv/bin/python --no-deps --reinstall \
             p4n/results/installer/risu_probe_preview-0.9.17.dev0-py3-none-any.whl
