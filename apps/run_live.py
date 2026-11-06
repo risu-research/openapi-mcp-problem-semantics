@@ -21,6 +21,8 @@ sys.path.insert(0,'/opt/risu/product')
 sys.path.insert(0,'/opt/risu/apps')
 from risu_probe import MCPClient,VERSION
 from risu_repair import promote_text_json,read_structured
+from risu_fixverify import prepare_consumer_result
+from fixverify_controls import test_controls
 from risu_minimize import minimize,canonical
 from risu_diagnostics import _strict_same
 from risu_witness import witness
@@ -110,7 +112,7 @@ def classify(contract,mcp,status):
 def prove(contract,c,mcp):
     native=classify_real_sdk(contract,c['body'],c['status'])
     broken=classify(contract,mcp,c['status'])
-    repaired=promote_text_json(mcp)
+    repaired=prepare_consumer_result(mcp)
     fixed=classify(contract,repaired,c['status'])
     assert native==c['expected'],(contract,'original SDK classification changed',native)
     assert broken!=native,(contract,'structured-only consumer unexpectedly succeeded')
@@ -127,9 +129,10 @@ def prove(contract,c,mcp):
 def bridge_files():
     old=("def payload(mcp):\n"
          "    return mcp.get('structuredContent') or {}\n")
-    new=("from risu_repair import promote_text_json, read_structured\n"
+    new=("from risu_fixverify import prepare_consumer_result\n"
+         "from risu_repair import read_structured\n"
          "def payload(mcp):\n"
-         "    normalized=promote_text_json(mcp)\n"
+         "    normalized=prepare_consumer_result(mcp)\n"
          "    return read_structured(normalized) or {}\n")
     patch=''.join(difflib.unified_diff(old.splitlines(True),new.splitlines(True),
                        fromfile='consumer_bridge.py',tofile='consumer_bridge.py'))
@@ -141,7 +144,7 @@ def bridge_classify(contract,txt,c,mcp):
     return classify_real_sdk(contract,ns['payload'](mcp),c['status'])
 
 def main():
-    assert VERSION=='0.9.5-experimental',VERSION
+    assert VERSION=='0.9.6-experimental',VERSION
     os.chdir('/tmp')
     for key,path in [('mcpgen','/opt/mcpgen-source'),
                      ('pygithub','/opt/pygithub-source'),
@@ -203,7 +206,11 @@ def main():
                     'original_mcp':result,'minimal_mcp':reobserved,
                     'minim':minim,'native':native,'broken':broken,
                     'fixed':fixed,'witness':witness2})
-        assert ctr=={'total':4,'unexpected':0},ctr
+            # P3 independent positive controls: 4 real alternate error
+            # decisions + 2 valid HTTP-200 responses, through same MCPGen.
+            controls=test_controls(client,lookup,ctr,CONTRACTS,OUT/'repro_package')
+        assert ctr=={'total':10,'unexpected':0},ctr
+        assert len(controls)==6 and all(x['typed_passthrough_preserved'] for x in controls)
         old,new,patch=bridge_files()
         package=OUT/'repro_package'
         fixtures=package/'fixtures'
@@ -214,8 +221,18 @@ def main():
         shutil.copy2(ROOT/'apps'/'replay_generated.py',package/'replay_generated.py')
         shutil.copy2(ROOT/'apps'/'real_contracts.py',package/'real_contracts.py')
         summaries=[]
+        mutants_killed=0
         for x in observed:
             name=x['name'];c=x['contract'];m=x['minim']
+            # Deliberately remove the exact SDK-required discriminator from
+            # the minimal body. A meaningful regression must fail this test.
+            mutated=copy.deepcopy(m['minimal'])
+            if name=='pygithub-404':
+                mutated.pop('message')
+            else:
+                mutated['error'].pop('code')
+            assert classify_real_sdk(name,mutated,c['status'])!=x['native']
+            mutants_killed+=1
             assert bridge_classify(name,old,c,x['minimal_mcp'])==x['broken']
             assert bridge_classify(name,new,c,x['minimal_mcp'])==x['fixed']
             (fixtures/(name+'.json')).write_text(json.dumps({
@@ -259,12 +276,18 @@ def main():
         result={'status':'PASS','product_version':VERSION,'consumers':summaries,
                 'pinned_repos':SHA,'synthetic_http_get_count':ctr['total'],
                 'unexpected_requests':ctr['unexpected'],
-                'real_minimal_mcp_replays':2,'patch_applied_and_retested':True,
+                'real_minimal_mcp_replays':2,
+                'real_control_mcp_replays':len(controls),
+                'control_results':controls,
+                'typed_passthrough_cases':len(controls),
+                'critical_field_mutants_killed':mutants_killed,
+                'patch_applied_and_retested':True,
                 'runtime_seconds':round(time.monotonic()-started,3),
                 'scope':'Two actual pinned SDK error handlers; synthetic GET facade and real generated MCPGen; no provider APIs, no LLM'}
         (OUT/'REAL_APPS_SUMMARY.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
         print('RISU_EXTERNAL_CONSUMER_REPRO_PASS',json.dumps({
             'actual_sdk_consumers':2,'real_mcp_gets':ctr['total'],
+            'controls':len(controls),'mutants_killed':mutants_killed,
             'patch':'PASS','sizes':{x['name']:x['minimal_bytes'] for x in summaries}}),flush=True)
     finally:
         server.shutdown();server.server_close()
