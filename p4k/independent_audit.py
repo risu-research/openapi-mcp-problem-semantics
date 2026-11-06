@@ -20,6 +20,7 @@ def assert_report(r,manifest,cache,controls=None,check_files=True):
     sources=FROZEN['sources']
     assert len(sources)==len(manifest)==19
     assert [s['id'] for s in sources]==[x['id'] for x in manifest]==[x['id'] for x in r['sources']]
+    assert r['sources']==manifest, 'report source metadata was changed independently of authenticated manifest'
     assert len(set(x['id'] for x in manifest))==19
     assert len(set(x['repo'] for x in manifest))==14
     if check_files:
