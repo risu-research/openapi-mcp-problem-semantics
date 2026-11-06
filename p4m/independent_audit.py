@@ -42,7 +42,7 @@ def verify(r,files,cache,full=True):
         assert c['application_level_not_found']==(i==1)
         assert c['upstream_recorded_in_mcp_dispatch_test']==(i==0)
         if full:
-            v=yaml.safe_load((cache/'item_'+str(i)).read_text(encoding='utf-8-sig'))
+            v=yaml.safe_load((cache/('item_'+str(i))).read_text(encoding='utf-8-sig'))
             upstream=[x for x in v['interactions'] if x['request']['method']=='GET']
             assert len(upstream)==1
             response=upstream[0]['response']
