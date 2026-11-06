@@ -1,6 +1,6 @@
 # RISU Probe P4-T — 버전별 MCP 출력 계약·운영자 의무 변경 추적
 
-**상태: 로컬에서 50개 테스트 통과.** 기존 P4-S v0.9.15를 덮어쓰지 않고, 선택 명령 `risu-probe contract-history`를 추가할 수 있는 패치다. P4-S에서 관측한 `tools/list`의 출력 스키마를 실제 기준점으로 사용할 수 있다. 포함된 두 번째 스키마와 운영자 정책은 **명시적인 가상 업그레이드 시나리오**이며, 제3자 개발자가 실제 배포한 변경이 아니다.
+**상태: 로컬에서 60개 테스트 통과.** 기존 P4-S v0.9.15를 덮어쓰지 않고, 선택 명령 `risu-probe contract-history`를 추가할 수 있는 패치다. P4-S에서 관측한 `tools/list`의 출력 스키마를 실제 기준점으로 사용할 수 있다. 포함된 두 번째 스키마와 운영자 정책은 **명시적인 가상 업그레이드 시나리오**이며, 제3자 개발자가 실제 배포한 변경이 아니다.
 
 ## 사용법
 
@@ -32,6 +32,12 @@ risu-probe contract-history timeline p4t/results/observed.json p4t/results/hypot
 
 ## 현재 결과
 
-단독 50개 `unittest`가 통과했다. 합성 예시의 정확한 변화는 스키마 직접 변경 **4**, 파급효과 **4**, 운영자 정책 이벤트 **6**, 잠재 breaking 변경 **3**. 기존 P4-S 원본의 132/134 커버리지나 CONFIRMED_LOSS=0 등의 결과를 변경하려는 패치는 포함하지 않았다.
+단독 60개 `unittest`가 통과했다. 합성 예시의 정확한 변화는 스키마 직접 변경 **4**, 파급효과 **4**, 운영자 정책 이벤트 **6**, 잠재 breaking 변경 **3**. 기존 P4-S 원본의 132/134 커버리지나 CONFIRMED_LOSS=0 등의 결과를 변경하려는 패치는 포함하지 않았다.
 
 GitHub Actions에서 기존 P4-S 재생 결과에 설치형 명령을 적용하기 전에는 **실제 P4-T GitHub CI가 통과했다고 주장할 수 없다.**
+
+## 정밀 재감사 보강
+
+GitHub 최초 CI에서 P4-S의 실물 운영자 정책이 `cases[].obligations[]`를 사용한다는 점을 확인했다. 이 형식을 직접 해석하도록 개선하고, 알 수 없는 정책 형식을 빈 규칙 집합처럼 무시하지 않도록 실패 처리한다.
+
+`python p4t/upgrade_scenario.py --observed p4t/results/observed_snapshot.json --schema-out p4t/results/derived_upgrade_schema.json --policy-out p4t/results/derived_upgrade_policy.json`는 **동일한 실제 MCP 스키마를 복제한 뒤 제한된 가상 변경만 적용**한다. 이 실험에서 스키마 직접 변경 4, 상위 필수 조건의 하위 파급효과 4, 운영자 의무 변경 6, 잠재적 breaking 3으로 집계한다. 정책 6건에는 두 건의 새로운 가상 요구, 한 건의 삭제, 오류 요구 조건과 중요도·이유의 변경 3건이 들어간다. 모두 실제 배포 사실이 아니다.
