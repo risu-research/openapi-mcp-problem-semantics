@@ -192,7 +192,7 @@ class Consumer(unittest.TestCase):
     def test_sensitive_values_absent_in_report(self):
         secret='PRIVATE_SENTINEL_NEVER_EXPORT_2949'
         src={'status':200,'content_type':'application/json','body':{'token':secret}}
-        m={'content':[{'type':'text','text':json.dumps({'data':{'token':secret}})}],'isError':False}
+        m={'content':[{'type':'text','text':json.dumps({'status_code':200,'data':{'token':secret}})}],'isError':False}
         output=json.dumps(witness(src,m,['/token']))
         self.assertNotIn(secret,output)
         self.assertEqual(json.loads(output)['models']['json-text-data']['outcome'],'PASS')
