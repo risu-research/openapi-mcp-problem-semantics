@@ -156,9 +156,19 @@ jobs:
         run: |
           set -euo pipefail
           CLI=p4n/external_upstream/.venv/bin/risu-probe
+          mkdir -p p4n/results/semantic_maps
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          full=json.loads(Path('p4o/fixtures/jpo_observed_mapping.json').read_text())
+          for name in ('normal','logical_not_found'):
+              subset={'schema':full['schema'],'cases':[x for x in full['cases'] if x['case_id']=='JPO_'+name]}
+              assert len(subset['cases'])==1
+              Path('p4n/results/semantic_maps/'+name+'.json').write_text(json.dumps(subset,sort_keys=True)+'\n')
+          PY
           for name in normal logical_not_found; do
             "$CLI" analyze "p4n/results/risu_native_inputs/$name" \
-              --recovery --semantic-map p4o/fixtures/jpo_observed_mapping.json \
+              --recovery --semantic-map "p4n/results/semantic_maps/$name.json" \
               --fail-on-semantic-contradiction \
               --format json --out "p4n/results/$name/p4o_semantic_diagnosis.json"
           done
@@ -221,4 +231,6 @@ jobs:
             p4n/results/normal/p4o_semantic_diagnosis.json
             p4n/results/logical_not_found/p4o_semantic_diagnosis.json
             p4n/results/p4o_independent_audit.json
+            p4n/results/semantic_maps/normal.json
+            p4n/results/semantic_maps/logical_not_found.json
           if-no-files-found: warn
