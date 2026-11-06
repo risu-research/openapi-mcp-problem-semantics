@@ -184,7 +184,7 @@ def evaluate_result(adapter,matrix,expected_paths,counters,unexpected,elapsed):
 
 def main():
     os.chdir('/tmp')
-    assert VERSION=='0.9.5-experimental',VERSION
+    assert VERSION=='0.9.6-experimental',VERSION
     assert git_head('/opt/cnoe-source')==REPO_SHA['cnoe']
     assert git_head('/opt/mcpgen-source')==REPO_SHA['mcpgen']
     RESULTS.mkdir(exist_ok=True)
