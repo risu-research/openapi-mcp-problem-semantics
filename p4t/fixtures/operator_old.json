@@ -1,0 +1,21 @@
+{
+  "format": "operator-demo-v1",
+  "rules": [
+    {
+      "id": "quota",
+      "source_path": "/result/remainAccessCount",
+      "condition": "always",
+      "importance": "HIGH",
+      "reason": "UI shows remaining calls",
+      "source": "operator"
+    },
+    {
+      "id": "error",
+      "source_path": "/result/errorMessage",
+      "condition": "nonempty",
+      "importance": "MEDIUM",
+      "reason": "errors need visible message",
+      "source": "operator"
+    }
+  ]
+}
