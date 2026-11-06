@@ -9,6 +9,7 @@ from __future__ import annotations
 import copy
 import json
 from typing import Callable,Any
+from risu_evidence import _bounded_shape
 
 MAX_CHECKS=1000
 MAX_PAYLOAD_BYTES=256_000
@@ -52,8 +53,10 @@ def minimize(original:Any,oracle:Callable[[Any],bool],*,max_checks:int=MAX_CHECK
     if not callable(oracle) or not 1<=max_checks<=MAX_CHECKS:
         raise MinimizationError('INVALID_ORACLE_OR_BUDGET')
     try:original_bytes=len(canonical(original).encode('utf-8'))
-    except (ValueError,TypeError,OverflowError):
+    except (ValueError,TypeError,OverflowError,RecursionError):
         raise MinimizationError('BODY_NOT_FINITE_JSON') from None
+    if not _bounded_shape(original):
+        raise MinimizationError('SOURCE_SHAPE_EXCEEDS_LIMITS')
     if original_bytes>MAX_PAYLOAD_BYTES:
         raise MinimizationError('SOURCE_EXCEEDS_256KB')
     checks=1
