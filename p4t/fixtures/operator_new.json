@@ -1,0 +1,21 @@
+{
+  "format": "operator-demo-v1",
+  "rules": [
+    {
+      "id": "error",
+      "source_path": "/result/errorMessage",
+      "condition": "always",
+      "importance": "HIGH",
+      "reason": "all error texts visible",
+      "source": "operator-policy-revision"
+    },
+    {
+      "id": "registration",
+      "source_path": "/data/registrationDate",
+      "condition": "always",
+      "importance": "HIGH",
+      "reason": "audit requirements",
+      "source": "operator"
+    }
+  ]
+}
