@@ -1,0 +1,742 @@
+name: RISU P4-T Versioned MCP Contract and Operator Duty Drift
+on:
+  push:
+    branches:
+      - qualification/p4t-versioned-contract-obligation-drift-20261106
+    paths:
+      - p4t/**
+      - p4s/**
+      - .github/workflows/risu-p4t-versioned-contract-history.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pinned-third-party-replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Freeze and validate source/trust boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m compileall -q p4n
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('p4n/FROZEN_SOURCES.json').read_text())
+          assert p['original_commit']=='e7f0bcf2175823baaceb4844e84f9fc10ef00b40'
+          assert len(p['cases'])==2
+          assert p['cases']['normal']['upstream_http_status']==200
+          assert p['cases']['logical_not_found']['upstream_http_status']==200
+          assert p['cases']['logical_not_found']['application_status_code']=='107'
+          print('P4N_FROZEN_SOURCE_AND_REPLAY_BOUNDARY_PASS')
+          PY
+      - name: Checkout exact original third-party project commit, never mutable HEAD
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p p4n/external_upstream
+          git -C p4n/external_upstream init -q
+          git -C p4n/external_upstream remote add origin https://github.com/parkerhancock/patent-client-agents.git
+          git -C p4n/external_upstream -c protocol.version=2 fetch --no-tags --depth 1 origin e7f0bcf2175823baaceb4844e84f9fc10ef00b40
+          git -C p4n/external_upstream checkout -q --detach FETCH_HEAD
+          test "$(git -C p4n/external_upstream rev-parse HEAD)" = "e7f0bcf2175823baaceb4844e84f9fc10ef00b40"
+          echo "P4N_PINNED_EXTERNAL_PROJECT_GIT_CHECKOUT_PASS"
+      - name: Install external project's FROZEN dependency lock + original test VCR tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -q uv==0.11.10
+          cd p4n/external_upstream
+          uv sync --frozen --extra mcp --no-dev --python "$(command -v python)"
+          uv pip install --python .venv/bin/python 'vcrpy>=8.0,<9' 'pytest>=8,<10'
+          .venv/bin/python - <<'PY'
+          import importlib.metadata
+          import fastmcp, vcr
+          import patent_client_agents
+          print('P4N_THIRD_PARTY_ENV_READY',
+                importlib.metadata.version('fastmcp'),
+                importlib.metadata.version('vcrpy'),
+                importlib.metadata.version('patent-client-agents'))
+          PY
+      - name: Real stdio JSON-RPC MCP wire, with offline-only original HTTP cassette replay
+        shell: bash
+        env:
+          JPO_API_USERNAME: REDACTED_USERNAME
+          JPO_API_PASSWORD: REDACTED_PASSWORD
+          P4N_REPLAY_ONLY: '1'
+        run: |
+          set -euo pipefail
+          mkdir -p p4n/results
+          p4n/external_upstream/.venv/bin/python -u p4n/drive_wire.py \
+            --external p4n/external_upstream \
+            --out p4n/results
+          test -s p4n/results/normal/observed_stdio_wire.jsonl
+          test -s p4n/results/logical_not_found/observed_stdio_wire.jsonl
+      - name: Extract independent evidence receipt and assert no live upstream HTTP / causal overclaim
+        shell: bash
+        run: |
+          set -euo pipefail
+          p4n/external_upstream/.venv/bin/python p4n/independent_audit.py --out p4n/results --external p4n/external_upstream
+      - name: Derive HAR 1.2 and MCP JSONL with explicit replay-only provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          p4n/external_upstream/.venv/bin/python p4n/export_native.py \
+            --external p4n/external_upstream --out p4n/results
+      - name: Rebuild the unmodified P4-J RISU Probe from SHA-pinned upgrades
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -q setuptools wheel PyYAML==6.0.2 cryptography
+          python ci/export_v09_source_portable.py
+          python ci/upgrade_v10_modules.py
+          python ci/upgrade_v11_semantics.py
+          python ci/upgrade_v12_decision_witness.py
+          python ci/upgrade_v13_repro.py
+          python ci/upgrade_v14_fixverify.py
+          python ci/upgrade_v15_openapi_compat.py
+          python p4g/apply_upgrade.py
+          python p4h/apply_upgrade.py
+          python p4j/apply_upgrade.py
+          mkdir -p p4n/results/installer
+          python -m pip wheel --no-deps --no-build-isolation -w p4n/results/installer dist/risu_v09_source
+          uv pip install --python p4n/external_upstream/.venv/bin/python --no-deps --reinstall \
+            p4n/results/installer/risu_probe_preview-0.9.10.dev0-py3-none-any.whl
+      - name: Use native RISU CLI once per original HTTP plus actual MCP wire pair
+        shell: bash
+        run: |
+          set -euo pipefail
+          CLI=p4n/external_upstream/.venv/bin/risu-probe
+          "$CLI" analyze p4n/results/risu_native_inputs/normal --recovery \
+            --format json --out p4n/results/normal/risu_product_diagnosis.json
+          "$CLI" analyze p4n/results/risu_native_inputs/logical_not_found --recovery \
+            --format json --out p4n/results/logical_not_found/risu_product_diagnosis.json
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          for name in ('normal','logical_not_found'):
+              p=Path('p4n/results')/name/'risu_product_diagnosis.json'
+              d=json.loads(p.read_text())
+              assert len(d['results'])==1
+              assert d['causal_gate_v1']['summary']['CONFIRMED_LOSS']==0
+              assert d['capture_v1']['source_inference'] is False if 'capture_v1' in d else True
+              print('P4N_ONE_COMMAND_PRODUCT_DIAGNOSIS',name,
+                    {'raw_verdict':d['results'][0]['verdict'],
+                     'causal_outcome':d['results'][0]['causal_v1']['outcome'],
+                     'confirmed_loss':d['causal_gate_v1']['summary']['CONFIRMED_LOSS']})
+          PY
+      - name: Audit the product's raw syntactic LOSS against original JPO semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4n/qualify_semantics.py --out p4n/results
+      - name: Upgrade pinned unchanged P4-J to opt-in v0.9.11 scoped semantic mapping lens
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4o/apply_upgrade.py
+          python -m compileall -q dist/risu_v09_source p4o
+          python -m pip wheel --no-deps --no-build-isolation -w p4n/results/installer dist/risu_v09_source
+          uv pip install --python p4n/external_upstream/.venv/bin/python --no-deps --reinstall \
+            p4n/results/installer/risu_probe_preview-0.9.11.dev0-py3-none-any.whl
+          p4n/external_upstream/.venv/bin/risu-probe --version
+      - name: Test P4-J signed witness regression unchanged and semantic mapping against actual SDK wire
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e p4j/src && ln -s ../dist/risu_v09_source p4j/src
+          PYTHONPATH=dist/risu_v09_source python -m unittest discover -s p4j/tests -p test_causal_gate.py -v
+          python -m unittest discover -s p4o/tests -p test_real_jpo_semantics.py -v
+      - name: Verify all eight declared JPO field and lookup transitions using installed CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          CLI=p4n/external_upstream/.venv/bin/risu-probe
+          mkdir -p p4n/results/semantic_maps
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          full=json.loads(Path('p4o/fixtures/jpo_observed_mapping.json').read_text())
+          for name in ('normal','logical_not_found'):
+              subset={'schema':full['schema'],'cases':[x for x in full['cases'] if x['case_id']=='JPO_'+name]}
+              assert len(subset['cases'])==1
+              Path('p4n/results/semantic_maps/'+name+'.json').write_text(json.dumps(subset,sort_keys=True)+'\n')
+          PY
+          for name in normal logical_not_found; do
+            "$CLI" analyze "p4n/results/risu_native_inputs/$name" \
+              --recovery --semantic-map "p4n/results/semantic_maps/$name.json" \
+              --fail-on-semantic-contradiction \
+              --format json --out "p4n/results/$name/p4o_semantic_diagnosis.json"
+          done
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          expected={'normal':7,'logical_not_found':1}
+          for name,checks in expected.items():
+              d=json.loads((Path('p4n/results')/name/'p4o_semantic_diagnosis.json').read_text())
+              s=d['semantic_mapping_v1']
+              assert s['rules_summary']=={'OBSERVED_MATCH':checks,'CONTRADICTED':0,'INSUFFICIENT':0},(name,s)
+              assert s['cases_summary']=={'ALL_DECLARED_CHECKS_MATCH':1,'DECLARED_MAPPING_CONTRADICTED':0,'DECLARED_MAPPING_INSUFFICIENT':0,'NOT_ASSESSED':0}
+              assert s['all_passing_is_not_full_semantic_preservation']
+              assert d['results'][0]['verdict']=='LOSS'
+              assert d['results'][0]['decision_v1']['outcome']=='REVIEW'
+              assert d['causal_gate_v1']['summary']['CONFIRMED_LOSS']==0
+              assert d['results'][0]['causal_v1']['outcome']=='CONDITIONAL_MISMATCH'
+              old=json.loads((Path('p4n/results')/name/'risu_product_diagnosis.json').read_text())
+              assert old['results'][0]['losses']==d['results'][0]['losses']
+              assert old['causal_gate_v1']['summary']==d['causal_gate_v1']['summary']
+              assert 'semantic_mapping_v1' not in old
+              print('P4O_ACTUAL_EXTERNAL_ORIGINAL_VCR_REAL_MCP_SCOPED_MAPPING_PASS',name,checks,flush=True)
+          PY
+      - name: Independent P4-O post-install audit and counterexample checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4o/independent_audit.py --results p4n/results \
+            --contract p4o/fixtures/jpo_observed_mapping.json
+      - name: Expand sha256-pinned readable field coverage module, tests, and independent audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4p/unpack_sources.py
+          mkdir -p p4p/fixtures
+          cp p4o/fixtures/jpo_observed_mapping.json p4p/fixtures/jpo_observed_mapping.json
+          ln -s ../dist/risu_v09_source p4p/install_src
+          ln -s ../../p4o/overrides/risu_semantics.py p4p/overrides/risu_semantics.py
+          ln -s ../../p4o/tests/test_semantic_mapping.py p4p/tests/test_semantic_mapping.py || true
+          python -m compileall -q p4p
+      - name: Upgrade P4-O v0.9.11 to additive P4-P v0.9.12 without changing policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4p/apply_upgrade.py
+          python -m compileall -q dist/risu_v09_source
+          python -m pip wheel --no-deps --no-build-isolation -w p4n/results/installer dist/risu_v09_source
+          uv pip install --python p4n/external_upstream/.venv/bin/python --no-deps --reinstall \
+            p4n/results/installer/risu_probe_preview-0.9.12.dev0-py3-none-any.whl
+          p4n/external_upstream/.venv/bin/risu-probe --version
+      - name: Run new 26 source coverage tests against exact on-disk product build
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHONPATH=dist/risu_v09_source python -m unittest discover -s p4p/tests -p test_field_coverage.py -v
+      - name: Quantify source field coverage on third-party original VCR plus actual MCP wire
+        shell: bash
+        run: |
+          set -euo pipefail
+          CLI=p4n/external_upstream/.venv/bin/risu-probe
+          for name in normal logical_not_found; do
+            "$CLI" analyze "p4n/results/risu_native_inputs/$name" \
+              --recovery --semantic-map "p4n/results/semantic_maps/$name.json" \
+              --field-coverage \
+              --fail-on-semantic-contradiction \
+              --format json --out "p4n/results/$name/p4p_field_coverage.json"
+          done
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          rows=[]
+          for name in ('normal','logical_not_found'):
+              old=json.loads((Path('p4n/results')/name/'p4o_semantic_diagnosis.json').read_text())
+              new=json.loads((Path('p4n/results')/name/'p4p_field_coverage.json').read_text())
+              assert new['version']=='0.9.12-experimental'
+              assert new['summary']==old['summary'] and new['causal_gate_v1']==old['causal_gate_v1']
+              assert new['semantic_mapping_v1']['rules_summary']==old['semantic_mapping_v1']['rules_summary']
+              assert new['results'][0]['verdict']==old['results'][0]['verdict']=='LOSS'
+              assert new['causal_gate_v1']['summary']['CONFIRMED_LOSS']==0
+              a=new['field_coverage_v1']['cases'][0]['full_source']
+              assert a['total_source_leaf_units']>a['coverage_verified_units']>0
+              assert a['total_source_leaf_units']==a['coverage_verified_units']+a['undeclared_unassessed_leaf_units']
+              assert a['failed_declared_rule_leaf_units']==a['insufficient_evidence_leaf_units']==0
+              rows.append([name,a['total_source_leaf_units'],a['exact_value_verified'],a['transition_only_verified'],a['undeclared_unassessed_leaf_units'],a['verified_coverage_pct']])
+          print('P4P_ACTUAL_JPO_SOURCE_FIELDS_OBSERVED',rows,flush=True)
+          PY
+      - name: Independently recompute original source field counts from pinned third-party VCR bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          p4n/external_upstream/.venv/bin/python p4p/independent_audit.py \
+             --external p4n/external_upstream --results p4n/results
+      - name: Verify uncovered-field opt-in CI exit contract, no false confirmed loss
+        shell: bash
+        run: |
+          set -euo pipefail
+          CLI=p4n/external_upstream/.venv/bin/risu-probe
+          set +e
+          "$CLI" analyze p4n/results/risu_native_inputs/normal \
+            --semantic-map p4n/results/semantic_maps/normal.json --field-coverage \
+            --fail-on-coverage-gap --format json \
+            --out p4n/results/normal/p4p_strict_coverage.json
+          EXIT_CODE=$?
+          set -e
+          test "$EXIT_CODE" -eq 1
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('p4n/results/normal/p4p_strict_coverage.json').read_text())
+          assert d['causal_gate_v1']['summary']['CONFIRMED_LOSS']==0
+          assert d['field_coverage_v1']['cases'][0]['full_source']['undeclared_unassessed_leaf_units']>0
+          print('P4P_COVERAGE_GAP_STRICT_EXIT_ONE_PASS')
+          PY
+      - name: Verify P4-Q source SHA before installation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4q/unpack_sources.py
+          python -m compileall -q p4q/overrides p4q/tests
+      - name: Build installed v0.9.13 with immutable P4-P baseline and unchanged causal gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4q/apply_upgrade.py
+          python -m compileall -q dist/risu_v09_source
+          python -m pip wheel --no-deps --no-build-isolation -w p4n/results/installer dist/risu_v09_source
+          uv pip install --python p4n/external_upstream/.venv/bin/python --no-deps --reinstall \
+            p4n/results/installer/risu_probe_preview-0.9.13.dev0-py3-none-any.whl
+          p4n/external_upstream/.venv/bin/risu-probe --version
+      - name: Measure nested keyed JPO arrays from original third-party VCR + actual MCP stdio frames
+        shell: bash
+        run: |
+          set -euo pipefail
+          p4n/external_upstream/.venv/bin/risu-probe analyze p4n/results/risu_native_inputs/normal \
+            --recovery --semantic-map p4n/results/semantic_maps/normal.json \
+            --field-coverage --array-map p4q/jpo_arrays.json \
+            --fail-on-array-contradiction --format json \
+            --out p4n/results/normal/p4q_array_diagnosis.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('p4n/results/normal/p4q_array_diagnosis.json').read_text())
+          old=json.loads(Path('p4n/results/normal/p4p_field_coverage.json').read_text())
+          arr=p['array_identity_v1']['summary']
+          c=p['source_coverage_with_arrays_v1']['summary']
+          assert p['version']=='0.9.13-experimental'
+          assert (arr['matched_groups'],arr['matched_rows'],arr['candidate_exact_leaf_units'])==(3,14,118)
+          assert (arr['contradicted_groups'],arr['insufficient_groups'])==(0,0)
+          assert (c['source_leaf_units'],c['baseline_verified'],c['newly_verified_by_array_groups'],
+                  c['combined_verified'],c['combined_unverified'],c['combined_coverage_pct'])==(134,8,116,124,10,92.54)
+          assert p['field_coverage_v1']==old['field_coverage_v1']
+          assert p['semantic_mapping_v1']==old['semantic_mapping_v1']
+          assert p['causal_gate_v1']==old['causal_gate_v1']
+          assert p['results'][0]['verdict']==old['results'][0]['verdict']=='LOSS'
+          assert p['causal_gate_v1']['summary']['CONFIRMED_LOSS']==0
+          print('P4Q_REAL_ORIGINAL_JPO_KEYED_ARRAY_124_OF_134_PASS',c,flush=True)
+          PY
+      - name: Mutation suite on actual third-party original JPO response and real MCP wire
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHONPATH=dist/risu_v09_source p4n/external_upstream/.venv/bin/python \
+            -m unittest discover -s p4q/tests -p test_original_jpo_arrays.py -v
+      - name: Independent original VCR audit, complete scalar key linkage, nine false claim controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          p4n/external_upstream/.venv/bin/python p4q/independent_audit.py
+      - name: CI failure only on actual array contradiction, not old raw LOSS
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p p4n/results/p4q_mutation
+          python - <<'PY'
+          import json,shutil
+          from pathlib import Path
+          source=Path('p4n/results/risu_native_inputs/normal')
+          target=Path('p4n/results/p4q_mutation')
+          for filename in ('capture.har','mcp.jsonl','pairs.json'):shutil.copyfile(source/filename,target/filename)
+          lines=[json.loads(x) for x in (target/'mcp.jsonl').read_text().splitlines() if x.strip()]
+          hits=[x for x in lines if x.get('id')==3 and 'result' in x]
+          assert len(hits)==1
+          hits[0]['result']['structuredContent']['items'][0]['bibliography_information'][0]['document_list'][0]['document_description']='MUTATED_RECORD_CONTENT'
+          (target/'mcp.jsonl').write_text(''.join(json.dumps(x,ensure_ascii=False)+'\n' for x in lines))
+          PY
+          set +e
+          p4n/external_upstream/.venv/bin/risu-probe analyze p4n/results/p4q_mutation \
+            --semantic-map p4n/results/semantic_maps/normal.json --field-coverage \
+            --array-map p4q/jpo_arrays.json --fail-on-array-contradiction --format json \
+            --out p4n/results/p4q_mutation/diagnosis.json
+          EXIT_CODE=$?
+          set -e
+          test "$EXIT_CODE" -eq 1
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('p4n/results/p4q_mutation/diagnosis.json').read_text())
+          assert x['array_identity_v1']['summary']['contradicted_groups']==1
+          assert x['causal_gate_v1']['summary']['CONFIRMED_LOSS']==0
+          assert x['source_coverage_with_arrays_v1']['summary']['combined_verified']<124
+          print('P4Q_MUTATED_DOCUMENT_FAILS_ARRAY_GATE_WITHOUT_FALSE_CAUSAL_LOSS',flush=True)
+          PY
+      - name: CI strict coverage gap explicitly blocks remaining ten UNKNOWN original fields
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          p4n/external_upstream/.venv/bin/risu-probe analyze p4n/results/risu_native_inputs/normal \
+            --semantic-map p4n/results/semantic_maps/normal.json --field-coverage \
+            --array-map p4q/jpo_arrays.json --fail-on-combined-coverage-gap \
+            --format json --out p4n/results/normal/p4q_strict_coverage_gap.json
+          STATUS=$?
+          set -e
+          test "$STATUS" -eq 1
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('p4n/results/normal/p4q_strict_coverage_gap.json').read_text())
+          assert x['source_coverage_with_arrays_v1']['summary']['combined_unverified']==10
+          assert x['causal_gate_v1']['summary']['CONFIRMED_LOSS']==0
+          print('P4Q_REMAINING_10_UNKNOWN_SOURCE_FIELDS_STRICT_CI_EXIT_1_PASS',flush=True)
+          PY
+      - name: SHA-pinned additive v0.9.14 residual classification lens
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4r/apply_upgrade.py
+          python -m compileall -q dist/risu_v09_source p4r
+          python -m pip wheel --no-deps --no-build-isolation -w p4n/results/installer dist/risu_v09_source
+          uv pip install --python p4n/external_upstream/.venv/bin/python --no-deps --reinstall \
+            p4n/results/installer/risu_probe_preview-0.9.14.dev0-py3-none-any.whl
+          p4n/external_upstream/.venv/bin/risu-probe --version
+      - name: Run 38 fail-closed field mapping, identity, exposure and CLI regressions against REAL original replay
+        shell: bash
+        env:
+          P4R_CAPTURE: p4n/results/risu_native_inputs/normal
+          P4R_BASE_REPORT: p4n/results/normal/p4q_array_diagnosis.json
+          PYTHONPATH: dist/risu_v09_source
+        run: |
+          set -euo pipefail
+          p4n/external_upstream/.venv/bin/python -m unittest discover -s p4r/tests -p test_residual.py -v
+      - name: Classify ten source fields by direct value remap, structural defaults and observed envelope non-exposure
+        shell: bash
+        run: |
+          set -euo pipefail
+          p4n/external_upstream/.venv/bin/risu-probe analyze \
+            p4n/results/risu_native_inputs/normal \
+            --recovery --semantic-map p4n/results/semantic_maps/normal.json \
+            --field-coverage --array-map p4q/jpo_arrays.json \
+            --residual-map p4r/fixtures/jpo_residual_fields.json \
+            --fail-on-residual-contradiction --format json \
+            --out p4n/results/normal/p4r_residual_classification.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          new=json.loads(Path('p4n/results/normal/p4r_residual_classification.json').read_text())
+          old=json.loads(Path('p4n/results/normal/p4q_array_diagnosis.json').read_text())
+          assert new['version']=='0.9.14-experimental'
+          s=new['residual_disposition_v1']['summary']
+          assert (s['source_leaf_units'],s['baseline_verified'],s['exact_new'],
+                  s['normalized_new'],s['observed_nonexposure'],
+                  s['final_verified'],s['remaining_unverified'],s['final_verified_pct']) == (
+                      134,124,7,1,2,132,2,98.51)
+          assert len(new['residual_disposition_v1']['cases'][0]['rules'])==10
+          for key in ('causal_gate_v1','field_coverage_v1','source_coverage_with_arrays_v1',
+                      'semantic_mapping_v1','array_identity_v1','summary','decision_summary'):
+              assert new[key]==old[key],key
+          assert new['results'][0]['verdict']==old['results'][0]['verdict']=='LOSS'
+          assert new['results'][0]['decision_v1']['outcome']=='REVIEW'
+          assert new['causal_gate_v1']['summary']['CONFIRMED_LOSS']==0
+          print('P4R_ACTUAL_ORIGINAL_JPO_7_TYPED_1_NORMALIZED_2_UNEXPOSED_PASS',s,flush=True)
+          PY
+      - name: Independent original source AST, pinned VCR, wire, all ten fields and ten claim falsifications
+        shell: bash
+        run: |
+          set -euo pipefail
+          p4n/external_upstream/.venv/bin/python p4r/independent_audit.py \
+            --external p4n/external_upstream --results p4n/results
+          test -s p4n/results/p4r_independent_audit.json
+      - name: Strict non-exposure/gap gates are opt-in and DO NOT imply causal loss
+        shell: bash
+        run: |
+          set -euo pipefail
+          CLI=p4n/external_upstream/.venv/bin/risu-probe
+          set +e
+          "$CLI" analyze p4n/results/risu_native_inputs/normal \
+            --semantic-map p4n/results/semantic_maps/normal.json --field-coverage \
+            --array-map p4q/jpo_arrays.json --residual-map p4r/fixtures/jpo_residual_fields.json \
+            --fail-on-residual-nonexposure --format json --out p4n/results/normal/p4r_strict_exposure.json
+          A=$?
+          "$CLI" analyze p4n/results/risu_native_inputs/normal \
+            --semantic-map p4n/results/semantic_maps/normal.json --field-coverage \
+            --array-map p4q/jpo_arrays.json --residual-map p4r/fixtures/jpo_residual_fields.json \
+            --fail-on-residual-gap --format json --out p4n/results/normal/p4r_strict_gap.json
+          B=$?
+          set -e
+          test "$A" -eq 1
+          test "$B" -eq 1
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          for name in ('p4r_strict_exposure','p4r_strict_gap'):
+              j=json.loads((Path('p4n/results/normal')/(name+'.json')).read_text())
+              assert j['causal_gate_v1']['summary']['CONFIRMED_LOSS']==0
+              assert j['residual_disposition_v1']['summary']['remaining_unverified']==2
+          print('P4R_NONEXPOSURE_AND_UNVERIFIED_CI_GATES_PASS_WITHOUT_CAUSAL_OVERCLAIM')
+          PY
+      - name: Restore SHA-pinned readable P4-S source, policy and independent audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4s/unpack_sources.py
+          python -m compileall -q p4s
+          test -s p4s/fixtures/external_pinned_source.json
+      - name: Upgrade SHA-verified P4-R to opt-in v0.9.15 field obligations
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4s/apply_upgrade.py
+          python -m compileall -q dist/risu_v09_source
+          python -m pip wheel --no-deps --no-build-isolation -w p4n/results/installer dist/risu_v09_source
+          uv pip install --python p4n/external_upstream/.venv/bin/python --no-deps --reinstall \
+             p4n/results/installer/risu_probe_preview-0.9.15.dev0-py3-none-any.whl
+          p4n/external_upstream/.venv/bin/risu-probe --version
+      - name: Run 32 source contract adversarial unit tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHONPATH=dist/risu_v09_source python -m unittest discover -s p4s/tests -p test_field_obligations.py -v
+      - name: On ACTUAL pinned JPO replay, distinguish operator quota duty and server output required fields
+        shell: bash
+        run: |
+          set -euo pipefail
+          p4n/external_upstream/.venv/bin/risu-probe analyze \
+            p4n/results/risu_native_inputs/normal --recovery \
+            --semantic-map p4n/results/semantic_maps/normal.json --field-coverage \
+            --array-map p4q/jpo_arrays.json --residual-map p4r/fixtures/jpo_residual_fields.json \
+            --obligation-map p4s/fixtures/jpo_obligation_policy.json --format json \
+            --out p4n/results/normal/p4s_contract_obligations.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          new=json.loads(Path('p4n/results/normal/p4s_contract_obligations.json').read_text())
+          old=json.loads(Path('p4n/results/normal/p4r_residual_classification.json').read_text())
+          assert new['version']=='0.9.15-experimental'
+          for field in ('summary','results','decision_summary','causal_gate_v1','semantic_mapping_v1','field_coverage_v1','array_identity_v1','source_coverage_with_arrays_v1','residual_disposition_v1'):
+              assert new[field]==old[field],field
+          m=new['field_obligations_v1']['summary']
+          assert m['SERVER_SCHEMA_REQUIREMENT_SATISFIED']==3
+          assert m['OPERATOR_POLICY_UNSATISFIED_OBSERVED']==1
+          assert m['NOT_APPLICABLE_TO_OBSERVED_SOURCE']==1
+          assert m['NO_OBSERVED_SERVER_SCHEMA_REQUIREMENT']==2
+          assert m['SERVER_SCHEMA_REQUIRED_FIELD_MISSING']==0
+          assert m['SERVER_SCHEMA_REQUIRED_FIELD_WRONG_TYPE']==0
+          assert new['causal_gate_v1']['summary']['CONFIRMED_LOSS']==0
+          print('P4S_ACTUAL_JPO_OPERATOR_QUOTA_UNMET_PUBLISHER_REQUIRED_3_MET_PASS',m,flush=True)
+          PY
+      - name: Eight installed-wheel integration tests including wrong publisher-required fields
+        shell: bash
+        env:
+          P4S_CAPTURE: p4n/results/risu_native_inputs/normal
+          P4S_SEMANTIC_MAP: p4n/results/semantic_maps/normal.json
+          P4S_ARRAY_MAP: p4q/jpo_arrays.json
+          P4S_RESIDUAL_MAP: p4r/fixtures/jpo_residual_fields.json
+          P4S_POLICY: p4s/fixtures/jpo_obligation_policy.json
+        run: |
+          set -euo pipefail
+          p4n/external_upstream/.venv/bin/python -m unittest discover -s p4s/tests -p test_cli_obligations.py -v
+      - name: Independent SHA-pinned third-party source, MCP output-schema and 11 false-claims audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          p4n/external_upstream/.venv/bin/python p4s/independent_audit.py \
+            --external p4n/external_upstream \
+            --capture p4n/results/risu_native_inputs/normal \
+            --report p4n/results/normal/p4s_contract_obligations.json \
+            --out p4n/results/p4s_independent_audit.json
+      - name: Three separate CI exit rules, with no publisher breach overclaim
+        shell: bash
+        run: |
+          set -euo pipefail
+          CLI=p4n/external_upstream/.venv/bin/risu-probe
+          OPTS=(p4n/results/risu_native_inputs/normal --semantic-map p4n/results/semantic_maps/normal.json \
+            --field-coverage --array-map p4q/jpo_arrays.json --residual-map p4r/fixtures/jpo_residual_fields.json \
+            --obligation-map p4s/fixtures/jpo_obligation_policy.json --format json)
+          set +e
+          "$CLI" analyze "${OPTS[@]}" --fail-on-operator-duty --out p4n/results/normal/p4s_operator_strict.json
+          OPERATOR=$?
+          "$CLI" analyze "${OPTS[@]}" --fail-on-schema-duty --out p4n/results/normal/p4s_schema_strict.json
+          SCHEMA=$?
+          "$CLI" analyze "${OPTS[@]}" --fail-on-unsupported-schema-claim --out p4n/results/normal/p4s_unsupported_claim_strict.json
+          UNSUPPORTED=$?
+          set -e
+          test "$OPERATOR" -eq 1
+          test "$SCHEMA" -eq 0
+          test "$UNSUPPORTED" -eq 1
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          for name in ('p4s_operator_strict','p4s_schema_strict','p4s_unsupported_claim_strict'):
+              d=json.loads((Path('p4n/results/normal')/(name+'.json')).read_text())
+              assert d['causal_gate_v1']['summary']['CONFIRMED_LOSS']==0
+          print('P4S_SEPARATE_OPERATOR_SCHEMA_CLAIM_EXIT_CODES_1_0_1_PASS')
+          PY
+      - name: P4-T upgrade installed wheel and 50 local adversarial regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4t/apply_upgrade.py
+          python -m compileall -q dist/risu_v09_source p4t
+          python -m pip wheel --no-deps --no-build-isolation -w p4n/results/installer dist/risu_v09_source
+          uv pip install --python p4n/external_upstream/.venv/bin/python --no-deps --reinstall \
+            p4n/results/installer/risu_probe_preview-0.9.16.dev0-py3-none-any.whl
+          p4n/external_upstream/.venv/bin/risu-probe --version
+          PYTHONPATH=p4t python -m unittest discover -s p4t/tests -p 'test_*.py' -v
+      - name: P4-T baseline snapshot from ACTUAL original VCR replay and recorded MCP tools/list
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p p4t/results
+          CLI=p4n/external_upstream/.venv/bin/risu-probe
+          "$CLI" contract-history snapshot \
+            --schema p4n/results/normal/observed_stdio_wire.jsonl \
+            --tool get_jpo_progress --policy p4s/fixtures/jpo_obligation_policy.json \
+            --version observed-P4S-pinned-replay \
+            --out p4t/results/observed_snapshot.json
+          "$CLI" contract-history snapshot \
+            --schema p4t/fixtures/upgrade_schema.json \
+            --tool get_jpo_progress --policy p4t/fixtures/operator_new.json \
+            --version hypothetical-upgrade \
+            --previous p4t/results/observed_snapshot.json \
+            --out p4t/results/hypothetical_snapshot.json
+          set +e
+          "$CLI" contract-history diff \
+            p4t/results/observed_snapshot.json p4t/results/hypothetical_snapshot.json \
+            --fail-on-potential-breaking --out p4t/results/observed_vs_hypothetical.json
+          DIFF_EXIT=$?
+          set -e
+          test "$DIFF_EXIT" -eq 1
+          "$CLI" contract-history timeline \
+            p4t/results/observed_snapshot.json p4t/results/hypothetical_snapshot.json \
+            --out p4t/results/timeline.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          obs=json.loads(Path('p4t/results/observed_snapshot.json').read_text())
+          diff=json.loads(Path('p4t/results/observed_vs_hypothetical.json').read_text())
+          tl=json.loads(Path('p4t/results/timeline.json').read_text())
+          assert obs['source_kind']=='recorded-tools-list',obs['source_kind']
+          assert obs['tool']=='get_jpo_progress'
+          assert {'summary','items','provenance'}.issubset(obs['schema']['required'])
+          assert tl['verified_hash_links']==1
+          assert diff['summary']['potential_breaking']>=1
+          pre=json.loads(Path('p4n/results/normal/p4s_contract_obligations.json').read_text())
+          assert pre['causal_gate_v1']['summary']['CONFIRMED_LOSS']==0
+          print('P4T_REAL_P4S_OBSERVED_BASELINE_WITH_EXPLICIT_HYPOTHETICAL_UPGRADE_PASS',diff['summary'],flush=True)
+          PY
+      - name: P4-T fail-closed mutation audit of hash chain
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          obj=json.loads(Path('p4t/results/observed_snapshot.json').read_text())
+          obj['schema']['properties']['items']['type']='integer'
+          Path('p4t/results/tampered_snapshot.json').write_text(json.dumps(obj))
+          PY
+          set +e
+          p4n/external_upstream/.venv/bin/risu-probe contract-history diff \
+            p4t/results/tampered_snapshot.json p4t/results/hypothetical_snapshot.json \
+            >p4t/results/mutation_stdout.txt 2>p4t/results/mutation_stderr.txt
+          TAMPER_RC=$?
+          set -e
+          test "$TAMPER_RC" -eq 2
+          grep -q 'hash mismatch' p4t/results/mutation_stderr.txt
+          echo "P4T_HASH_CHAIN_MUTATION_REJECTED_PASS"
+      - name: Upload raw actual STDIO JSON-RPC wire from our REPLAY, not third-party original wire
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: risu-p4t-versioned-contract-history-v0916-verified
+          path: |
+            p4t/risu_contract_history.py
+            p4t/risu_p4t_cli.py
+            p4t/apply_upgrade.py
+            p4t/tests/test_contract_history.py
+            p4t/fixtures/*.json
+            p4t/fixtures/build_scenarios.py
+            p4t/README_KO.md
+            p4t/results/*.json
+            p4t/results/*.txt
+            p4n/results/installer/risu_probe_preview-0.9.16.dev0-py3-none-any.whl
+            p4s/unpack_sources.py
+            p4s/overrides/risu_obligations.py
+            p4s/apply_upgrade.py
+            p4s/independent_audit.py
+            p4s/tests/test_field_obligations.py
+            p4s/tests/test_cli_obligations.py
+            p4s/fixtures/jpo_obligation_policy.json
+            p4s/fixtures/external_pinned_source.json
+            p4n/results/normal/p4s_contract_obligations.json
+            p4n/results/normal/p4s_operator_strict.json
+            p4n/results/normal/p4s_schema_strict.json
+            p4n/results/normal/p4s_unsupported_claim_strict.json
+            p4n/results/p4s_independent_audit.json
+            p4n/results/installer/risu_probe_preview-0.9.15.dev0-py3-none-any.whl
+            p4r/overrides/risu_residual.py
+            p4r/apply_upgrade.py
+            p4r/independent_audit.py
+            p4r/tests/test_residual.py
+            p4r/fixtures/jpo_residual_fields.json
+            p4r/fixtures/jpo_semantic_normal_only.json
+            p4n/results/normal/p4r_residual_classification.json
+            p4n/results/normal/p4r_strict_exposure.json
+            p4n/results/normal/p4r_strict_gap.json
+            p4n/results/p4r_independent_audit.json
+            p4n/results/installer/risu_probe_preview-0.9.14.dev0-py3-none-any.whl
+            p4q/overrides/risu_arraymatch.py
+            p4q/tests/test_original_jpo_arrays.py
+            p4q/independent_audit.py
+            p4q/jpo_arrays.json
+            p4q/apply_upgrade.py
+            p4q/unpack_sources.py
+            p4n/results/normal/p4q_array_diagnosis.json
+            p4n/results/normal/p4q_strict_coverage_gap.json
+            p4n/results/p4q_mutation/diagnosis.json
+            p4n/results/p4q_independent_audit.json
+            p4n/results/installer/risu_probe_preview-0.9.13.dev0-py3-none-any.whl
+            p4p/overrides/risu_coverage.py
+            p4p/apply_upgrade.py
+            p4p/unpack_sources.py
+            p4p/tests/test_field_coverage.py
+            p4p/independent_audit.py
+            p4p/fixtures/jpo_observed_mapping.json
+            p4n/results/p4p_independent_audit.json
+            p4n/results/normal/p4p_field_coverage.json
+            p4n/results/logical_not_found/p4p_field_coverage.json
+            p4n/results/normal/p4p_strict_coverage.json
+            p4n/results/installer/risu_probe_preview-0.9.12.dev0-py3-none-any.whl
+            p4n/FROZEN_SOURCES.json
+            p4n/drive_wire.py
+            p4n/export_native.py
+            p4n/qualify_semantics.py
+            p4n/replay_original_jpo_subserver.py
+            p4n/independent_audit.py
+            p4n/results/summary.json
+            p4n/results/product_semantic_interpretation.json
+            p4n/results/independent_audit.json
+            p4n/results/normal/observed_stdio_wire.jsonl
+            p4n/results/normal/case_report.json
+            p4n/results/logical_not_found/observed_stdio_wire.jsonl
+            p4n/results/logical_not_found/case_report.json
+            p4n/results/normal/risu_product_diagnosis.json
+            p4n/results/logical_not_found/risu_product_diagnosis.json
+            p4n/results/risu_native_inputs/normal/DERIVATION_PROVENANCE.json
+            p4n/results/risu_native_inputs/logical_not_found/DERIVATION_PROVENANCE.json
+            p4n/results/installer/risu_probe_preview-0.9.10.dev0-py3-none-any.whl
+            p4n/results/installer/risu_probe_preview-0.9.11.dev0-py3-none-any.whl
+            p4o/overrides/risu_semantics.py
+            p4o/fixtures/jpo_observed_mapping.json
+            p4o/apply_upgrade.py
+            p4o/tests/test_real_jpo_semantics.py
+            p4o/independent_audit.py
+            p4n/results/normal/p4o_semantic_diagnosis.json
+            p4n/results/logical_not_found/p4o_semantic_diagnosis.json
+            p4n/results/p4o_independent_audit.json
+            p4n/results/semantic_maps/normal.json
+            p4n/results/semantic_maps/logical_not_found.json
+          if-no-files-found: warn
