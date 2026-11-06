@@ -69,6 +69,18 @@ jobs:
             dist/risu_v09_source/risu_verify.py
             dist/risu_v09_source/risu_onboarding.py
             dist/risu_v09_source/pyproject.toml
+            ci/upgrade_v12_decision_witness.py
+            ci/upgrade_v11_semantics.py
+            ci/upgrade_v10_modules.py
+            ci/export_v09_source_portable.py
+            ci/test_v094_decision_witness.py
+            ci/test_v093_evidence.py
+            ci/test_v10_regressions.py
+            triad/run_three.py
+            triad/audit_results.py
+            triad/Dockerfile
+            triad/fastmcp_openapi_server.py
+            .github/workflows/risu-v094-decision-witness.yml
           if-no-files-found: error
 
   actual-three-projects:
