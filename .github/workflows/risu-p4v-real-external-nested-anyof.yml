@@ -1,0 +1,83 @@
+name: RISU P4-V actual released MCP nested ref-anyOf assurance
+on:
+  push:
+    branches:
+      - qualification/p4v-nested-ref-anyof-real-external-mcp-20261106
+    paths:
+      - p4v/**
+      - .github/workflows/risu-p4v-real-external-nested-anyof.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  two-published-version-nested-schema:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify P4-T trusted comparator SHA, scripts and previous P4-U lineage
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'f9201c7f5889e978d61e85dcf7450a1c6997b9295a6e1f5c1528e7f898355087  p4t/risu_contract_history.py' | sha256sum -c -
+          python -m compileall -q p4u p4v p4t
+      - name: Install genuine published 2026.10.19 wheel and record original stdio MCP wire
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m venv "$RUNNER_TEMP/p4v-old"
+          PY="$RUNNER_TEMP/p4v-old/bin/python"
+          mkdir -p p4u/results/distribution p4u/results/2026.10.19
+          "$PY" -m pip download --disable-pip-version-check --no-deps --only-binary=:all: --index-url https://pypi.org/simple 'mcp-server-time==2026.10.19' -d p4u/results/distribution
+          echo '5c099a001c6ca78260bda419f2e9b2aabee1adc4fe6ca56d8959871ad8da58a1  p4u/results/distribution/mcp_server_time-2026.10.19-py3-none-any.whl' | sha256sum -c -
+          "$PY" -m pip install --disable-pip-version-check p4u/results/distribution/mcp_server_time-2026.10.19-py3-none-any.whl
+          "$PY" -m pip freeze > p4u/results/2026.10.19/installed_dependencies.txt
+          "$PY" p4u/capture_version.py --version 2026.10.19 --out p4u/results/2026.10.19
+          "$PY" p4v/dst_probe.py --version 2026.10.19 --out p4u/results/dst/2026.10.19
+      - name: Install genuine published 2026.11.4 wheel and execute non-null anyOf object branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m venv "$RUNNER_TEMP/p4v-new"
+          PY="$RUNNER_TEMP/p4v-new/bin/python"
+          mkdir -p p4u/results/2026.11.4
+          "$PY" -m pip download --disable-pip-version-check --no-deps --only-binary=:all: --index-url https://pypi.org/simple 'mcp-server-time==2026.11.4' -d p4u/results/distribution
+          echo '536388fc6f19adec845f0d3a194d696aca3260a626c041cb97a9988e1a18444a  p4u/results/distribution/mcp_server_time-2026.11.4-py3-none-any.whl' | sha256sum -c -
+          "$PY" -m pip install --disable-pip-version-check p4u/results/distribution/mcp_server_time-2026.11.4-py3-none-any.whl
+          "$PY" -m pip freeze > p4u/results/2026.11.4/installed_dependencies.txt
+          "$PY" p4u/capture_version.py --version 2026.11.4 --out p4u/results/2026.11.4
+          "$PY" p4v/dst_probe.py --version 2026.11.4 --out p4u/results/dst/2026.11.4
+      - name: Run P4-U original shallow control and P4-V real nested $ref/anyOf audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4u/evaluate_versions.py --captures p4u/results
+          python p4v/nested_eval.py --captures p4u/results --out p4u/results/p4v_real_nested_summary.json
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          root=Path('p4u/results')
+          for v in ('2026.10.19','2026.11.4'):
+              base=root/'dst'/v
+              receipt=json.loads((base/'receipt.json').read_text())
+              assert receipt['wire_sha256']==hashlib.sha256((base/'dst_real_stdio_wire.jsonl').read_bytes()).hexdigest()
+              assert receipt['response_sha256']==hashlib.sha256((base/'dst_actual_response.json').read_bytes()).hexdigest()
+              frames=[json.loads(x) for x in (base/'dst_real_stdio_wire.jsonl').read_text().splitlines()]
+              assert json.loads((base/'dst_actual_response.json').read_text()) in frames
+          print('P4V_INDEPENDENT_DST_WIRE_RECEIPT_HASH_AUDIT_PASS',flush=True)
+          PY
+      - name: Upload actual external release MCP wire and nested branch evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: risu-p4v-genuine-2-releases-ref-anyof-nested-dst-wire
+          path: |
+            p4u/results/**
+            p4v/dst_probe.py
+            p4v/nested_eval.py
+            p4t/risu_contract_history.py
+          if-no-files-found: warn
+          retention-days: 30
