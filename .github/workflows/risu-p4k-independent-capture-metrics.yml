@@ -1,0 +1,124 @@
+name: RISU P4-K Independent Third-Party Capture Metrics
+on:
+  push:
+    branches:
+      - qualification/p4k-independent-developer-cohort-metrics-20261106
+    paths:
+      - p4k/**
+      - .github/workflows/risu-p4k-independent-capture-metrics.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  frozen-public-corpus:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Freeze preregistration and Python source parsing
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m compileall -q p4k
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          j=json.loads(Path('p4k/FROZEN_COHORT.json').read_text())
+          assert len(j['sources'])==19
+          assert len({x['repo'] for x in j['sources']})==14
+          assert len([x for x in j['sources'] if x['type']=='har'])==9
+          assert len([x for x in j['sources'] if x['type']=='mcp'])==10
+          print('P4K_PREDECLARED_EXTERNAL_COHORT',len(j['sources']))
+          PY
+      - name: Build unchanged v0.9.10 from original SHA-pinned upgrades
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -q PyYAML==6.0.2 cryptography setuptools wheel
+          python ci/export_v09_source_portable.py
+          python ci/upgrade_v10_modules.py
+          python ci/upgrade_v11_semantics.py
+          python ci/upgrade_v12_decision_witness.py
+          python ci/upgrade_v13_repro.py
+          python ci/upgrade_v14_fixverify.py
+          python ci/upgrade_v15_openapi_compat.py
+          python p4g/apply_upgrade.py
+          python p4h/apply_upgrade.py
+          python p4j/apply_upgrade.py
+          python -m compileall -q dist/risu_v09_source
+          mkdir -p p4k/results
+          python -m pip wheel --no-deps --no-build-isolation -w p4k/results dist/risu_v09_source
+          python -m pip install --no-index --no-deps --force-reinstall p4k/results/risu_probe_preview-0.9.10.dev0-py3-none-any.whl
+          risu-probe --version
+      - name: Verify prior P4-J causal trust unit gates and fallback
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHONPATH=dist/risu_v09_source python -m unittest discover -s p4j/tests -p test_causal_gate.py -v
+          risu-probe analyze p4g/evidence/saved_p4de.json --recovery --format json --out p4k/results/p4g_regression.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('p4k/results/p4g_regression.json').read_text())
+          assert r['summary']['LOSS']==3 and r['summary']['PRESERVED']==2
+          assert r['causal_gate_v1']['summary']['CONFIRMED_LOSS']==0
+          assert r['causal_gate_v1']['summary']['CONDITIONAL_MISMATCH']==3
+          print('P4K_P4J_UNCHANGED_REGRESSION_PASS')
+          PY
+      - name: Download only SHA-pinned third-party public source files, never execute them
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -u p4k/measure_independent.py --fetch
+      - name: Quantify original raw-file refusals, actual unpaired files, unrelated forged links
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -u p4k/measure_independent.py --evaluate
+      - name: Create a REAL SDK internal signed positive-control, not third-party field evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check 'mcp==2.3.0'
+          python -u p4j/runner/make_witnessed_capture.py --out p4k/results/internal_control --trust-out p4k/results/internal_control_public_trust.json
+          risu-probe analyze p4k/results/internal_control --recovery --format json --out p4k/results/untrusted_control.json
+          risu-probe analyze p4k/results/internal_control --recovery --causal-trust-store p4k/results/internal_control_public_trust.json --format json --out p4k/results/positive_control.json
+      - name: Independent source-hash, denominator, outcome and eight-falsification audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4k/independent_audit.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('p4k/results/metrics.json').read_text())
+          m=p['metrics']
+          print('P4K_PUBLISHED_DENOMINATORS',json.dumps(m,sort_keys=True))
+          assert m['field_false_positive_rate'] is None
+          assert m['total_external_attempts']==109
+          assert m['known_unrelated_splice_confirmed_loss']==0
+          PY
+      - name: Ensure source itself unchanged and no raw corpus is uploaded
+        shell: bash
+        run: |
+          set -euo pipefail
+          git status --porcelain -- p4k/ | grep -E '^ M|^M ' && exit 1 || true
+          test -s p4k/results/independent_audit.json
+      - name: Preserve only provenance manifest and aggregate metrics, NO raw public captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: risu-p4k-19-third-party-109-inputs-verified-metrics
+          path: |
+            p4k/FROZEN_COHORT.json
+            p4k/measure_independent.py
+            p4k/independent_audit.py
+            p4k/results/source_manifest.json
+            p4k/results/metrics.json
+            p4k/results/independent_audit.json
+            p4k/results/p4g_regression.json
+            p4k/results/risu_probe_preview-0.9.10.dev0-py3-none-any.whl
+          if-no-files-found: warn
