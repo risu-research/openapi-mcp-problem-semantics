@@ -1,0 +1,198 @@
+{
+  "cases": [
+    {
+      "id": "D200",
+      "translator": "Meilisearch-CNOE",
+      "source": {
+        "status": 200,
+        "content_type": "application/json",
+        "body": {
+          "uid": "movies",
+          "primaryKey": "movie_id",
+          "createdAt": "2019-11-20T09:40:33.711324Z",
+          "updatedAt": "2019-11-20T09:40:33.711324Z"
+        }
+      },
+      "mcp": {
+        "content": [
+          {
+            "text": "{\"uid\":\"movies\",\"primaryKey\":\"movie_id\",\"createdAt\":\"2019-11-20T09:40:33.711324Z\",\"updatedAt\":\"2019-11-20T09:40:33.711324Z\"}",
+            "type": "text"
+          }
+        ],
+        "isError": false,
+        "structuredContent": {
+          "createdAt": "2019-11-20T09:40:33.711324Z",
+          "primaryKey": "movie_id",
+          "uid": "movies",
+          "updatedAt": "2019-11-20T09:40:33.711324Z"
+        }
+      },
+      "provenance": "P4D_ARCHIVED_MCP_AND_VENDOR_200_EXAMPLE",
+      "observed_consumer": {
+        "consumer": {
+          "artifact": {
+            "structured_content": {
+              "createdAt": "2019-11-20T09:40:33.711324Z",
+              "primaryKey": "movie_id",
+              "uid": "movies",
+              "updatedAt": "2019-11-20T09:40:33.711324Z"
+            }
+          },
+          "content": [
+            {
+              "id": "lc_4fa40a24-cf29-41cd-b876-a2ad0bcad9c3",
+              "text": "{\"uid\":\"movies\",\"primaryKey\":\"movie_id\",\"createdAt\":\"2019-11-20T09:40:33.711324Z\",\"updatedAt\":\"2019-11-20T09:40:33.711324Z\"}",
+              "type": "text"
+            }
+          ],
+          "status": "success",
+          "type": "ToolMessage"
+        },
+        "execution_kind": "ACTUAL_LANGCHAIN_TOOLMESSAGE"
+      }
+    },
+    {
+      "id": "D404",
+      "translator": "Meilisearch-CNOE",
+      "source": {
+        "status": 404,
+        "content_type": "application/json",
+        "body": {
+          "message": "Index `does-not-exist` not found.",
+          "code": "index_not_found",
+          "type": "invalid_request",
+          "link": "https://docs.meilisearch.com/errors#index_not_found"
+        }
+      },
+      "mcp": {
+        "content": [
+          {
+            "text": "{\"error\":\"API request failed: 404 - Index `does-not-exist` not found.\"}",
+            "type": "text"
+          }
+        ],
+        "isError": false,
+        "structuredContent": {
+          "error": "API request failed: 404 - Index `does-not-exist` not found."
+        }
+      },
+      "provenance": "P4D_SOURCE_BODY_RECONSTRUCTED_FROM_PINNED_VENDOR_EXAMPLE_AND_REPLAY_SCRIPT; NO_ARCHIVED_RAW_HTTP_BYTES",
+      "observed_consumer": {
+        "consumer": {
+          "artifact": {
+            "structured_content": {
+              "error": "API request failed: 404 - Index `does-not-exist` not found."
+            }
+          },
+          "content": [
+            {
+              "id": "lc_1867e4cf-81d7-4611-b1c8-64854ddd4783",
+              "text": "{\"error\":\"API request failed: 404 - Index `does-not-exist` not found.\"}",
+              "type": "text"
+            }
+          ],
+          "status": "success",
+          "type": "ToolMessage"
+        },
+        "execution_kind": "ACTUAL_LANGCHAIN_TOOLMESSAGE"
+      }
+    },
+    {
+      "id": "S200",
+      "translator": "DeepL-FastMCP",
+      "source": {
+        "status": 200,
+        "content_type": "application/json",
+        "body": {
+          "character_count": 180118,
+          "character_limit": 1250000
+        }
+      },
+      "mcp": {
+        "content": [
+          {
+            "text": "{\"character_count\":180118,\"character_limit\":1250000}",
+            "type": "text"
+          }
+        ],
+        "isError": false,
+        "structuredContent": {
+          "character_count": 180118,
+          "character_limit": 1250000
+        }
+      },
+      "provenance": "P4E_ARCHIVED_LOCAL_HTTP_RAW_BODY_AND_MCP",
+      "observed_consumer": {
+        "consumer": {
+          "mapped": {
+            "character_count": 180118,
+            "character_limit": 1250000
+          },
+          "python_type": "dict"
+        },
+        "execution_kind": "ORIGINAL_PYDANTICAI_MCP_MAPPER"
+      }
+    },
+    {
+      "id": "E456",
+      "translator": "DeepL-FastMCP",
+      "source": {
+        "status": 456,
+        "content_type": "application/json",
+        "body": {
+          "code": "RISU_SYNTH_QUOTA_EXCEEDED",
+          "message": "Local synthetic character quota exhausted"
+        }
+      },
+      "mcp": {
+        "content": [
+          {
+            "text": "Error calling tool 'getUsage': HTTP error 456:  - {\"message\": \"Local synthetic character quota exhausted\", \"code\": \"RISU_SYNTH_QUOTA_EXCEEDED\"}",
+            "type": "text"
+          }
+        ],
+        "isError": true,
+        "structuredContent": null
+      },
+      "provenance": "P4E_ARCHIVED_LOCAL_HTTP_RAW_BODY_AND_MCP",
+      "observed_consumer": {
+        "consumer": {
+          "mapped": "Error calling tool 'getUsage': HTTP error 456:  - {\"message\": \"Local synthetic character quota exhausted\", \"code\": \"RISU_SYNTH_QUOTA_EXCEEDED\"}",
+          "python_type": "str"
+        },
+        "execution_kind": "ORIGINAL_PYDANTICAI_MCP_MAPPER"
+      }
+    },
+    {
+      "id": "E429",
+      "translator": "DeepL-FastMCP",
+      "source": {
+        "status": 429,
+        "content_type": "application/json",
+        "body": {
+          "code": "RISU_SYNTH_RATE_LIMITED",
+          "message": "Local synthetic request rate limit"
+        }
+      },
+      "mcp": {
+        "content": [
+          {
+            "text": "Rate limited by upstream API, please retry later",
+            "type": "text"
+          }
+        ],
+        "isError": true,
+        "structuredContent": null
+      },
+      "provenance": "P4E_ARCHIVED_LOCAL_HTTP_RAW_BODY_AND_MCP",
+      "observed_consumer": {
+        "consumer": {
+          "mapped": "Rate limited by upstream API, please retry later",
+          "python_type": "str"
+        },
+        "execution_kind": "ORIGINAL_PYDANTICAI_MCP_MAPPER"
+      }
+    }
+  ]
+}
