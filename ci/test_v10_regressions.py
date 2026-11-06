@@ -42,7 +42,7 @@ class PortableRegression(unittest.TestCase):
             p=subprocess.run([sys.executable,str(SOURCE/'risu_probe.py'),flag],
                              text=True,capture_output=True,timeout=8)
             self.assertEqual(p.returncode,0,p.stderr)
-            self.assertIn('0.9.1',p.stdout)
+            self.assertIn('0.9.3',p.stdout)
 
     def test_modern_legacy_and_auto(self):
         program="""import json,sys
