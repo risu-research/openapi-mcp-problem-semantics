@@ -43,7 +43,7 @@ def fetch_source(s,cache):
     name=s['id']+('.har' if s['type']=='har' else '.jsonl')
     (cache/name).write_bytes(raw)
     return {'id':s['id'],'repo':s['repo'],'commit':s['commit'],
-            'path':s['path'],'type':s['type'],'origin_label':s['origin_label'],
+            'path':s['path'],'type':s['type'],'origin_label':s.get('origin_label','third-party-public-source-from-P4-I'),
             'git_blob':blobsha(raw),'sha256':hashlib.sha256(raw).hexdigest(),
             'bytes':len(raw),'file':name}
 
