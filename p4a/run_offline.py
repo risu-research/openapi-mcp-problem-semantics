@@ -38,13 +38,23 @@ def call(args,timeout=30):
         p=subprocess.run([sys.executable,'-B',*args],
                          cwd='/tmp',env=env,capture_output=True,text=True,
                          timeout=timeout,preexec_fn=limits)
-        if p.returncode==0:
+        # RISU intentionally returns exit code 2 for an UNVERIFIED input.
+        # That means "successfully diagnosed as unsupported", not a crashed
+        # process. Keep the exit code and parse its valid evidence JSON.
+        if p.returncode in (0,2):
             try:
                 obj=json.loads(p.stdout)
-                return {'status':'COMPLETE','payload':obj,
-                        'exit_code':0,'seconds':round(time.monotonic()-started,3)}
+                expected_unverified=(p.returncode==2 and
+                     obj.get('tool')=='RISU Probe' and obj.get('status')=='UNVERIFIED')
+                if p.returncode==0 or expected_unverified:
+                    return {'status':'COMPLETE','payload':obj,
+                            'exit_code':p.returncode,
+                            'seconds':round(time.monotonic()-started,3)}
+                return {'status':'UNEXPECTED_EXIT_WITH_JSON','exit_code':p.returncode,
+                        'seconds':round(time.monotonic()-started,3)}
             except (ValueError,TypeError):
-                return {'status':'INVALID_JSON_OUTPUT','seconds':round(time.monotonic()-started,3)}
+                return {'status':'INVALID_JSON_OUTPUT','exit_code':p.returncode,
+                        'seconds':round(time.monotonic()-started,3)}
         return {'status':'NONZERO_EXIT','exit_code':p.returncode,
                 'seconds':round(time.monotonic()-started,3)}
     except subprocess.TimeoutExpired:
@@ -90,6 +100,22 @@ def qualified(inputs:Path,output:Path):
         scan=call([str(PRODUCT/'risu_probe.py'),'scan',str(folder),
                    '--format','json'],timeout=30)
         inventory=call([str(ROOT/'p4a'/'inventory.py'),str(filename)],timeout=35)
+        # Post-hoc diagnostic arm: same SHA, same untouched v0.9.6 binary,
+        # but developer explicitly points at the existing original file.
+        # This DOES NOT replace preregistered default-folder results.
+        directed=call([str(PRODUCT/'risu_probe.py'),'scan',str(filename),
+                       '--format','json'],timeout=30)
+        record['posthoc_explicit_file_path']={
+            'status':'SECONDARY_POSTHOC_NOT_PREREGISTERED',
+            'execution':directed['status'],
+            'elapsed_seconds':directed['seconds']}
+        if directed['status']=='COMPLETE':
+            d=directed['payload']
+            record['posthoc_explicit_file_path'].update(
+                 scanner_status=d.get('status'),
+                 summary=d.get('summary',{}),
+                 incomplete=[{'reason':x.get('reason')} for x in
+                             d.get('incomplete',[])][:4])
         record['first_check_elapsed_seconds']=first['seconds']
         record['full_scan_elapsed_seconds']=scan['seconds']
         record['inventory_elapsed_seconds']=inventory['seconds']
@@ -153,6 +179,10 @@ def qualified(inputs:Path,output:Path):
          i.get('declared_contract_inventory',{}).get('get_operations',0) for i in items),
       'total_declared_GETs_with_error_or_default':sum(
          i.get('declared_contract_inventory',{}).get('get_with_any_error_or_default',0) for i in items),
+      'posthoc_direct_path_recognized_projects':sum(
+          i.get('posthoc_explicit_file_path',{}).get('summary',{})
+           .get('openapi_parsed',0)>0 for i in items),
+      'posthoc_arm_can_change_primary_denominator':False,
       'confirmed_real_consumer_mismatches':0,
       'independent_developer_onboarding_measured':False,
       'claim_boundary':'Public committed OpenAPI declaration inventory and v0.9.6 offline scanner only. No vendor API, live MCP converter, actual SDK consumer, external developer, or new production defect was tested.',
