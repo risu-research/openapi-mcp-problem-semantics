@@ -177,10 +177,15 @@ async def one_chain(server_py,base):
         listed=await client.list_tools()
         matches=[t for t in listed.tools if t.name=='get_index']
         assert len(matches)==1, ('GENERATED_TOOL_ABSENT',[t.name for t in listed.tools])
+        schema=matches[0].inputSchema
+        props=schema.get('properties',{})
+        assert 'path_indexUid' in props, ('DECLARED_PARAMETER_MISMATCH',schema)
+        assert 'path_indexUid' in schema.get('required',[]), ('NOT_REQUIRED',schema)
+        mcp_key='path_indexUid'
         tool=await as_langchain_tool(matches[0],client)
         out=[]
         for label,identifier in [('success','movies'),('error','does-not-exist')]:
-            arguments={'indexUid':identifier}
+            arguments={mcp_key:identifier}
             raw=await client.call_tool('get_index',arguments,raise_on_error=False)
             raw_record={'isError':raw.is_error,'structuredContent':raw.structured_content,
                         'content':[{'type':getattr(x,'type',None),'text':getattr(x,'text',None)} for x in raw.content]}
@@ -191,10 +196,10 @@ async def one_chain(server_py,base):
                                 'artifact':getattr(result,'artifact',None),
                                 'content':getattr(result,'content',None)}}
             out.append(record)
-        return out, [t.name for t in listed.tools]
+        return out, [t.name for t in listed.tools], mcp_key
 
 
-def make_report(original,good,missing,bounded,results,tools,counts,invalid,observed_error):
+def make_report(original,good,missing,bounded,results,tools,counts,invalid,observed_error,mcp_key):
     by={v['case']:v for v in results}
     assert set(by)=={'success','error'}
     assert not invalid, ('UNEXPECTED_HTTP_REQUESTS',invalid)
@@ -219,7 +224,8 @@ def make_report(original,good,missing,bounded,results,tools,counts,invalid,obser
        'transport':'ACTUAL_STDIO_MCP_CLIENT_SESSION',
        'consumer_kind':'ACTUAL_LANGCHAIN_MCP_AS_LANGCHAIN_TOOL_AND_TOOLMESSAGE',
        'production_service_touched':False,'external_llm_touched':False,
-       'local_http_gets':dict(counts),'unexpected_http':invalid,'listed_tools':tools},
+       'local_http_gets':dict(counts),'unexpected_http':invalid,'listed_tools':tools,
+       'argument_mapping':{'source':'indexUid','mcp':mcp_key}},
       'checks':{'source_error_code':upstream_error_code,
         'mcp_contains_error_code':raw_code,
         'langchain_model_or_artifact_contains_error_code':model_code,
@@ -246,8 +252,8 @@ async def main():
         inp,good,missing,bounded=derive(original,Path(t),base)
         generated=exec_codegen(inp,Path(t)/'generated')
         assert not counts and not invalid,'Generation unexpectedly accessed API'
-        results,tools=await one_chain(generated,base)
-        report=make_report(original,good,missing,bounded,results,tools,counts,invalid,observed_error)
+        results,tools,mcp_key=await one_chain(generated,base)
+        report=make_report(original,good,missing,bounded,results,tools,counts,invalid,observed_error,mcp_key)
     finally:
       server.shutdown();server.server_close();thread.join(timeout=5)
     args.out.parent.mkdir(parents=True,exist_ok=True)

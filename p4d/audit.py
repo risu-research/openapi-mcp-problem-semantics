@@ -15,11 +15,12 @@ def audit(result):
     assert e['unexpected_http']==[]
     assert e['local_http_gets']=={'/indexes/movies':2,'/indexes/does-not-exist':2}
     assert 'get_index' in e['listed_tools']
+    assert e['argument_mapping']=={'source':'indexUid','mcp':'path_indexUid'}
     assert len(entries)==2 and {x['case'] for x in entries}=={'success','error'}
     vals={x['case']:x for x in entries}
     success=vals['success'];error=vals['error']
-    assert success['arguments']=={'indexUid':'movies'}
-    assert error['arguments']=={'indexUid':'does-not-exist'}
+    assert success['arguments']=={'path_indexUid':'movies'}
+    assert error['arguments']=={'path_indexUid':'does-not-exist'}
     assert success['consumer']['type']=='ToolMessage' and error['consumer']['type']=='ToolMessage'
     assert success['consumer']['status'] in ('success','error') and error['consumer']['status'] in ('success','error')
     source_code=c['source_error_code']
