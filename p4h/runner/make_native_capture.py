@@ -62,6 +62,11 @@ async def generate(out):
         (out/'capture.har').write_text(json.dumps({'log':{'version':'1.2','creator':{'name':'RISU independent SDK capture test','version':'1'},'entries':server.captures}},indent=2)+'\n')
         (out/'pairs.json').write_text(json.dumps(pairing,indent=2)+'\n')
         print('REAL_SDK_NATIVE_RECORDING',len(calls),'tool calls,',len(server.captures),'HTTP requests,',len(wire),'raw MCP frames')
+    except BaseException:
+        stderr_file=out/'mcp.jsonl.server_stderr'
+        if stderr_file.exists():
+            print('NATIVE_CAPTURE_SERVER_STDERR',stderr_file.read_text(errors='replace')[-5000:],file=sys.stderr)
+        raise
     finally:
         server.shutdown();server.server_close();thread.join(timeout=3)
 
