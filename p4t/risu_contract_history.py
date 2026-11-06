@@ -106,10 +106,36 @@ def _policy_rules(raw: Any) -> dict[str, dict]:
         return {}
     if not isinstance(raw, dict):
         raise ValueError("Operator policy must be an object")
-    rows = raw.get("rules", raw.get("obligations", []))
+    rules: dict[str, dict] = {}
+    if "cases" in raw:
+        cases = raw["cases"]
+        if not isinstance(cases, list):
+            raise ValueError("P4-S policy cases must be an array")
+        seen_cases: set[str] = set()
+        for case in cases:
+            if not isinstance(case, dict):
+                raise ValueError("Invalid P4-S policy case")
+            case_id = case.get("case_id")
+            tool = case.get("tool")
+            if not isinstance(case_id, str) or not case_id or case_id in seen_cases or not isinstance(tool,str) or not tool:
+                raise ValueError("Invalid/duplicate policy case or missing tool")
+            seen_cases.add(case_id)
+            obligations = case.get("obligations")
+            if not isinstance(obligations, list):
+                raise ValueError("P4-S case obligations must be an array")
+            for row in obligations:
+                if not isinstance(row, dict) or not isinstance(row.get("id"),str) or not row["id"]:
+                    raise ValueError("P4-S obligation requires an id")
+                key = case_id+"::"+row["id"]
+                if key in rules:
+                    raise ValueError("Duplicate P4-S case obligation: "+key)
+                rules[key] = {"case_id":case_id,"tool":tool,**copy.deepcopy(row)}
+        return rules
+    if "rules" not in raw and "obligations" not in raw:
+        raise ValueError("Unrecognized policy layout; refusing to silently ignore obligations")
+    rows = raw.get("rules", raw.get("obligations"))
     if not isinstance(rows, list):
         raise ValueError("Operator policy rules must be an array")
-    rules: dict[str, dict] = {}
     for idx, row in enumerate(rows):
         if not isinstance(row, dict):
             raise ValueError("Invalid operator rule")
