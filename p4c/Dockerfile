@@ -44,4 +44,4 @@ RUN chmod -R a+rX /opt/risu /opt/langchain-source /opt/agents-source /opt/pydant
    /opt/langchain-venv /opt/agents-venv /opt/pydantic-venv
 ENV HOME=/tmp TMPDIR=/tmp XDG_CACHE_HOME=/tmp/cache
 USER 65534:65534
-ENTRYPOINT ["/bin/sh","-c"]
+CMD ["/opt/langchain-venv/bin/python","-B","/opt/risu/p4c/run_external_consumers.py","--framework","langchain","--out","/results/langchain.json"]
