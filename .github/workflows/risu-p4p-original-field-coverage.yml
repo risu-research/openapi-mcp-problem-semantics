@@ -205,7 +205,7 @@ jobs:
           python p4p/unpack_sources.py
           mkdir -p p4p/fixtures
           cp p4o/fixtures/jpo_observed_mapping.json p4p/fixtures/jpo_observed_mapping.json
-          ln -s ../../dist/risu_v09_source p4p/install_src
+          ln -s ../dist/risu_v09_source p4p/install_src
           ln -s ../../p4o/overrides/risu_semantics.py p4p/overrides/risu_semantics.py
           ln -s ../../p4o/tests/test_semantic_mapping.py p4p/tests/test_semantic_mapping.py || true
           python -m compileall -q p4p
