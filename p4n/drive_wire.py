@@ -64,7 +64,9 @@ async def run_case(case,repo,source,output):
             "JPO_API_PASSWORD":"REDACTED_PASSWORD",
             "P4N_REPLAY_ONLY":"1",
             "PYTHONDONTWRITEBYTECODE":"1",
-            "VCR_RECORD_MODE":"none"}
+            "VCR_RECORD_MODE":"none",
+            "FASTMCP_CHECK_FOR_UPDATES":"off",
+            "FASTMCP_SHOW_SERVER_BANNER":"false"}
         cmd=[sys.executable,"-u",str(ROOT/"replay_original_jpo_subserver.py")]
         p=await asyncio.create_subprocess_exec(*cmd,
             stdin=asyncio.subprocess.PIPE,
