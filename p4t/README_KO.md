@@ -1,6 +1,6 @@
 # RISU Probe P4-T — 버전별 MCP 출력 계약·운영자 의무 변경 추적
 
-**상태: 로컬에서 60개 테스트 통과.** 기존 P4-S v0.9.15를 덮어쓰지 않고, 선택 명령 `risu-probe contract-history`를 추가할 수 있는 패치다. P4-S에서 관측한 `tools/list`의 출력 스키마를 실제 기준점으로 사용할 수 있다. 포함된 두 번째 스키마와 운영자 정책은 **명시적인 가상 업그레이드 시나리오**이며, 제3자 개발자가 실제 배포한 변경이 아니다.
+**상태: 로컬 단위 테스트 60/60 및 P4-T 실제 GitHub Actions 통합 검증 통과.** 기존 P4-S v0.9.15를 덮어쓰지 않고, 선택 명령 `risu-probe contract-history`를 추가할 수 있는 패치다. P4-S에서 관측한 `tools/list`의 출력 스키마를 실제 기준점으로 사용할 수 있다. 포함된 두 번째 스키마와 운영자 정책은 **명시적인 가상 업그레이드 시나리오**이며, 제3자 개발자가 실제 배포한 변경이 아니다.
 
 ## 사용법
 
@@ -10,8 +10,11 @@
 risu-probe contract-history snapshot --schema p4n/results/normal/observed_stdio_wire.jsonl \
   --tool get_jpo_progress --policy p4s/fixtures/jpo_obligation_policy.json \
   --version observed-p4s --out p4t/results/observed.json
-risu-probe contract-history snapshot --schema p4t/fixtures/upgrade_schema.json \
-  --tool get_jpo_progress --policy p4t/fixtures/operator_new.json \
+python p4t/upgrade_scenario.py --observed p4t/results/observed.json \
+  --schema-out p4t/results/hypothetical_schema.json \
+  --policy-out p4t/results/hypothetical_policy.json
+risu-probe contract-history snapshot --schema p4t/results/hypothetical_schema.json \
+  --tool get_jpo_progress --policy p4t/results/hypothetical_policy.json \
   --version hypothetical-v2 --previous p4t/results/observed.json \
   --out p4t/results/hypothetical.json
 risu-probe contract-history diff p4t/results/observed.json p4t/results/hypothetical.json \
@@ -34,7 +37,7 @@ risu-probe contract-history timeline p4t/results/observed.json p4t/results/hypot
 
 단독 60개 `unittest`가 통과했다. 합성 예시의 정확한 변화는 스키마 직접 변경 **4**, 파급효과 **4**, 운영자 정책 이벤트 **6**, 잠재 breaking 변경 **3**. 기존 P4-S 원본의 132/134 커버리지나 CONFIRMED_LOSS=0 등의 결과를 변경하려는 패치는 포함하지 않았다.
 
-GitHub Actions에서 기존 P4-S 재생 결과에 설치형 명령을 적용하기 전에는 **실제 P4-T GitHub CI가 통과했다고 주장할 수 없다.**
+P4-T 통합 CI 실행 **#42300393742**에서 제3자 고정 HTTP 기록을 원본 MCP 서버로 실제 재생하고, P4-S 원본 `tools/list` 스키마를 다시 수집했다. 해당 실제 기준점에서 가상 업그레이드를 생성하여 4/4/6/3 결과를 강제 검증했고, P4-T 단위 테스트 60개, 이전 단계 전체, SHA-256 변조 반례까지 통과했다. [재현 CI](https://github.com/risu-research/openapi-mcp-problem-semantics/actions/runs/42300393742). 이 성공은 고정된 재생 환경과 가상 변경 시나리오에 한정된다.
 
 ## 정밀 재감사 보강
 
