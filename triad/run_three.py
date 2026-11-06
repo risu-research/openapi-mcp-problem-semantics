@@ -20,6 +20,7 @@ from threading import Thread
 PRODUCT=Path('/opt/risu/product')
 sys.path.insert(0,str(PRODUCT))
 from risu_probe import compare, VERSION
+from risu_evidence import assess as calibrated_assess
 from risu_analyze import analyze
 from risu_collect import capture, digest
 from risu_verify import _server, prepare, verify_fixture
@@ -117,6 +118,10 @@ def safe_controls(prep):
              '_meta':{'observed_http_status':n},'content':[]}
         result=compare(source,mcp,'control-'+str(n),error_profile='json-errors')
         assert result['verdict']=='PRESERVED',(n,result)
+        assert result['evidence_v1']['body_recovery']=='EXACT_MACHINE',(n,result)
+        text_positive={'content':[{'type':'text','text':json.dumps(source['body'])}],
+                       'isError':n>=400,'_meta':{'observed_http_status':n}}
+        assert calibrated_assess(source,text_positive)['body_recovery']=='EXACT_JSON_TEXT'
         positives[str(n)]=result['verdict']
     assert set(positives)=={'200','400','409','422'}
     return positives
@@ -130,15 +135,31 @@ def evaluate_result(adapter,matrix,expected_paths,counters,unexpected,elapsed):
     source_by_id={r['check']['id']:r['source_sample'] for r in matrix['targets'][0]['checks']}
     items=[]
     meaningful=0
+    metamorphic_rejections=0
     for row in report['results']:
         source=source_by_id[row['id']]
         status=source['status']
         loss=row['verdict'] in ('LOSS','LOSS_AND_INVENTED')
         meaningful+=int(loss)
         rec=next(r for r in matrix['targets'][0]['checks'] if r['check']['id']==row['id'])
+        ev=row.get('evidence_v1')
+        assert ev and ev['schema']=='risu-evidence-v1' and ev['scope']=='FULL_JSON_BODY',(adapter,row)
+        altered=json.loads(json.dumps(source))
+        assert 'risu_fixture_marker' in altered['body'],(adapter,status)
+        altered['body']['risu_fixture_marker']='RISU_COUNTERFACTUAL_NOT_PRESENT'
+        rejected=calibrated_assess(altered,rec['mcp_sample'])
+        assert rejected['body_recovery'] not in ('EXACT_MACHINE','EXACT_JSON_TEXT'),(adapter,status,rejected)
+        metamorphic_rejections+=1
+        if adapter=='mcpgen':
+            assert ev['body_recovery']=='EXACT_JSON_TEXT',(adapter,status,ev)
+            assert ev.get('envelope_path')=='/data',(adapter,status,ev)
+            assert ev['http_status']=='TEXT_STATUS_RECOVERABLE',(adapter,status,ev)
+        if adapter=='fastmcp' and status==200:
+            assert ev['body_recovery']=='EXACT_MACHINE',(adapter,status,ev)
         items.append({'id':row['id'],'status':status,'verdict':row['verdict'],
                       'diagnostic_codes':sorted(set(x['code'] for x in row.get('diagnostics',[]))),
                       'losses':row.get('losses',[])[:5],
+                      'evidence_v1':ev,
                       'source_sha256':rec['source_sha256'],'mcp_sha256':rec['mcp_sha256']})
     assert sorted(x['status'] for x in items)==[200,400,409,422],adapter
     assert meaningful>0,'No meaningful loss detection on selected target'
@@ -146,13 +167,14 @@ def evaluate_result(adapter,matrix,expected_paths,counters,unexpected,elapsed):
     return {'project':adapter,'execution':'REAL_LOCALHOST_HTTP_AND_EXTERNAL_MCP',
             'version':VERSION,'seconds_after_dependencies_ready':round(elapsed,3),
             'cases':sorted(items,key=lambda x:x['status']),
-            'observed_loss_count':meaningful,'http_get_count':sum(counters.values()),
+            'observed_loss_count':meaningful,'counterfactual_rejections':metamorphic_rejections,
+            'http_get_count':sum(counters.values()),
             'unexpected_http_requests':len(unexpected),
             'first_diagnosis_under_ten_minutes_after_dependencies_ready':True}
 
 def main():
     os.chdir('/tmp')
-    assert VERSION=='0.9.1-experimental',VERSION
+    assert VERSION=='0.9.3-experimental',VERSION
     assert git_head('/opt/cnoe-source')==REPO_SHA['cnoe']
     assert git_head('/opt/mcpgen-source')==REPO_SHA['mcpgen']
     RESULTS.mkdir(exist_ok=True)
@@ -176,9 +198,11 @@ def main():
                         'version':VERSION,
                         'seconds_after_dependencies_ready':round(cnoe_elapsed,3),
                         'cases':[{'id':x['id'],'status':x['http_status'],'verdict':x['verdict'],
+                                  'evidence_v1':x['evidence_v1'],
                                   'diagnostic_codes':x['diagnostic_codes']}
                                   for x in cnoe['evaluations']],
                         'observed_loss_count':cnoe['counts']['error_losses'],
+                        'counterfactual_rejections':cnoe['counts']['counterfactual_rejections'],
                         'http_get_count':12,'unexpected_http_requests':0,
                         'first_diagnosis_under_ten_minutes_after_dependencies_ready':cnoe_elapsed<600})
         assert cnoe_elapsed<600
@@ -226,12 +250,21 @@ def main():
                 results.append(evaluate_result(name,matrix,paths,counters,unexpected,elapsed))
             finally:
                 http.shutdown();http.server_close()
+        calibrated_summary={}
+        for project in results:
+            for case in project['cases']:
+                typ=case['evidence_v1']['body_recovery']
+                calibrated_summary[typ]=calibrated_summary.get(typ,0)+1
+        assert sum(calibrated_summary.values())==12
+        assert sum(p['counterfactual_rejections'] for p in results)==12
         summary={'status':'PASS','fixture':'SYNTHETIC_GET_ONLY',
                  'network':'Docker --network none',
                  'original_product_sha256':hashlib.sha256((PRODUCT/'risu_probe.py').read_bytes()).hexdigest(),
                  'projects':results,'reference_controls':control,
+                 'calibrated_summary':calibrated_summary,
+                 'counterfactual_rejections':sum(p['counterfactual_rejections'] for p in results),
                  'pinned_projects':{**REPO_SHA,'fastmcp':'4.1.6','mcp':'2.3.0'},
-                 'claim_boundary':'Three actual conversion implementations with 4 synthetic cases each; not a prevalence survey or MCP compliance claim',
+                 'claim_boundary':'Legacy LOSS refers to machine-carrier failures, not necessarily destroyed content. New evidence_v1 distinguishes exact JSON text recovery, flags and actual preview clipping.',
                  'evidence_privacy':'Only hashes, statuses, and limited loss descriptors exported; no raw bodies'}
         (RESULTS/'THREE_PROJECTS_SUMMARY.json').write_text(json.dumps(summary,indent=2)+'\n')
         for x in results:
