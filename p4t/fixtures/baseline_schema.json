@@ -1,0 +1,42 @@
+{
+  "type": "object",
+  "required": [
+    "summary",
+    "items",
+    "provenance"
+  ],
+  "properties": {
+    "summary": {
+      "type": "string"
+    },
+    "items": {
+      "type": "array"
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "source",
+        "retrieved_at",
+        "endpoint",
+        "verified"
+      ],
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "retrieved_at": {
+          "type": "string"
+        },
+        "endpoint": {
+          "type": "string"
+        },
+        "verified": {
+          "type": "boolean"
+        }
+      }
+    },
+    "not_found": {
+      "type": "boolean"
+    }
+  }
+}
