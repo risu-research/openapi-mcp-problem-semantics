@@ -1,0 +1,136 @@
+name: RISU P4-J Causal Evidence Gate 0.9.10
+on:
+  push:
+    branches:
+      - qualification/p4j-causal-trust-gate-20261106
+    paths:
+      - p4j/**
+      - .github/workflows/risu-p4j-causal-evidence-gate.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  trusted-causality-qualification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Freeze old baseline and rerun all P0 compatibility tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -q PyYAML==6.0.2
+          python ci/export_v09_source_portable.py
+          python ci/upgrade_v10_modules.py
+          python ci/upgrade_v11_semantics.py
+          python ci/upgrade_v12_decision_witness.py
+          python ci/upgrade_v13_repro.py
+          python ci/upgrade_v14_fixverify.py
+          python ci/upgrade_v15_openapi_compat.py
+          PYTHONPATH=dist/risu_v09_source python ci/test_v093_evidence.py
+          PYTHONPATH=dist/risu_v09_source python ci/test_v094_decision_witness.py
+          PYTHONPATH=dist/risu_v09_source python ci/test_v10_regressions.py
+          PYTHONPATH=dist/risu_v09_source python ci/test_v097_compat.py
+      - name: Reconstruct original P4-G and P4-H exactly, then apply SHA-pinned P4-J patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4g/apply_upgrade.py
+          python p4h/apply_upgrade.py
+          python p4j/apply_upgrade.py
+          python -m compileall -q dist/risu_v09_source p4j
+          mkdir -p p4j/src p4j/dist p4j/results
+          cp -a dist/risu_v09_source/. p4j/src/
+      - name: Exercise 26 adversarial trust/causality unit tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -q cryptography
+          PYTHONPATH=p4j/src python -m unittest discover -s p4j/tests -p test_causal_gate.py -v
+      - name: Build and install integrated experiment wheel
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -q --upgrade setuptools wheel
+          python -m pip wheel --no-deps --no-build-isolation -w p4j/dist dist/risu_v09_source
+          python -m pip install --no-index --no-deps --force-reinstall p4j/dist/risu_probe_preview-0.9.10.dev0-py3-none-any.whl
+          risu-probe --version
+      - name: Test conservative upgrade of untrusted P4-G and P4-H saved data
+        shell: bash
+        run: |
+          set -euo pipefail
+          risu-probe analyze p4g/evidence/saved_p4de.json --recovery --format json --out p4j/results/p4g_declaration_only.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('p4j/results/p4g_declaration_only.json').read_text())
+          assert r['summary']['LOSS']==3 and r['summary']['PRESERVED']==2
+          assert r['causal_gate_v1']['summary']['CONFIRMED_LOSS']==0
+          assert r['causal_gate_v1']['summary']['CONDITIONAL_MISMATCH']==3
+          print('P4J_ARCHIVED_REAL_CONVERTER_EVIDENCE_REMAINS_CONDITIONAL',r['causal_gate_v1']['summary'])
+          PY
+      - name: Run actual third-party MCP SDK over real stdio and local HTTP under bounded witness observer
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check 'mcp==2.3.0'
+          python -u p4j/runner/make_witnessed_capture.py --out p4j/results/trusted_local_sdk_capture --trust-out p4j/results/operator_demo_trust.json
+          test -s p4j/results/trusted_local_sdk_capture/capture.har
+          test -s p4j/results/trusted_local_sdk_capture/mcp.jsonl
+          test -s p4j/results/trusted_local_sdk_capture/causal_witness.json
+      - name: One command controls and one command verified promotion
+        shell: bash
+        run: |
+          set -euo pipefail
+          risu-probe analyze p4j/results/trusted_local_sdk_capture --recovery --format json --out p4j/results/declared_only.json
+          risu-probe analyze p4j/results/trusted_local_sdk_capture --recovery --causal-trust-store p4j/results/operator_demo_trust.json --format json --out p4j/results/confirmed_with_witness.json
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          d=json.loads(Path('p4j/results/declared_only.json').read_text())
+          w=json.loads(Path('p4j/results/confirmed_with_witness.json').read_text())
+          assert d['causal_gate_v1']['summary']['CONFIRMED_LOSS']==0
+          assert d['causal_gate_v1']['summary']['CONDITIONAL_MISMATCH']==1
+          assert w['causal_gate_v1']['summary']['CONFIRMED_LOSS']==1
+          assert w['causal_gate_v1']['summary']['WITNESSED_NO_LOSS_IN_OBSERVED_FIELDS']==1
+          assert w['summary']['LOSS']==d['summary']['LOSS']==1
+          assert 'risu_trace_token' not in json.dumps(w)
+          print('P4J_REAL_SDK_PROMOTION_GATED_CORRECTLY',w['causal_gate_v1']['summary'])
+          PY
+      - name: Independently audit full original HTTP-MCP event chain and verified signing root
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4j/independent_audit.py p4j/results/trusted_local_sdk_capture p4j/results/operator_demo_trust.json p4j/results/confirmed_with_witness.json p4j/results/declared_only.json p4j/results/independent_audit.json
+          if risu-probe analyze p4j/results/trusted_local_sdk_capture --recovery --causal-trust-store p4j/results/operator_demo_trust.json --fail-on-confirmed-loss --format json > /dev/null; then
+            echo 'P4J_CRITICAL: confirmed loss did not set exit status' >&2; exit 1
+          else
+            code=$?
+            test "$code" -eq 1
+          fi
+      - name: Preserve original inputs, evidence and audit, never signing private keys
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: risu-p4j-010-causal-trust-qualification
+          path: |
+            p4j/README_KO.md
+            p4j/apply_upgrade.py
+            p4j/independent_audit.py
+            p4j/overrides/**
+            p4j/runner/**
+            p4j/tests/**
+            p4j/dist/*.whl
+            p4j/results/trusted_local_sdk_capture/capture.har
+            p4j/results/trusted_local_sdk_capture/mcp.jsonl
+            p4j/results/trusted_local_sdk_capture/pairs.json
+            p4j/results/trusted_local_sdk_capture/causal_witness.json
+            p4j/results/operator_demo_trust.json
+            p4j/results/declared_only.json
+            p4j/results/confirmed_with_witness.json
+            p4j/results/p4g_declaration_only.json
+            p4j/results/independent_audit.json
+          if-no-files-found: warn
