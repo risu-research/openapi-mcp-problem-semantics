@@ -59,6 +59,7 @@ jobs:
           python apps/test_repro_unit.py
           python apps/test_repro_cli.py
           python apps/test_v096_fixverify.py
+          bash -n apps/verify_fix.sh
           python ci/test_v10_regressions.py
           python dist/risu_v09_source/risu_probe.py --version
           risu-probe --version
@@ -214,6 +215,13 @@ jobs:
       - name: Independent audit of all 10 live GETs, no-regression and minimal-repair artifacts
         run: |
           PYTHONPATH=dist/risu_v09_source python apps/audit_results.py results
+      - name: Independently exercise developer one-command replay with same pinned container
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash apps/verify_fix.sh --reuse-image risu-v096-real-apps --output "$RUNNER_TEMP/risu-v096-one-command"
+          test -s "$RUNNER_TEMP/risu-v096-one-command/INDEPENDENT_AUDIT.json"
+          cp "$RUNNER_TEMP/risu-v096-one-command/INDEPENDENT_AUDIT.json" results/ONE_COMMAND_AUDIT.json
       - name: Export complete minimal executable fix and authentic SDK findings
         if: always()
         uses: actions/upload-artifact@v4
@@ -222,6 +230,7 @@ jobs:
           path: |
             results/REAL_APPS_SUMMARY.json
             results/INDEPENDENT_AUDIT.json
+            results/ONE_COMMAND_AUDIT.json
             results/repro_package/**
             results/begin_unix.txt
             results/end_unix.txt
