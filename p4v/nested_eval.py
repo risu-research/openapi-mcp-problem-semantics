@@ -76,8 +76,8 @@ def verify(root,out):
     assert 'later_occurrence' not in load(root/versions[0]/'tool_calls.json')['convert_time']['response']['result']['structuredContent']
     assert load(root/versions[1]/'tool_calls.json')['convert_time']['response']['result']['structuredContent']['later_occurrence'] is None
     base=create_snapshot(str(root/versions[0]/'tools_list.json'),None,versions[0],'convert_time')
-    next=create_snapshot(str(root/versions[1]/'tools_list.json'),None,versions[1],'convert_time')
-    assert diff_snapshots(base,next)['summary']['direct_schema_events']==1
+    next_snapshot=create_snapshot(str(root/versions[1]/'tools_list.json'),None,versions[1],'convert_time')
+    assert diff_snapshots(base,next_snapshot)['summary']['direct_schema_events']==1
     dsta=load(root/'dst'/versions[0]/'receipt.json');dstb=load(root/'dst'/versions[1]/'receipt.json')
     assert not dsta['later_occurrence_nonnull'] and dstb['later_occurrence_nonnull']
     report={'source':'two published releases; actual stdio MCP tools/list + tools/call; date-injected DST branch',
