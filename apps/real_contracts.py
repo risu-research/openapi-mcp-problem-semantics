@@ -38,10 +38,10 @@ def classify_real_sdk(contract:str, body:dict, status:int) ->str:
         from github.Requester import Requester
         return type(Requester.createException(status,{},body)).__name__
     if contract=='stripe-rate-limit-400':
-        from stripe._api_requestor import APIRequestor
+        from stripe._api_requestor import _APIRequestor
         # Invoke the real official dispatcher for BOTH the native payload
         # and the missing structured-content case; no invented fallback labels.
-        parser=object.__new__(APIRequestor)
+        parser=object.__new__(_APIRequestor)
         try:
             parser.handle_error_response(json.dumps(body,sort_keys=True),
                                          status,body,{},'V1')
