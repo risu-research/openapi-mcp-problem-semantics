@@ -1,0 +1,93 @@
+name: RISU P4-G One-Command Recovery Lens Qualified
+on:
+  push:
+    branches:
+      - qualification/p4g-one-command-recovery-lens-20261106
+    paths:
+      - p4g/**
+      - .github/workflows/risu-p4g-recovery-one-command.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  p4g-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Restore qualified unchanged v0.9.7 source from pinned upgrades
+        shell: bash
+        run: |
+          set -euo pipefail
+          python ci/export_v09_source_portable.py
+          python ci/upgrade_v10_modules.py
+          python ci/upgrade_v11_semantics.py
+          python ci/upgrade_v12_decision_witness.py
+          python ci/upgrade_v13_repro.py
+          python ci/upgrade_v14_fixverify.py
+          python ci/upgrade_v15_openapi_compat.py
+          python -m compileall -q dist/risu_v09_source
+      - name: Verify original v0.9.7 baseline regression behavior
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -q PyYAML==6.0.2
+          PYTHONPATH=dist/risu_v09_source python ci/test_v093_evidence.py
+          PYTHONPATH=dist/risu_v09_source python ci/test_v094_decision_witness.py
+          PYTHONPATH=dist/risu_v09_source python ci/test_v10_regressions.py
+          PYTHONPATH=dist/risu_v09_source python ci/test_v097_compat.py
+      - name: Apply pinned narrow v0.9.8 recovery command patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p4g/apply_upgrade.py
+          python -m compileall -q dist/risu_v09_source
+      - name: Run 23 opt-in CLI cases and failure controls on actual integrated source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p p4g/acceptance/{src,tests,evidence}
+          cp -a dist/risu_v09_source/. p4g/acceptance/src/
+          cp p4g/tests/test_cli_recovery.py p4g/acceptance/tests/test_cli_recovery.py
+          cp p4g/evidence/saved_p4de.json p4g/acceptance/evidence/saved_p4de.json
+          PYTHONPATH=p4g/acceptance/src python -m unittest discover -s p4g/acceptance/tests -p test_cli_recovery.py -v
+      - name: Build a real wheel and run installed console script on frozen cases
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -q --upgrade setuptools wheel
+          mkdir -p p4g/dist p4g/results
+          python -m pip wheel --no-deps --no-build-isolation -w p4g/dist dist/risu_v09_source
+          python -m pip install --no-index --no-deps --force-reinstall p4g/dist/risu_probe_preview-0.9.8.dev0-py3-none-any.whl
+          risu-probe --version
+          risu-probe analyze p4g/evidence/saved_p4de.json --recovery --format json --out p4g/results/combined.json
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          r=json.loads(Path('p4g/results/combined.json').read_text())
+          assert r['version']=='0.9.8-experimental'
+          assert r['summary']['LOSS']==3 and r['summary']['PRESERVED']==2
+          by={x['id']:x for x in r['recovery_v1']['cases']}
+          assert by['D404']['error_flag']=='ERROR_FLAG_LOST'
+          assert by['E456']['consumer']['full_body']=='EXACT_JSON_TEXT'
+          assert by['E429']['consumer']['full_body']=='NO_EXACT_OBJECT_CARRIER'
+          original=json.loads(Path('p4g/evidence/saved_p4de.json').read_text())
+          assert len(original['cases'])==5
+          print('P4G_INSTALLED_ONE_COMMAND_PASS',r['recovery_v1']['summary'])
+          PY
+      - name: Preserve reproducible evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: risu-p4g-098-one-command-recovery-verified
+          path: |
+            p4g/apply_upgrade.py
+            p4g/overrides/**
+            p4g/tests/**
+            p4g/evidence/saved_p4de.json
+            p4g/results/combined.json
+            p4g/dist/risu_probe_preview-0.9.8.dev0-py3-none-any.whl
+          if-no-files-found: warn
