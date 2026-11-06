@@ -191,6 +191,20 @@ class CausalGate(unittest.TestCase):
         (self.root/'pairs.json').write_text(json.dumps(pair))
         d=self.gate()
         self.assertEqual(d['causal_gate_v1']['summary']['CONFIRMED_LOSS'],0)
+    def test_default_human_output_primary_is_conditional(self):
+        env={**os.environ,'PYTHONPATH':str(SRC)}
+        p=subprocess.run([sys.executable,'-B','-m','risu_probe','analyze',str(self.root),'--recovery','--format','text'],
+            env=env,text=True,capture_output=True)
+        self.assertEqual(p.returncode,0,p.stderr)
+        self.assertIn('FALSE_FLAG_404: CONDITIONAL_MISMATCH (legacy=LOSS)',p.stdout)
+        self.assertIn('Primary causal summary:',p.stdout)
+    def test_markdown_labels_legacy_as_unproven(self):
+        env={**os.environ,'PYTHONPATH':str(SRC)}
+        p=subprocess.run([sys.executable,'-B','-m','risu_probe','analyze',str(self.root),'--recovery','--format','markdown'],
+            env=env,text=True,capture_output=True)
+        self.assertEqual(p.returncode,0,p.stderr)
+        self.assertTrue(p.stdout.startswith('## Primary evidence-gated findings'))
+        self.assertIn('## Legacy comparator (not causal proof)',p.stdout)
     def test_plain_json_output_contains_proof_warning(self):
         d=self.gate()
         self.assertIn('cannot prove',d['causal_gate_v1']['boundary'])
