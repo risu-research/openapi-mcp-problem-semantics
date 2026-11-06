@@ -10,7 +10,7 @@ import shutil
 ROOT=Path(__file__).resolve().parents[1]
 BASE=ROOT/"dist"/"risu_v09_source"
 PINS={
- "risu_analyze.py":"56081e051c6477e1942d2e455a8d785ea1e0f445a0f1179f9eb763d956ee931b",
+ "risu_analyze.py":"306b6744eb3f43e3a3e656ecb26264f3408204974fd58354c1166fb50ed23b4d",
  "risu_probe.py":"2548e269ad3b4e7a22465d19d86bfe497ea62d08cd73f10c9da1bf7b063dde90",
  "pyproject.toml":"95affb5f6f5e8662ac42a5f93328692fd38c59c7252f7f90ea15c9a0c80812a8",
  "risu_semantics.py":"4dc3d546a78edf0f09ea6891b5f9c50c7355fa9419fda31f85b41478822d4202",
