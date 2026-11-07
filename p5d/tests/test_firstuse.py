@@ -37,6 +37,7 @@ class FirstUse(unittest.TestCase):
     def test_doctor_exposes_platform(self):
         d=doctor();self.assertEqual(d['platform'],platform.system())
         self.assertEqual(d['default_scope'],'STATIC_ONLY_NO_PROJECT_IMPORT_OR_NETWORK')
+        self.assertIn('default RISU Probe installation includes PyYAML',d['help'])
     def test_cli_is_timed_and_json_safe(self):
         (self.root/'x.py').write_text('a=1\n')
         self.assertEqual(cli([str(self.root),'--format','json','--timing','--out',str(self.root/'report.json')]),0)
