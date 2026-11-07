@@ -35,7 +35,10 @@ def prepare(wheel:Path,output:Path,os_name:str):
     after['risu_firstuse.py']=old['risu_firstuse.py'].replace('0.9.19','0.9.20')
     changes={}
     for name,source in after.items():
-        (output/name).write_text(source,encoding='utf-8')
+        # Preserve exact wheel source bytes on Windows; write_text would translate LF.
+        (output/name).write_bytes(source.encode('utf-8'))
+        if (output/name).read_bytes()!=source.encode('utf-8'):
+            raise RuntimeError('P5E_SOURCE_BYTE_IDENTITY_FAILED '+name)
         if source!=old[name]:
             changes[name]={'before':hashlib.sha256(old[name].encode()).hexdigest(),
                            'after':hashlib.sha256(source.encode()).hexdigest()}
