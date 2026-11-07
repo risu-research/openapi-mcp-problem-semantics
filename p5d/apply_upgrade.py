@@ -15,6 +15,7 @@ def replace_once(filename,old,new):
  p.write_text(s.replace(old,new),encoding='utf-8')
 replace_once('risu_probe.py',"VERSION = '0.9.18-experimental'","VERSION = '0.9.19-experimental'")
 replace_once('pyproject.toml','0.9.18.dev0','0.9.19.dev0')
+replace_once('pyproject.toml','requires-python = ">=3.11"','requires-python = ">=3.11"\ndependencies = ["PyYAML==6.0.2"]')
 replace_once('pyproject.toml','risu-probe = "risu_p5c_cli:main"','risu-probe = "risu_p5d_cli:main"')
 replace_once('pyproject.toml','"risu_p5c_cli"','"risu_p5c_cli", "risu_firstuse", "risu_p5d_cli"')
 for module in ('risu_firstuse.py','risu_p5d_cli.py'):
