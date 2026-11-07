@@ -1,3 +1,7 @@
+> **Developer tool:** [RISU Probe preview — install and run](risu-probe/README.md). The validated developer CLI lives in a separate, canonical source tree under `risu-probe/`. The research release-candidate and its DOI remain preserved below.
+
+---
+
 # OpenAPI→MCP Problem-Semantics Preservation Profile
 
 [![DOI](https://zenodo.org/badge/1332313466.svg)](https://doi.org/10.5281/zenodo.21911146)
