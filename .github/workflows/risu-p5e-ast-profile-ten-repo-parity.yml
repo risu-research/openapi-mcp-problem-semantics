@@ -37,9 +37,9 @@ jobs:
         run: |
           python -m pip install --disable-pip-version-check 'setuptools>=68' wheel
           if ($LASTEXITCODE -ne 0) { throw 'Build tools missing' }
-          python p5e/prepare_product.py --wheel baseline/wheels/risu_probe_preview-0.9.19.dev0-py3-none-any.whl --product product --os '${{ runner.os }}'
+          python p5e/prepare_product.py --wheel baseline/wheels/risu_probe_preview-0.9.19.dev0-py3-none-any.whl --product p5e/product_source --os '${{ runner.os }}'
           if ($LASTEXITCODE -ne 0) { throw 'Source pin or allowed-source patch failed' }
-          python -m pip wheel --no-build-isolation --no-deps --wheel-dir p5e/wheels ./product
+          python -m pip wheel --no-build-isolation --no-deps --wheel-dir p5e/wheels ./p5e/product_source
           if ($LASTEXITCODE -ne 0) { throw 'Candidate wheel compilation failed' }
           python -m venv p5e/env_before
           python -m venv p5e/env_after
@@ -103,6 +103,6 @@ jobs:
             p5e/*.py
             p5e/tests/*.py
             p5d/external_repos.json
-            SOURCE_PROVENANCE.json
+            p5e/SOURCE_PROVENANCE.json
           if-no-files-found: warn
           retention-days: 30
