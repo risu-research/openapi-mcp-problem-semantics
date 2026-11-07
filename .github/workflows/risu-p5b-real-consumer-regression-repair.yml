@@ -1,0 +1,96 @@
+name: RISU P5-B actual external consumer regression and source-backed repair
+on:
+  push:
+    branches:
+      - qualification/p5b-real-external-consumer-repair-20261106
+    paths:
+      - p5b/**
+      - .github/workflows/risu-p5b-real-consumer-regression-repair.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pinned-consumer-broken-and-repaired:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Preregistered independent-source identities and unit tests
+        run: |
+          set -euo pipefail
+          python -m compileall -q p5b p4d
+          python -m unittest discover -s p5b/tests -p 'test_*.py' -v
+          python - <<'PY'
+          import json
+          p=json.load(open('p5b/FROZEN_PROTOCOL.json'))
+          assert p['consumer_2']['repo']=='meilisearch/meilisearch-python'
+          assert p['converter']['repo']=='cnoe-io/openapi-mcp-codegen'
+          assert p['consumer_1']['repo']=='langchain-ai/langchain'
+          print('P5B_THREE_REPOS_PLUS_ORIGINAL_VENDOR_SPEC_PINNED')
+          PY
+      - name: Build exact original OpenAPI, CNOE generator, LangChain and official SDK
+        run: |
+          set -euo pipefail
+          docker build --pull -f p5b/Dockerfile -t risu-p5b-consumer-repair .
+      - name: Run original, broken and producer-repaired consumer behavior in one offline replay
+        run: |
+          set -euo pipefail
+          mkdir -p results && chmod 0777 results
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user 65534:65534 \
+            --pids-limit 128 --memory 3g --cpus 2 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=256m,mode=1777 \
+            --mount type=bind,src="$PWD/results",dst=/results \
+            risu-p5b-consumer-repair
+      - name: Independent on-wire and consumer-contract audit
+        run: |
+          set -euo pipefail
+          python p5b/audit.py results/full_chain.json results/INDEPENDENT_AUDIT.json
+      - name: Tamper rejection and failure/control counterfactual audit
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import copy, json, sys
+          from pathlib import Path
+          sys.path.insert(0,'p5b')
+          from audit import check
+          root=Path('results')
+          original=json.loads((root/'full_chain.json').read_text())
+          corrupt=[]
+          for name,patch in [
+            ('fake_failure',lambda d:d['converted_consumer'].update(status='PASS')),
+            ('false_restoration',lambda d:d['repaired_consumer']['result'].update(code='missing')),
+            ('fake_original_source_hash',lambda d:d['execution'].update(original_http_response_sha256='0'*64)),
+            ('pretend_success_unchanged',lambda d:d['phase_results']['repair'][0]['raw_mcp'].update(structuredContent={'bad':'changed'})),
+            ('pretend_error_status',lambda d:d['phase_results']['repair'][1]['langchain'].update(status='success')),
+          ]:
+            d=copy.deepcopy(original);patch(d)
+            try:check(d,root)
+            except (AssertionError,ValueError,KeyError):corrupt.append(name)
+            else:raise RuntimeError(f'Independent auditor accepted corruption: {name}')
+          assert len(corrupt)==5
+          print('P5B_FIVE_ADVERSARIAL_MUTATIONS_REJECTED',corrupt)
+          PY
+      - name: Upload original external consumer source pins, real wire and full reproducible trace
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: risu-p5b-original-converted-failed-repaired-consumer-wire
+          path: |
+            p5b/FROZEN_PROTOCOL.json
+            p5b/README_KO.md
+            p5b/proxy.py
+            p5b/consumer.py
+            p5b/run_full_chain.py
+            p5b/audit.py
+            p5b/Dockerfile
+            p5b/tests/test_protocol.py
+            results/full_chain.json
+            results/passthrough_wire.jsonl
+            results/repair_wire.jsonl
+            results/INDEPENDENT_AUDIT.json
+          if-no-files-found: warn
+          retention-days: 30
