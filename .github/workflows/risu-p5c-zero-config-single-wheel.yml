@@ -1,0 +1,152 @@
+name: RISU P5-C Zero-Config First Diagnosis Same-Wheel CI
+on:
+  push:
+    branches:
+      - qualification/p5c-zero-config-cli-product-20261106
+    paths:
+      - p5c/**
+      - .github/workflows/risu-p5c-zero-config-single-wheel.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  installed-wheel-replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore human-readable SHA256-verified code from bounded source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p5c/unpack_sources.py
+          python -m compileall -q p5c
+      - name: Retrieve real previously verified baseline wheel and consumer MCP wire
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p p5c/baseline p5c/baseline-consumer
+          gh run download 42313416047 --repo "${{ github.repository }}" --name risu-p5a-v0917-single-wheel-real-mcp-and-closed-object-regression --dir p5c/baseline
+          gh run download 42318083899 --repo "${{ github.repository }}" --name risu-p5b-original-converted-failed-repaired-consumer-wire --dir p5c/baseline-consumer
+          echo 'a7237b01b210ed68a76f4d3346a89dbf64b1f2f148c3e4f32b0ab58b01b03ef3  p5c/baseline/p4n/results/installer/risu_probe_preview-0.9.17.dev0-py3-none-any.whl' | sha256sum -c
+          test -f p5c/baseline-consumer/results/full_chain.json
+          test -f p5c/baseline-consumer/results/passthrough_wire.jsonl
+          test -f p5c/baseline-consumer/results/repair_wire.jsonl
+      - name: Build once from pinned baseline and install exact resulting new wheel
+        shell: bash
+        run: |
+          set -euo pipefail
+          python p5c/prepare_base.py --wheel p5c/baseline/p4n/results/installer/risu_probe_preview-0.9.17.dev0-py3-none-any.whl --output dist/risu_v09_source
+          python p5c/apply_upgrade.py
+          python -m pip wheel --no-deps -w p5c/wheels dist/risu_v09_source
+          python -m venv p5c/product_venv
+          p5c/product_venv/bin/python -m pip install --no-index --no-deps p5c/wheels/risu_probe_preview-0.9.18.dev0-py3-none-any.whl
+          p5c/product_venv/bin/risu-probe --version | tee p5c/version.txt
+          grep -F '0.9.18-experimental' p5c/version.txt
+          p5c/product_venv/bin/python - <<'PY'
+          import importlib.metadata,risu_quickcheck,risu_p5c_cli,risu_probe
+          assert importlib.metadata.version('risu-probe-preview')=='0.9.18.dev0'
+          for m in (risu_quickcheck,risu_p5c_cli,risu_probe): assert 'site-packages' in m.__file__
+          print('P5C_NEW_AND_OLD_COMMANDS_IN_SINGLE_INSTALLED_WHEEL_PASS')
+          PY
+      - name: Run new 22 quickcheck tests and previous 54+60 tests on installed wheel
+        shell: bash
+        env:
+          P4V_CAPTURES_DIR: p5c/baseline/p5a/results/external
+        run: |
+          set -euo pipefail
+          mkdir -p p5c/examples/p5b-results p5c/regression/p4t_tests p5c/regression/fixtures
+          cp p5c/baseline-consumer/results/{full_chain.json,passthrough_wire.jsonl,repair_wire.jsonl} p5c/examples/p5b-results/
+          p5c/product_venv/bin/python -m unittest discover -s p5c/tests -v 2>&1 | tee p5c/new_tests.log
+          grep -F 'Ran 22 tests' p5c/new_tests.log
+          grep -Fx OK p5c/new_tests.log
+          p5c/product_venv/bin/python -m unittest discover -s p5a/tests -v 2>&1 | tee p5c/p5a_tests.log
+          grep -F 'Ran 54 tests' p5c/p5a_tests.log
+          grep -Fx OK p5c/p5a_tests.log
+          cp p4t/tests/test_contract_history.py p5c/regression/p4t_tests/
+          cp p4t/fixtures/*.json p5c/regression/fixtures/
+          cp p4t/upgrade_scenario.py p5c/regression/
+          p5c/product_venv/bin/python -m unittest discover -s p5c/regression/p4t_tests -v 2>&1 | tee p5c/p4t_tests.log
+          grep -F 'Ran 60 tests' p5c/p4t_tests.log
+          grep -Fx OK p5c/p4t_tests.log
+          echo P5C_136_TESTS_EXACT_INSTALLED_WHEEL_PASS
+      - name: One-command replay diagnosis, JSON SARIF and fail-closed corrupted wire
+        shell: bash
+        run: |
+          set -euo pipefail
+          CLI=p5c/product_venv/bin/risu-probe
+          "$CLI" check p5c/examples/p5b-results --format text | tee p5c/first_diagnosis.txt
+          "$CLI" check p5c/examples/p5b-results --format json --out p5c/diagnosis.json
+          "$CLI" check p5c/examples/p5b-results --format sarif --out p5c/diagnosis.sarif
+          set +e
+          "$CLI" check p5c/examples/p5b-results --fail-on-confirmed
+          RC=$?
+          set -e
+          test "$RC" -eq 1
+          p5c/product_venv/bin/python - <<'PY'
+          import json
+          from pathlib import Path
+          x=json.loads(Path('p5c/diagnosis.json').read_text())
+          assert x['summary']['confirmed_saved_replay']==1
+          assert x['status']=='CONFIRMED_IN_SAVED_REPLAY'
+          assert x['confirmed'][0]['consumer_results']=={'original':'PASS','converted':'FAIL_APPLICATION_CONTRACT','repaired':'PASS'}
+          s=json.loads(Path('p5c/diagnosis.sarif').read_text())
+          assert s['runs'][0]['results'][0]['ruleId']=='RMC301'
+          print('P5C_REAL_PINNED_EXTERNAL_CONSUMER_RECORD_TO_RMC301_ONE_COMMAND_PASS')
+          PY
+          cp -a p5c/examples/p5b-results p5c/mutated
+          printf '\n' >> p5c/mutated/repair_wire.jsonl
+          set +e
+          "$CLI" check p5c/mutated > p5c/tampered.txt 2>&1
+          BAD=$?
+          set -e
+          test "$BAD" -eq 2
+          grep -q INCOMPLETE_EVIDENCE p5c/tampered.txt
+          echo P5C_TAMPERED_EVIDENCE_FAIL_CLOSED_PASS
+      - name: Scan exact external SDK without config or target execution; old commands still available
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p p5c/external_readonly_source
+          curl --fail --silent --show-error --max-time 30 --location 'https://raw.githubusercontent.com/meilisearch/meilisearch-python/6a6cc2596779a06f121ebb6d88dfa6943ee18d91/meilisearch/errors.py' -o p5c/external_readonly_source/errors.py
+          test "$(git hash-object p5c/external_readonly_source/errors.py)" = 9771fba0458973dc5cefe94ee3505e215caa6e66
+          p5c/product_venv/bin/risu-probe check p5c/external_readonly_source --format json --out p5c/external_scan.json
+          p5c/product_venv/bin/python - <<'PY'
+          import json
+          d=json.load(open('p5c/external_scan.json'))
+          assert d['summary']['python_parsed']==1
+          assert d['summary']['unverified']==0
+          assert d['scope']=='LOCAL_READ_ONLY_NO_EXEC_NO_NETWORK'
+          print('P5C_EXTERNAL_SOURCE_CONFIG_FREE_FIRST_SCAN_PASS')
+          PY
+          for cmd in scan schema-compat contract-history analyze reproduce; do
+            p5c/product_venv/bin/risu-probe "$cmd" --help >/dev/null
+          done
+          echo P5C_LEGACY_PRODUCT_COMMANDS_PRESERVED_PASS
+      - name: Publish exact wheel plus readable source and reproducible evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: risu-p5c-zero-config-one-wheel-external-consumer-record
+          path: |
+            p5c/*.py
+            p5c/README_KO.md
+            p5c/tests/*.py
+            p5c/packed/part_*.txt
+            p5c/wheels/*.whl
+            p5c/*.log
+            p5c/*tests.log
+            p5c/version.txt
+            p5c/first_diagnosis.txt
+            p5c/diagnosis.json
+            p5c/diagnosis.sarif
+            p5c/external_scan.json
+            p5c/examples/p5b-results/*
+          if-no-files-found: warn
+          retention-days: 30
