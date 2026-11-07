@@ -11,58 +11,8 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
-  actions: read
 jobs:
-  promote-p5e-to-source-once:
-    name: Promote exact original P5-E wheel modules to tracked canonical source
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      actions: read
-    outputs:
-      product_sha: ${{ steps.promotion.outputs.product_sha }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: qualification/p6a-canonical-readable-product-source-multios-20261106
-          persist-credentials: true
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Restore original publicly verifiable P5-E CI wheel only on first promotion
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ ! -f risu-probe/P5E_SOURCE_PROVENANCE.json ]; then
-            mkdir -p .p6a-origin-artifact p6a/reference
-            gh run download 42330673704 -R risu-research/openapi-mcp-problem-semantics \
-              -n risu-p5e-ast-profile-parity-Linux -D .p6a-origin-artifact
-            cp .p6a-origin-artifact/p5e/wheels/risu_probe_preview-0.9.20.dev0-py3-none-any.whl \
-              p6a/reference/risu_probe_preview-0.9.20.dev0-py3-none-any.whl
-            python p6a/promote.py --reference-wheel p6a/reference/risu_probe_preview-0.9.20.dev0-py3-none-any.whl --output risu-probe
-            git config user.name 'RISU CI Source Promoter'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add risu-probe/src risu-probe/P5E_SOURCE_PROVENANCE.json p6a/reference
-            if ! git diff --cached --quiet; then
-              git commit -m 'P6-A: check in exact readable P5-E source and permanent frozen reference wheel'
-              git push origin HEAD:refs/heads/qualification/p6a-canonical-readable-product-source-multios-20261106
-            fi
-          else
-            test -f p6a/reference/risu_probe_preview-0.9.20.dev0-py3-none-any.whl
-            echo 'P6A_ALREADY_TRACKED_SOURCE_NO_HISTORICAL_REEXTRACTION'
-          fi
-      - id: promotion
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "product_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-          test -f risu-probe/src/risu_static.py
-          test "$(find risu-probe/src -maxdepth 1 -name '*.py' | wc -l)" -eq 38
-          echo 'P6A_CANONICAL_SOURCE_CHECKED_IN'
   validate-canonical-product:
-    needs: promote-p5e-to-source-once
     name: P6-A full wheel / CLI / ten-repo parity (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 55
@@ -124,6 +74,30 @@ jobs:
           "$NEW_CLI" --version
           RISU_P6A_TEST_CLI="$NEW_CLI" python -m unittest discover -s risu-probe/tests -v
           printf 'OLD_CLI=%s\nNEW_CLI=%s\n' "$OLD_CLI" "$NEW_CLI" > .p6a-ci/cli_paths.txt
+      - name: uv local tool install and source distribution packaging (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          set -euo pipefail
+          python -m pip install uv==0.11.10
+          export UV_TOOL_DIR="$RUNNER_TEMP/p6a-uv-tool-root"
+          export UV_TOOL_BIN_DIR="$RUNNER_TEMP/p6a-uv-bin"
+          mkdir -p "$UV_TOOL_BIN_DIR" .p6a-ci/sdist .p6a-ci/rebuilt-sdist-wheel
+          uv tool install --python "$(command -v python)" ./risu-probe
+          "$UV_TOOL_BIN_DIR/risu-probe" doctor --format json | tee .p6a-ci/results/uv_source_install_doctor.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path('.p6a-ci/results/uv_source_install_doctor.json').read_text())
+          assert data['pypi_yaml_support_installed'] and 'STATIC_ONLY' in data['default_scope']
+          print('P6A_UV_LOCAL_TOOL_INSTALL_NO_PYPI_RELEASE_REQUIRED_PASS')
+          PY
+          uv build --sdist ./risu-probe --out-dir .p6a-ci/sdist
+          python -m pip wheel --no-deps --no-build-isolation -w .p6a-ci/rebuilt-sdist-wheel .p6a-ci/sdist/risu_probe_preview-0.9.20.dev0.tar.gz
+          python p6a/verify_distribution.py \
+            --product risu-probe \
+            --wheel .p6a-ci/rebuilt-sdist-wheel/risu_probe_preview-0.9.20.dev0-py3-none-any.whl \
+            --reference p6a/reference/risu_probe_preview-0.9.20.dev0-py3-none-any.whl
+          echo 'P6A_SOURCE_DIST_CAN_REBUILD_IDENTICAL_SOURCE_MODULES_PASS'
       - name: Exact diagnostics on ten pinned external repositories, baseline vs rebuilt product
         run: |
           set -euo pipefail
@@ -163,5 +137,7 @@ jobs:
             risu-probe/tests/*.py
             p6a/reference/*.whl
             .p6a-ci/wheels/*.whl
+            .p6a-ci/sdist/*.tar.gz
+            .p6a-ci/rebuilt-sdist-wheel/*.whl
             .p6a-ci/results/*.json
           if-no-files-found: warn
