@@ -41,6 +41,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Source pin or allowed-source patch failed' }
           python -m pip wheel --no-build-isolation --no-deps --wheel-dir p5e/wheels ./p5e/product_source
           if ($LASTEXITCODE -ne 0) { throw 'Candidate wheel compilation failed' }
+          python p5e/verify_wheel_identity.py --before baseline/wheels/risu_probe_preview-0.9.19.dev0-py3-none-any.whl --after p5e/wheels/risu_probe_preview-0.9.20.dev0-py3-none-any.whl
+          if ($LASTEXITCODE -ne 0) { throw 'Non-allowlisted module byte mutation detected' }
           python -m venv p5e/env_before
           python -m venv p5e/env_after
           if ('${{ runner.os }}' -eq 'Windows') {
