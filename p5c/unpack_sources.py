@@ -4,10 +4,10 @@ import base64,hashlib,io
 from pathlib import Path
 import tarfile,zlib
 ROOT=Path(__file__).resolve().parents[1]
-PACK=ROOT/'p5c/packed/p5c_source.tar.zlib.b64'
+PACKDIR=ROOT/'p5c'/'packed'
 EXPECTED='0bd5b185a388e157275600f884d8504ca4e69e4e357e965199edc33ef9e9574f'
 ALLOWED={'p5c/README_KO.md','p5c/apply_upgrade.py','p5c/prepare_base.py','p5c/risu_p5c_cli.py','p5c/risu_quickcheck.py','p5c/tests/test_quickcheck.py'}
-data=PACK.read_text(encoding='ascii').strip()
+data=''.join((PACKDIR/f'part_{i:02d}.txt').read_text(encoding='ascii').strip() for i in range(3))
 if len(data)>25000:raise ValueError('oversize source pack')
 raw=zlib.decompress(base64.b64decode(data,validate=True))
 if len(raw)>80000 or hashlib.sha256(raw).hexdigest()!=EXPECTED:
