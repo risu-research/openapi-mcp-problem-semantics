@@ -31,14 +31,14 @@ jobs:
           New-Item -ItemType Directory -Force -Path p5d/baseline | Out-Null
           gh run download 42320603656 --repo '${{ github.repository }}' --name risu-p5c-zero-config-one-wheel-external-consumer-record --dir p5d/baseline
           if ($LASTEXITCODE -ne 0) { throw 'Could not retrieve previous exact CI wheel' }
-          python -c "import hashlib,pathlib; p=pathlib.Path('p5d/baseline/p5c/wheels/risu_probe_preview-0.9.18.dev0-py3-none-any.whl'); assert p.exists(); assert hashlib.sha256(p.read_bytes()).hexdigest()=='6bdfa3cfc9fef675aa30cb94d30b546789b1f005a4c9f5df927def19b3e3c8d5'; print('PINNED_P5C_WHEEL_SHA256_PASS')"
+          python -c "import hashlib,pathlib; p=pathlib.Path('p5d/baseline/wheels/risu_probe_preview-0.9.18.dev0-py3-none-any.whl'); assert p.exists(); assert hashlib.sha256(p.read_bytes()).hexdigest()=='6bdfa3cfc9fef675aa30cb94d30b546789b1f005a4c9f5df927def19b3e3c8d5'; print('PINNED_P5C_WHEEL_SHA256_PASS')"
           if ($LASTEXITCODE -ne 0) { throw 'P5-C baseline wheel hash mismatch' }
       - name: Build and actually install P5-D single wheel, regression tests, and pinned 10 repo benchmark
         shell: pwsh
         run: |
           python -m pip install --disable-pip-version-check 'setuptools>=68' wheel
           if ($LASTEXITCODE -ne 0) { throw 'Build tools unavailable' }
-          python p5d/ci_driver.py --base-wheel p5d/baseline/p5c/wheels/risu_probe_preview-0.9.18.dev0-py3-none-any.whl --repeat 3
+          python p5d/ci_driver.py --base-wheel p5d/baseline/wheels/risu_probe_preview-0.9.18.dev0-py3-none-any.whl --repeat 3
           if ($LASTEXITCODE -ne 0) { throw 'P5-D cross-platform quality regression' }
       - name: Publish full benchmark and installed wheel evidence per OS
         uses: actions/upload-artifact@v4
