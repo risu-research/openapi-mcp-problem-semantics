@@ -13,3 +13,7 @@
 **Reproduce:** fetch pinned public repos and installed build wheels using the repo CI workflow, or run `python p5d/ci_driver.py --base-wheel path/to/verified-0.9.18.whl --repeat 3` with Git and Python 3.11, setuptools/wheel installed. Individual scan via `risu-probe check .`.
 
 **Evidence:** `p5d/results/windows.json`, `p5d/results/linux.json`, exact wheel SHA-256 identity, GitHub workflow jobs, explicit error examples and new regression tests. A CI status is not evidence of user adoption, production outages, or total MCP compatibility.
+
+## Findings from the initial baseline matrix
+
+Run #42326500440 found 10/10 command completion, but only 9/10 full source coverage on both Windows and Linux. The single partial result was CNOE codegen, whose pinned source includes `examples/backstage/openapi-backstage.yaml`. The initial default no-dependency wheel omitted optional PyYAML; this patch adds pinned PyYAML 6.0.2 as a normal dependency to make YAML OpenAPI work immediately after the default install, and reruns the same exact 10 project commits. The baseline remains exactly unchanged and is installed with no dependencies. New report records bounded `unverified_examples` to establish the cause directly rather than inferring it from counts.
