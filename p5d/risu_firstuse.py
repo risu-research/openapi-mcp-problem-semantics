@@ -68,7 +68,7 @@ def doctor(format: str = 'text') -> dict[str, Any]:
         'pypi_yaml_support_installed': util.find_spec('yaml') is not None,
         'default_scope': 'STATIC_ONLY_NO_PROJECT_IMPORT_OR_NETWORK',
         'commands': ['risu-probe check .', 'risu-probe check . --format json', 'risu-probe doctor'],
-        'help': 'YAML OpenAPI parsing is optional. Install PyYAML only if YAML files are needed; check output labels unsupported files as UNVERIFIED.'
+        'help': 'The default RISU Probe installation includes PyYAML for OpenAPI YAML. If YAML is unavailable, reinstall the package with its declared dependencies; skipped files are UNVERIFIED.'
     }
 
 
@@ -86,7 +86,7 @@ def doctor_cli(argv: list[str]) -> int:
     else:
         print(f"RISU Probe {result['version']} | {result['platform']} {result['architecture']} | Python {result['python']}")
         print('Default: static/read-only; no project imports, HTTP requests, or MCP server starts.')
-        print('YAML OpenAPI support: '+('available' if result['pypi_yaml_support_installed'] else 'not installed (optional)'))
+        print('YAML OpenAPI support: '+('available' if result['pypi_yaml_support_installed'] else 'not installed (reinstall with dependencies)'))
         print('Next: risu-probe check .')
     return 0
 
@@ -125,7 +125,7 @@ def cli(argv: list[str] | None=None) -> int:
                 remedies=[]
                 for gap in report['unverified'][:8]:
                     reason=gap.get('reason','')
-                    if 'PyYAML' in reason:remedies.append('YAML schema was skipped. Install optional PyYAML in the RISU environment, then rerun.')
+                    if 'PyYAML' in reason:remedies.append('YAML schema was skipped. Reinstall RISU Probe with dependencies so PyYAML is available, then rerun.')
                     if 'budget' in reason or 'limit' in reason:remedies.append('File limits reached. Scan a smaller package to improve coverage.')
                 content+='\nCoverage: INCOMPLETE. No full-project compatibility conclusion.\n'
                 for remedy in dict.fromkeys(remedies):content+='Next: '+remedy+'\n'
