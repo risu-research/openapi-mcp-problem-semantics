@@ -1,0 +1,108 @@
+name: RISU P5-E AST cProfile and Exact Ten-Repo Verdict Parity
+on:
+  push:
+    branches:
+      - qualification/p5e-ast-profile-strict-ten-repo-parity-20261106
+    paths:
+      - p5e/**
+      - .github/workflows/risu-p5e-ast-profile-ten-repo-parity.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  profiled-real-static-scanner:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: \${{ matrix.os }}
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Fetch exact P5-D CI-installed wheel from the matching OS
+        shell: pwsh
+        env:
+          GH_TOKEN: \${{ github.token }}
+        run: |
+          New-Item -ItemType Directory -Force -Path baseline | Out-Null
+          gh run download 42327747638 --repo '\${{ github.repository }}' --name 'risu-p5d-firstuse-\${{ runner.os }}' --dir baseline
+          if ($LASTEXITCODE -ne 0) { throw 'Pinned P5-D wheel download failed' }
+          if (-not (Test-Path baseline/wheels/risu_probe_preview-0.9.19.dev0-py3-none-any.whl)) { throw 'Pinned P5-D wheel missing' }
+      - name: Build candidate wheel from pinned P5-D and install both wheels independently
+        shell: pwsh
+        run: |
+          python -m pip install --disable-pip-version-check 'setuptools>=68' wheel
+          if ($LASTEXITCODE -ne 0) { throw 'Build tools missing' }
+          python p5e/prepare_product.py --wheel baseline/wheels/risu_probe_preview-0.9.19.dev0-py3-none-any.whl --product product --os '\${{ runner.os }}'
+          if ($LASTEXITCODE -ne 0) { throw 'Source pin or allowed-source patch failed' }
+          python -m pip wheel --no-build-isolation --no-deps --wheel-dir p5e/wheels ./product
+          if ($LASTEXITCODE -ne 0) { throw 'Candidate wheel compilation failed' }
+          python -m venv p5e/env_before
+          python -m venv p5e/env_after
+          if ('\${{ runner.os }}' -eq 'Windows') {
+            $old = (Resolve-Path p5e/env_before/Scripts/python.exe).Path
+            $new = (Resolve-Path p5e/env_after/Scripts/python.exe).Path
+          } else {
+            $old = (Resolve-Path p5e/env_before/bin/python).Path
+            $new = (Resolve-Path p5e/env_after/bin/python).Path
+          }
+          & $old -m pip install --disable-pip-version-check baseline/wheels/risu_probe_preview-0.9.19.dev0-py3-none-any.whl
+          if ($LASTEXITCODE -ne 0) { throw 'P5-D baseline wheel install failed' }
+          & $new -m pip install --disable-pip-version-check p5e/wheels/risu_probe_preview-0.9.20.dev0-py3-none-any.whl
+          if ($LASTEXITCODE -ne 0) { throw 'P5-E wheel install failed' }
+          & $new -m unittest discover -s p5e/tests -v
+          if ($LASTEXITCODE -ne 0) { throw 'P5-E baseline-to-candidate AST equivalence fixtures failed' }
+          & $new -c "import importlib.metadata as m; assert m.version('risu-probe-preview') == '0.9.20.dev0'; import risu_static; assert 'site-packages' in risu_static.__file__; print('P5E_SAME_INSTALLED_WHEEL_MODULE_PASS')"
+          if ($LASTEXITCODE -ne 0) { throw 'Installed wheel identity failed' }
+      - name: Ten immutable external repositories and full installed-CLI JSON parity
+        shell: pwsh
+        run: |
+          if ('\${{ runner.os }}' -eq 'Windows') {
+            $old=(Resolve-Path p5e/env_before/Scripts/risu-probe.exe).Path
+            $new=(Resolve-Path p5e/env_after/Scripts/risu-probe.exe).Path
+          } else {
+            $old=(Resolve-Path p5e/env_before/bin/risu-probe).Path
+            $new=(Resolve-Path p5e/env_after/bin/risu-probe).Path
+          }
+          python p5e/benchmark.py --sources p5d/external_repos.json --checkouts p5e/external_sources --baseline $old --candidate $new --output p5e/results/benchmark.json --repeat 3
+          if ($LASTEXITCODE -ne 0) { throw 'External repository full diagnostic JSON changed or timed check failed' }
+      - name: Run cProfile of both installed scanners against each of the same 10 repositories
+        shell: pwsh
+        run: |
+          if ('\${{ runner.os }}' -eq 'Windows') {
+            $old=(Resolve-Path p5e/env_before/Scripts/python.exe).Path
+            $new=(Resolve-Path p5e/env_after/Scripts/python.exe).Path
+          } else {
+            $old=(Resolve-Path p5e/env_before/bin/python).Path
+            $new=(Resolve-Path p5e/env_after/bin/python).Path
+          }
+          $manifest = Get-Content -Raw p5d/external_repos.json | ConvertFrom-Json
+          foreach ($entry in $manifest.repositories) {
+            $repo='p5e/external_sources/' + $entry.name
+            $prior='p5e/results/profile/baseline/' + $entry.name + '.json'
+            $later='p5e/results/profile/candidate/' + $entry.name + '.json'
+            & $old p5e/profile_one.py --repo $repo --out $prior
+            if ($LASTEXITCODE -ne 0) { throw 'Baseline cProfile failed' }
+            & $new p5e/profile_one.py --repo $repo --out $later
+            if ($LASTEXITCODE -ne 0) { throw 'Optimized cProfile failed' }
+          }
+          python p5e/audit.py --results p5e/results
+          if ($LASTEXITCODE -ne 0) { throw 'Independent cProfile and diagnostic audit failed' }
+      - name: Upload exact candidate wheel, full reports and independent audit for each OS
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: risu-p5e-ast-profile-parity-\${{ runner.os }}
+          path: |
+            p5e/results/**
+            p5e/wheels/*.whl
+            p5e/*.py
+            p5e/tests/*.py
+            p5d/external_repos.json
+            SOURCE_PROVENANCE.json
+          if-no-files-found: warn
+          retention-days: 30
