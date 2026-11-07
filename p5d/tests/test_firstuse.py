@@ -51,6 +51,26 @@ class FirstUse(unittest.TestCase):
         from risu_p5c_cli import _is_legacy_project
         (self.root/'risu-probe.json').write_text('{}')
         self.assertTrue(_is_legacy_project([str(self.root)]))
+    def test_yaml_openapi_works_in_default_install(self):
+        import importlib.util
+        self.assertIsNotNone(importlib.util.find_spec('yaml'))
+        text="""openapi: 3.0.3
+info:
+  title: Example
+  version: 1
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      responses:
+        '200':
+          description: ok
+"""
+        (self.root/'openapi-example.yaml').write_text(text)
+        r=check(self.root)
+        self.assertEqual(r['summary']['openapi_parsed'],1)
+        self.assertEqual(r['summary']['unverified'],0)
+
     def test_check_success_uses_installed_wheel(self):
         from importlib import metadata
         self.assertEqual(metadata.version('risu-probe-preview'),'0.9.19.dev0')
