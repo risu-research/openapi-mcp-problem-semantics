@@ -41,7 +41,12 @@ def main():
     for key,whl in [('baseline',base),('candidate',new)]:
         folder=ROOT/'p5d'/('env_'+key)
         run(sys.executable,'-m','venv',folder)
-        run(py_in(folder),'-m','pip','install','--no-deps','--no-index',whl)
+        if key=='baseline':
+            run(py_in(folder),'-m','pip','install','--no-deps','--no-index',whl)
+        else:
+            # Default installation resolves a pinned widely used YAML parser so
+            # YAML OpenAPI specs work without a second manual install.
+            run(py_in(folder),'-m','pip','install','--disable-pip-version-check',whl)
         cli=cli_in(folder)
         if not cli.exists():raise RuntimeError('Installed console script missing: '+str(cli))
         output=subprocess.run([str(cli),'--version'],capture_output=True,text=True,timeout=20,check=True).stdout.strip()
@@ -59,6 +64,8 @@ def main():
     diagnose=subprocess.run([str(cli_in(venv)),'doctor','--format','json'],capture_output=True,text=True,timeout=20,check=True)
     env_data=json.loads(diagnose.stdout)
     if env_data['platform']!=platform.system():raise RuntimeError('Wrong detected platform')
+    if not env_data['pypi_yaml_support_installed']:
+        raise RuntimeError('Default P5-D install missing pinned PyYAML')
     # External repo checkouts and stopwatch subprocess runs happen only AFTER the installed CLI tests.
     run(sys.executable,'p5d/benchmark.py','--sources','p5d/external_repos.json',
         '--checkouts','p5d/external_sources','--baseline-cli',cli_in(ROOT/'p5d/env_baseline'),
@@ -69,12 +76,19 @@ def main():
     before=result['summary']['baseline'];after=result['summary']['candidate']
     if after['commands_completed']<before['commands_completed'] or after['complete_source_scans']<before['complete_source_scans']:
         raise RuntimeError('P5D regressed overall project coverage or command success')
+    cnoe=next(x for x in result['repositories'] if x['name']=='cnoe-codegen')
+    if cnoe['baseline']['outcomes'][0]['unverified']!=1 or cnoe['candidate']['outcomes'][0]['unverified']!=0:
+        raise RuntimeError('The CNOE YAML OpenAPI coverage recovery was not demonstrated')
+    if after['complete_source_scans']!=10:
+        raise RuntimeError('P5D expects all 10 pinned projects completely parsed after installing PyYAML')
     # Only a generous regression gate. We do not promise a speed improvement.
     if after['median_repeated_ms'] > max(400, before['median_repeated_ms']*2.5):
         raise RuntimeError('P5D runtime regression beyond 2.5x median observed baseline')
+    versions=subprocess.run([str(py_in(venv)),'-m','pip','freeze'],capture_output=True,text=True,check=True,timeout=30)
+    (ROOT/'p5d/results'/'candidate_installed_dependencies.txt').write_text(versions.stdout)
     (ROOT/'p5d/results'/'installed_wheel_identity.json').write_text(json.dumps(ver,indent=2)+'\n')
     print('P5D_WINDOWS_LINUX_FIRST_USE_BENCHMARK_COMPLETE',json.dumps({
           'host_os':platform.system(),'baseline':before,'candidate':after,
-          'same_old_modules':12,'new_regression_tests':13}),flush=True)
+          'same_old_modules':12,'new_regression_tests':14}),flush=True)
 
 if __name__=='__main__':main()
