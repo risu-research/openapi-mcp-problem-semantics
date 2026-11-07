@@ -19,7 +19,7 @@ def audit(root:Path,wheel:Path,reference:Path|None=None)->dict:
         assert modules==expected, {'missing':sorted(set(expected)-set(modules)), 'extra':sorted(set(modules)-set(expected)), 'changed':[n for n in expected if modules.get(n)!=expected[n]]}
         entry=z.read(next(n for n in z.namelist() if n.endswith('/entry_points.txt'))).decode()
         assert 'risu-probe = risu_p5d_cli:main' in entry
-        meta=z.read(next(n for n in z.namelist() if n.endswith('/METADATA'))).decode()
+        meta=z.read(next(n for n in z.namelist() if n.endswith('/METADATA'))).decode().replace('\r\n','\n')
         assert 'Name: risu-probe-preview\n' in meta
         assert 'Version: 0.9.20.dev0\n' in meta
         assert 'Requires-Dist: PyYAML==6.0.2' in meta or 'Requires-Dist: PyYAML ==6.0.2' in meta
