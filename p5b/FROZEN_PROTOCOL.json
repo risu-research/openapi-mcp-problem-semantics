@@ -1,0 +1,18 @@
+{
+  "schema": "risu-p5b-preregistered-external-consumer-a-b-repair-v1",
+  "date": "2026-11-06",
+  "source": {"repo": "meilisearch/open-api", "commit": "0b0b0fdbb9d5821ec018a3db2777986a231eec37", "file": "open-api.json", "git_blob": "8e01bc5c07f4f17cc2f183ecfb427e2592ba333b", "operation": "GET /indexes/{indexUid}", "error": "original declared HTTP 404 example"},
+  "converter": {"repo": "cnoe-io/openapi-mcp-codegen", "commit": "8c2b065497cf32ecbb7cf7e28dad3a99c6706c3f", "upstream_mutation": "none"},
+  "consumer_1": {"repo": "langchain-ai/langchain", "commit": "bb6a25a878527136dcb1a20507d5c20049427f96", "file": "libs/langchain_v1/langchain/mcp/tools.py", "git_blob": "ad0c6b0c65226f88432246bad0edcebc63496623", "entrypoint": "as_langchain_tool, real MCP stdio"},
+  "consumer_2": {"repo": "meilisearch/meilisearch-python", "commit": "6a6cc2596779a06f121ebb6d88dfa6943ee18d91", "file": "meilisearch/errors.py", "git_blob": "9771fba0458973dc5cefe94ee3505e215caa6e66", "entrypoint": "MeilisearchApiError(original HTTP body or LangChain-model-visible body)"},
+  "expected_consumer_test_app_behavior": [
+    "Original HTTP 404 example body -> unmodified Meilisearch SDK decoder -> test-app contract PASS (code=index_not_found)",
+    "Actual generated CNOE MCP stdio -> unmodified LangChain ToolMessage -> unmodified Meilisearch SDK decoder -> fixed test-app contract FAIL: missing code",
+    "Producer-boundary test adapter supplied with verified original HTTP 404 body -> actual MCP stdio -> same LangChain and SDK -> test-app contract PASS",
+    "HTTP 200 successful tool outputs unchanged by producer adapter, compared byte-equivalent as normalized SDK result"
+  ],
+  "failure_definition": "The explicit, fixed test-app policy checks original vendor error code; Meilisearch SDK alone tolerates missing code. Never misattribute test-app exception to official SDK.",
+  "repair_limits": "Source-backed allowlist, only one original GET index-not-found 404; no inferred reconstruction from lossy MCP; no patch to third-party generator or SDK; test-only inline stdio proxy",
+  "safety": "No production Meilisearch API, no external writes, no LLM, no keys, ephemeral local replay in network-none Docker with read-only root, nonroot runtime and resource caps",
+  "claims_not_supported": "No production user incident, no new upstream bug, no global fix for all MCP schemas, no claim that published SDK directly consumes arbitrary MCP envelopes"
+}
