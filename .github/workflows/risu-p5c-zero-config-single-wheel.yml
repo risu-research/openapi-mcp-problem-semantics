@@ -61,8 +61,9 @@ jobs:
           P4V_CAPTURES_DIR: p5c/baseline/p5a/results/external
         run: |
           set -euo pipefail
-          mkdir -p p5c/examples/p5b-results p5c/regression/p4t_tests p5c/regression/fixtures
+          mkdir -p p5c/examples/p5b-results examples/p5b-results p5c/regression/p4t_tests p5c/regression/fixtures
           cp p5c/baseline-consumer/results/{full_chain.json,passthrough_wire.jsonl,repair_wire.jsonl} p5c/examples/p5b-results/
+          cp p5c/baseline-consumer/results/{full_chain.json,passthrough_wire.jsonl,repair_wire.jsonl} examples/p5b-results/
           p5c/product_venv/bin/python -m unittest discover -s p5c/tests -v 2>&1 | tee p5c/new_tests.log
           grep -F 'Ran 22 tests' p5c/new_tests.log
           grep -Fx OK p5c/new_tests.log
