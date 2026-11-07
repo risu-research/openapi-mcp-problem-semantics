@@ -28,7 +28,7 @@ class ASTOptimizationEquivalence(unittest.TestCase):
     def setUpClass(cls):
         with zipfile.ZipFile(ROOT/'baseline'/'wheels'/'risu_probe_preview-0.9.19.dev0-py3-none-any.whl') as z:
             old=z.read('risu_static.py').decode()
-        new=(ROOT/'product'/'risu_static.py').read_text()
+        new=(ROOT/'p5e'/'product_source'/'risu_static.py').read_text()
         cls.old=old;cls.new=new
         cls.before=load('before',old);cls.after=load('after',new)
     def test_patch_is_exact(self):
