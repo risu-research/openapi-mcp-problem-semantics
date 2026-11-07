@@ -1,0 +1,167 @@
+name: RISU P6-A canonical product source and Windows Linux macOS release candidate
+on:
+  push:
+    branches:
+      - qualification/p6a-canonical-readable-product-source-multios-20261106
+    paths:
+      - p6a/**
+      - risu-probe/**
+      - .github/workflows/risu-p6a-canonical-source.yml
+      - RISU_P6A_PRODUCT_SOURCE.md
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  promote-p5e-to-source-once:
+    name: Promote exact original P5-E wheel modules to tracked canonical source
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    outputs:
+      product_sha: ${{ steps.promotion.outputs.product_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: qualification/p6a-canonical-readable-product-source-multios-20261106
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore original publicly verifiable P5-E CI wheel only on first promotion
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f risu-probe/P5E_SOURCE_PROVENANCE.json ]; then
+            mkdir -p .p6a-origin-artifact p6a/reference
+            gh run download 42330673704 -R risu-research/openapi-mcp-problem-semantics \
+              -n risu-p5e-ast-profile-parity-Linux -D .p6a-origin-artifact
+            cp .p6a-origin-artifact/p5e/wheels/risu_probe_preview-0.9.20.dev0-py3-none-any.whl \
+              p6a/reference/risu_probe_preview-0.9.20.dev0-py3-none-any.whl
+            python p6a/promote.py --reference-wheel p6a/reference/risu_probe_preview-0.9.20.dev0-py3-none-any.whl --output risu-probe
+            git config user.name 'RISU CI Source Promoter'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add risu-probe/src risu-probe/P5E_SOURCE_PROVENANCE.json p6a/reference
+            if ! git diff --cached --quiet; then
+              git commit -m 'P6-A: check in exact readable P5-E source and permanent frozen reference wheel'
+              git push origin HEAD:refs/heads/qualification/p6a-canonical-readable-product-source-multios-20261106
+            fi
+          else
+            test -f p6a/reference/risu_probe_preview-0.9.20.dev0-py3-none-any.whl
+            echo 'P6A_ALREADY_TRACKED_SOURCE_NO_HISTORICAL_REEXTRACTION'
+          fi
+      - id: promotion
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "product_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          test -f risu-probe/src/risu_static.py
+          test "$(find risu-probe/src -maxdepth 1 -name '*.py' | wc -l)" -eq 38
+          echo 'P6A_CANONICAL_SOURCE_CHECKED_IN'
+  validate-canonical-product:
+    needs: promote-p5e-to-source-once
+    name: P6-A full wheel / CLI / ten-repo parity (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: qualification/p6a-canonical-readable-product-source-multios-20261106
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Build wheel only from canonical checked-in source
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip setuptools wheel
+          mkdir -p .p6a-ci/wheels .p6a-ci/results
+          python -m pip wheel --no-deps --no-build-isolation -w .p6a-ci/wheels ./risu-probe
+          python p6a/verify_distribution.py \
+            --product risu-probe \
+            --wheel .p6a-ci/wheels/risu_probe_preview-0.9.20.dev0-py3-none-any.whl \
+            --reference p6a/reference/risu_probe_preview-0.9.20.dev0-py3-none-any.whl \
+            --out .p6a-ci/results/wheel_source_identity.json
+      - name: Install frozen baseline and rebuilt candidate in separate clean venvs
+        run: |
+          set -euo pipefail
+          python -m venv .p6a-ci/baseline
+          python -m venv .p6a-ci/candidate
+          if [[ "${{ runner.os }}" == Windows ]]; then
+            OLD_PY=.p6a-ci/baseline/Scripts/python.exe
+            NEW_PY=.p6a-ci/candidate/Scripts/python.exe
+            OLD_CLI=.p6a-ci/baseline/Scripts/risu-probe.exe
+            NEW_CLI=.p6a-ci/candidate/Scripts/risu-probe.exe
+          else
+            OLD_PY=.p6a-ci/baseline/bin/python
+            NEW_PY=.p6a-ci/candidate/bin/python
+            OLD_CLI=.p6a-ci/baseline/bin/risu-probe
+            NEW_CLI=.p6a-ci/candidate/bin/risu-probe
+          fi
+          "$OLD_PY" -m pip install p6a/reference/risu_probe_preview-0.9.20.dev0-py3-none-any.whl
+          "$NEW_PY" -m pip install .p6a-ci/wheels/risu_probe_preview-0.9.20.dev0-py3-none-any.whl
+          "$OLD_PY" -m pip check
+          "$NEW_PY" -m pip check
+          "$NEW_PY" - <<'PY'
+          import importlib.metadata
+          import yaml
+          assert yaml.__version__ == '6.0.2', yaml.__version__
+          assert importlib.metadata.version('risu-probe-preview')=='0.9.20.dev0'
+          print('P6A_FRESH_DEFAULT_YAML_DEPENDENCY_INSTALLED',yaml.__version__)
+          PY
+          "$NEW_CLI" doctor
+          "$NEW_CLI" --version
+          RISU_P6A_TEST_CLI="$NEW_CLI" python -m unittest discover -s risu-probe/tests -v
+          printf 'OLD_CLI=%s\nNEW_CLI=%s\n' "$OLD_CLI" "$NEW_CLI" > .p6a-ci/cli_paths.txt
+      - name: Exact diagnostics on ten pinned external repositories, baseline vs rebuilt product
+        run: |
+          set -euo pipefail
+          source .p6a-ci/cli_paths.txt
+          python p6a/parity.py \
+            --manifest p5d/external_repos.json \
+            --baseline "$OLD_CLI" \
+            --candidate "$NEW_CLI" \
+            --checkouts .p6a-ci/checkouts \
+            --out .p6a-ci/results/ten_repository_exact_parity.json
+      - name: Independent output audit of counts and hashes
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,pathlib,hashlib
+          r=pathlib.Path('.p6a-ci/results')
+          a=json.loads((r/'wheel_source_identity.json').read_text())
+          b=json.loads((r/'ten_repository_exact_parity.json').read_text())
+          assert a['result']=='PASS' and a['source_module_bytes_changed']==0
+          assert a['reference_wheel_verified']
+          assert b['total']==b['exact_verdict_equal']==b['complete_source_scan']==10
+          assert len(set(x['normalized_report_sha256'] for x in b['results']))>=3
+          assert all(x['exact_normalized_json_equal'] and x['complete_both'] for x in b['results'])
+          print('P6A_THREE_OS_PROMOTION_GATE_PASS',b['platform'],len(b['results']),flush=True)
+          PY
+      - name: Preserve original reference, rebuild, source and outputs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: risu-p6a-canonical-source-${{ runner.os }}
+          retention-days: 30
+          path: |
+            risu-probe/P5E_SOURCE_PROVENANCE.json
+            risu-probe/pyproject.toml
+            risu-probe/README.md
+            risu-probe/src/*.py
+            risu-probe/tests/*.py
+            p6a/reference/*.whl
+            .p6a-ci/wheels/*.whl
+            .p6a-ci/results/*.json
+          if-no-files-found: warn
