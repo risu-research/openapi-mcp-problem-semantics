@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-    runs-on: \${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 65
     steps:
       - uses: actions/checkout@v4
@@ -26,10 +26,10 @@ jobs:
       - name: Fetch exact P5-D CI-installed wheel from the matching OS
         shell: pwsh
         env:
-          GH_TOKEN: \${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           New-Item -ItemType Directory -Force -Path baseline | Out-Null
-          gh run download 42327747638 --repo '\${{ github.repository }}' --name 'risu-p5d-firstuse-\${{ runner.os }}' --dir baseline
+          gh run download 42327747638 --repo '${{ github.repository }}' --name 'risu-p5d-firstuse-${{ runner.os }}' --dir baseline
           if ($LASTEXITCODE -ne 0) { throw 'Pinned P5-D wheel download failed' }
           if (-not (Test-Path baseline/wheels/risu_probe_preview-0.9.19.dev0-py3-none-any.whl)) { throw 'Pinned P5-D wheel missing' }
       - name: Build candidate wheel from pinned P5-D and install both wheels independently
@@ -37,13 +37,13 @@ jobs:
         run: |
           python -m pip install --disable-pip-version-check 'setuptools>=68' wheel
           if ($LASTEXITCODE -ne 0) { throw 'Build tools missing' }
-          python p5e/prepare_product.py --wheel baseline/wheels/risu_probe_preview-0.9.19.dev0-py3-none-any.whl --product product --os '\${{ runner.os }}'
+          python p5e/prepare_product.py --wheel baseline/wheels/risu_probe_preview-0.9.19.dev0-py3-none-any.whl --product product --os '${{ runner.os }}'
           if ($LASTEXITCODE -ne 0) { throw 'Source pin or allowed-source patch failed' }
           python -m pip wheel --no-build-isolation --no-deps --wheel-dir p5e/wheels ./product
           if ($LASTEXITCODE -ne 0) { throw 'Candidate wheel compilation failed' }
           python -m venv p5e/env_before
           python -m venv p5e/env_after
-          if ('\${{ runner.os }}' -eq 'Windows') {
+          if ('${{ runner.os }}' -eq 'Windows') {
             $old = (Resolve-Path p5e/env_before/Scripts/python.exe).Path
             $new = (Resolve-Path p5e/env_after/Scripts/python.exe).Path
           } else {
@@ -61,7 +61,7 @@ jobs:
       - name: Ten immutable external repositories and full installed-CLI JSON parity
         shell: pwsh
         run: |
-          if ('\${{ runner.os }}' -eq 'Windows') {
+          if ('${{ runner.os }}' -eq 'Windows') {
             $old=(Resolve-Path p5e/env_before/Scripts/risu-probe.exe).Path
             $new=(Resolve-Path p5e/env_after/Scripts/risu-probe.exe).Path
           } else {
@@ -73,7 +73,7 @@ jobs:
       - name: Run cProfile of both installed scanners against each of the same 10 repositories
         shell: pwsh
         run: |
-          if ('\${{ runner.os }}' -eq 'Windows') {
+          if ('${{ runner.os }}' -eq 'Windows') {
             $old=(Resolve-Path p5e/env_before/Scripts/python.exe).Path
             $new=(Resolve-Path p5e/env_after/Scripts/python.exe).Path
           } else {
@@ -96,7 +96,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: risu-p5e-ast-profile-parity-\${{ runner.os }}
+          name: risu-p5e-ast-profile-parity-${{ runner.os }}
           path: |
             p5e/results/**
             p5e/wheels/*.whl
