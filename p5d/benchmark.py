@@ -53,6 +53,7 @@ def measure(cli:Path, directory:Path, repeat:int)->dict:
                          'openapi_parsed':int(summary.get('openapi_parsed',0)),
                          'unverified':gaps,'complete_coverage':complete,
                          'cli_completed':result.returncode==0 and parsed is not None,
+                         'unverified_examples':(parsed.get('unverified',[])[:5] if parsed else []),
                          'error':err or (result.stderr[-500:] if result.returncode else None)})
         except subprocess.TimeoutExpired:
             rows.append({'elapsed_ms':100000.0,'returncode':None,'status':'TIMEOUT',
