@@ -164,9 +164,16 @@ finally{
   try{await Promise.race([client?.close(),new Promise(ok=>setTimeout(ok,2000))])}catch{}
   if(bridge)try{await new Promise(r=>bridge.close(r))}catch{}
   if(worker)try{await new Promise(r=>worker.close(r))}catch{}
-  fs.rmSync(tmp,{recursive:true,force:true});
+  try {
+  const dirs=[path.join(tmp,'logs'),path.join(os.homedir(),'.claude-mem','logs')];
+  result.server_log_tails=[];
+  for(const d of dirs)if(fs.existsSync(d)){for(const fn of fs.readdirSync(d).slice(-8)){
+    const fp=path.join(d,fn);if(fs.statSync(fp).isFile())result.server_log_tails.push({file:fp,content:fs.readFileSync(fp,'utf8').slice(-11000)});
+  }}
+}catch(e){result.log_read_error=String(e)}
+fs.rmSync(tmp,{recursive:true,force:true});
   fs.mkdirSync('results-stage4',{recursive:true});
   fs.writeFileSync('results-stage4/observations.json',JSON.stringify(result,null,2)+'\n');
-  console.log('CCNC_STAGE4_RESULT '+JSON.stringify({status:result.status,cases:result.cases,observed:result.observed,source_schema:result.source_schema,error:result.error,server_stderr:result.server_stderr}).slice(0,12000));
+  console.log('CCNC_STAGE4_RESULT '+JSON.stringify({status:result.status,cases:result.cases,observed:result.observed,source_schema:result.source_schema,error:result.error,server_stderr:result.server_stderr,server_log_tails:result.server_log_tails}).slice(0,12000));
   if(result.status!=='PASS')process.exitCode=1;
 }
