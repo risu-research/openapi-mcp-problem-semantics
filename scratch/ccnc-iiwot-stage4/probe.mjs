@@ -81,7 +81,7 @@ try{
   assert(serverPath,'Published claude-mem MCP executable not present');
   result.installed_server_path=path.relative(path.resolve('.'),serverPath);
   client=new Client({name:'ccnc-independent-boundary-probe',version:'1.0.0'});
-  await client.connect(new StdioClientTransport({command:process.execPath,args:[serverPath],env:{...process.env,CLAUDE_MEM_DATA_DIR:tmp,CLAUDE_MEM_WORKER_PORT:'37777',CLAUDE_MEM_WORKER_HOST:'127.0.0.1'}}));
+  await client.connect(new StdioClientTransport({command:'bun',args:[serverPath],env:{...process.env,CLAUDE_MEM_DATA_DIR:tmp,CLAUDE_MEM_WORKER_PORT:'37777',CLAUDE_MEM_WORKER_HOST:'127.0.0.1'}}));
   const listed=await client.listTools();
   const tool=listed.tools.find(x=>x.name==='search');
   assert(tool,'Expected search tool missing');
