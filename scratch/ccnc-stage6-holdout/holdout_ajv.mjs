@@ -8,7 +8,7 @@ const ajv=new Ajv({strict:false,allErrors:true,validateFormats:false});
 const maps=['properties','patternProperties','$defs','definitions','dependentSchemas'];
 const singles=['items','contains','not','if','then','else','propertyNames','contentSchema'];
 const arrays=['allOf','anyOf','oneOf','prefixItems'];
-const suites=['additionalProperties','unevaluatedProperties','patternProperties','oneOf','anyOf','dependentSchemas','ref','if-then-else','prefixItems'];
+const suites=['additionalProperties','unevaluatedProperties','patternProperties','oneOf','anyOf','dependentSchemas','ref','if-then-else','items'];
 function walk(s,p=[]){const r=[[p,s]];if(!s||typeof s!=='object'||Array.isArray(s))return r;
  for(const k of maps)if(s[k]&&typeof s[k]==='object'&&!Array.isArray(s[k]))
   for(const n of Object.keys(s[k]))r.push(...walk(s[k][n],[...p,k,n]));
