@@ -1,0 +1,45 @@
+name: CCNC IIWoT Stage 3 independent strict Consumer
+on:
+  push:
+    branches:
+      - run/ccnc-stage2-nodewot-20261121
+    paths:
+      - scratch/ccnc-iiwot-stage2/stage3.mjs
+      - .github/workflows/ccnc-iiwot-stage3.yml
+permissions:
+  contents: read
+jobs:
+  stage3-strict-and-repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned independent runtime dependencies
+        working-directory: scratch/ccnc-iiwot-stage2
+        run: |
+          npm install --no-audit --no-fund --save-exact \
+            @node-wot/core@0.9.2 @node-wot/binding-http@0.9.2 \
+            @modelcontextprotocol/sdk@1.32.2 @modelcontextprotocol/server-filesystem@1.0.0 \
+            ajv@8.17.1
+      - name: Execute strict baseline and automated repair
+        working-directory: scratch/ccnc-iiwot-stage2
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p results-stage3
+          npm list --depth=0 > results-stage3/dependency_versions.txt
+          cp package-lock.json results-stage3/package-lock.json
+          cp stage3.mjs results-stage3/stage3_executed.mjs
+          git rev-parse HEAD > results-stage3/git_commit.txt
+          sha256sum stage3.mjs package-lock.json > results-stage3/input.sha256
+          node stage3.mjs 2>&1 | tee results-stage3/console.log
+      - name: Upload complete run even if failed
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ccnc-iiwot-stage3-strict-repair
+          path: scratch/ccnc-iiwot-stage2/results-stage3
+          retention-days: 30
