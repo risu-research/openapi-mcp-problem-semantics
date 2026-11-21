@@ -1,0 +1,49 @@
+name: CCNC Stage 5 external Runware MCP with controlled SDK
+on:
+  push:
+    branches:
+      - run/ccnc-stage5-runware-external-20261121
+    paths:
+      - scratch/ccnc-stage5-runware/**
+      - .github/workflows/ccnc-stage5-runware.yml
+permissions:
+  contents: read
+jobs:
+  runware-independent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install published third-party server and pinned test dependencies
+        working-directory: scratch/ccnc-stage5-runware
+        run: |
+          npm install --ignore-scripts --no-audit --no-fund --save-exact \
+            @runware/mcp@1.4.0 @modelcontextprotocol/sdk@1.32.2 \
+            @node-wot/core@0.9.2 @node-wot/binding-http@0.9.2 \
+            ajv@8.17.1
+      - name: Execute unmodified MCP with mock SDK and independent strict WoT Consumer
+        working-directory: scratch/ccnc-stage5-runware
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence
+          npm list --depth=0 > evidence/dependency_versions.txt
+          cp package-lock.json evidence/package-lock.json
+          cp probe.mjs evidence/probe_executed.mjs
+          cp mock-sdk.mjs evidence/mock_sdk_executed.mjs
+          cp mock-loader.mjs evidence/mock_loader_executed.mjs
+          git rev-parse HEAD > evidence/commit.txt
+          sha256sum probe.mjs mock-sdk.mjs mock-loader.mjs package-lock.json > evidence/inputs.sha256
+          node probe.mjs 2>&1 | tee evidence/console.log
+      - name: Upload evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ccnc-stage5-runware-mcp
+          path: scratch/ccnc-stage5-runware/evidence/
+          retention-days: 30
