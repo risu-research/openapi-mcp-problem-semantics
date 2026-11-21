@@ -1,0 +1,40 @@
+name: CCNC IIWoT independent runtime probe
+on:
+  push:
+    branches:
+      - run/ccnc-stage2-nodewot-20261121
+    paths:
+      - scratch/ccnc-iiwot-stage2/**
+      - .github/workflows/ccnc-iiwot-stage2.yml
+permissions:
+  contents: read
+jobs:
+  node-wot-and-official-mcp-server:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install independent MCP server and WoT Consumer
+        working-directory: scratch/ccnc-iiwot-stage2
+        run: |
+          npm install --no-audit --no-fund --save-exact \
+            @node-wot/core @node-wot/binding-http \
+            @modelcontextprotocol/sdk@1 @modelcontextprotocol/server-filesystem
+      - name: Execute read-only independent runtime experiment
+        working-directory: scratch/ccnc-iiwot-stage2
+        run: |
+          mkdir -p results
+          npm list --depth=0 > results/dependency_versions.txt
+          sha256sum package-lock.json > results/npm-lock.sha256
+          cp package-lock.json results/package-lock.json
+          node probe.mjs 2>&1 | tee results/console.log
+      - name: Preserve evidence even if runtime fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ccnc-iiwot-stage2-evidence
+          path: scratch/ccnc-iiwot-stage2/results/
+          retention-days: 30
