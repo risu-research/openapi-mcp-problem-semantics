@@ -81,7 +81,10 @@ try{
   assert(serverPath,'Published claude-mem MCP executable not present');
   result.installed_server_path=path.relative(path.resolve('.'),serverPath);
   client=new Client({name:'ccnc-independent-boundary-probe',version:'1.0.0'});
-  await client.connect(new StdioClientTransport({command:'bun',args:[serverPath],env:{...process.env,CLAUDE_MEM_DATA_DIR:tmp,CLAUDE_MEM_WORKER_PORT:'37777',CLAUDE_MEM_WORKER_HOST:'127.0.0.1'}}));
+  const transport=new StdioClientTransport({command:'bun',args:[serverPath],stderr:'pipe',env:{...process.env,CLAUDE_MEM_DATA_DIR:tmp,CLAUDE_MEM_WORKER_PORT:'37777',CLAUDE_MEM_WORKER_HOST:'127.0.0.1'}});
+  result.server_stderr='';
+  transport.stderr?.on('data',x=>{result.server_stderr=(result.server_stderr+String(x)).slice(-12000)});
+  await client.connect(transport);
   const listed=await client.listTools();
   const tool=listed.tools.find(x=>x.name==='search');
   assert(tool,'Expected search tool missing');
@@ -164,6 +167,6 @@ finally{
   fs.rmSync(tmp,{recursive:true,force:true});
   fs.mkdirSync('results-stage4',{recursive:true});
   fs.writeFileSync('results-stage4/observations.json',JSON.stringify(result,null,2)+'\n');
-  console.log('CCNC_STAGE4_RESULT '+JSON.stringify({status:result.status,cases:result.cases,observed:result.observed,source_schema:result.source_schema,error:result.error}).slice(0,12000));
+  console.log('CCNC_STAGE4_RESULT '+JSON.stringify({status:result.status,cases:result.cases,observed:result.observed,source_schema:result.source_schema,error:result.error,server_stderr:result.server_stderr}).slice(0,12000));
   if(result.status!=='PASS')process.exitCode=1;
 }
