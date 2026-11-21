@@ -29,6 +29,7 @@ function project(src){const baseline=structuredClone(src),ops=[];
 }
 function restore(base,ops){const s=structuredClone(base);for(const op of ops){const d=at(s,op.path);
  if(op.present)d[op.keyword]=structuredClone(op.value);else delete d[op.keyword];}return s}
+function compatible(c){if(c===undefined)return true;let valid=true;for(const raw of String(c).split(',')){const part=raw.trim();const op=part.startsWith('<=')?'<=':part.startsWith('=')?'=':'';const v=Number(part.slice(op.length));if(!Number.isFinite(v))throw Error('bad compatibility '+part);valid=op==='='?2020===v:op==='<='?2020<=v:2020>=v;if(2020<=v)break;}return valid}
 function nonlocal(s){return walk(s).some(([,n])=>n&&typeof n==='object'&&!Array.isArray(n)&&
  ['$ref','$dynamicRef'].some(k=>typeof n[k]==='string'&&!n[k].startsWith('#')))}
 const outdir='evidence';fs.mkdirSync(outdir,{recursive:true});
@@ -36,9 +37,10 @@ const res={engine:'ajv 8.17.1',suite_results:[],groups_total:0,groups_checked:0,
  cases_checked:0,source_expected_mismatches:0,roundtrip_failures:0,
  baseline_false_rejects:0,baseline_false_accepts:0,skips:[],failures:[]};
 for(const name of suites){const buf=fs.readFileSync(path.join('upstream',name+'.json'));
- const groups=JSON.parse(buf),report={name,sha256:crypto.createHash('sha256').update(buf).digest('hex'),groups:groups.length,checked:0,cases:0};
+ const spec=JSON.parse(buf),groups=spec.tests,report={name,sha256:crypto.createHash('sha256').update(buf).digest('hex'),groups:groups.length,checked:0,cases:0};
  for(const [i,g] of groups.entries()){
   res.groups_total++;
+  if(!compatible(g.compatibility)){res.groups_skipped++;res.skips.push({suite:name,i,reason:'incompatible with 2020-12'});continue;}
   if(nonlocal(g.schema)){res.groups_skipped++;res.skips.push({suite:name,i,reason:'nonlocal reference'});continue;}
   try{
    const src=structuredClone(g.schema),{baseline,ops}=project(src),repaired=restore(baseline,ops);
