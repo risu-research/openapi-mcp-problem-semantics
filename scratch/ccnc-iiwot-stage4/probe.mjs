@@ -84,7 +84,7 @@ try{
   const transport=new StdioClientTransport({command:'bun',args:[serverPath],stderr:'pipe',env:{...process.env,CLAUDE_MEM_DATA_DIR:tmp,CLAUDE_MEM_WORKER_PORT:'37777',CLAUDE_MEM_WORKER_HOST:'127.0.0.1'}});
   result.server_stderr='';
   transport.stderr?.on('data',x=>{result.server_stderr=(result.server_stderr+String(x)).slice(-12000)});
-  await client.connect(transport);
+  await Promise.race([client.connect(transport),new Promise((_,reject)=>setTimeout(()=>reject(new Error('MCP handshake timeout after 12 seconds')),12000))]);
   const listed=await client.listTools();
   const tool=listed.tools.find(x=>x.name==='search');
   assert(tool,'Expected search tool missing');
@@ -161,7 +161,7 @@ try{
   result.status='PASS';
 }catch(e){result.status='FAIL';result.error=String(e.stack||e)}
 finally{
-  try{await client?.close()}catch{}
+  try{await Promise.race([client?.close(),new Promise(ok=>setTimeout(ok,2000))])}catch{}
   if(bridge)try{await new Promise(r=>bridge.close(r))}catch{}
   if(worker)try{await new Promise(r=>worker.close(r))}catch{}
   fs.rmSync(tmp,{recursive:true,force:true});
