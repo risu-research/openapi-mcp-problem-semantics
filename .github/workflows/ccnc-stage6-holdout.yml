@@ -28,7 +28,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p upstream evidence
-          for name in additionalProperties unevaluatedProperties patternProperties oneOf anyOf dependentSchemas ref if-then-else prefixItems; do
+          for name in additionalProperties unevaluatedProperties patternProperties oneOf anyOf dependentSchemas ref if-then-else items; do
             curl --fail --location --retry 3 --silent --show-error "https://raw.githubusercontent.com/json-schema-org/JSON-Schema-Test-Suite/main/validation/tests/$name.json" --output "upstream/$name.json"
           done
           sha256sum upstream/*.json > evidence/upstream.sha256
