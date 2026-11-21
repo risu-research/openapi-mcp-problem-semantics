@@ -40,6 +40,11 @@ jobs:
           cp probe.mjs results-stage4/executed_probe.mjs
           git rev-parse HEAD > results-stage4/commit.txt
           sha256sum probe.mjs package-lock.json > results-stage4/inputs.sha256
+          set +e
+          timeout 4s bun node_modules/claude-mem/plugin/scripts/mcp-server.cjs </dev/null > results-stage4/native_stdout.txt 2> results-stage4/native_stderr.txt
+          echo $? > results-stage4/native_exit.txt
+          find "$HOME/.claude-mem" -maxdepth 4 -type f 2>/dev/null | head -40 > results-stage4/native_log_paths.txt
+          set -e
           node probe.mjs 2>&1 | tee results-stage4/console.log
       - name: Preserve evidence on success or failure
         if: always()
