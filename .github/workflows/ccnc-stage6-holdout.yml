@@ -1,0 +1,53 @@
+name: CCNC IIWoT Stage 6 official JSON Schema holdout
+on:
+  push:
+    branches:
+      - run/ccnc-stage6-standards-holdout-20261121
+    paths:
+      - scratch/ccnc-stage6-holdout/**
+      - .github/workflows/ccnc-stage6-holdout.yml
+permissions:
+  contents: read
+jobs:
+  jsonschema-2020-12-holdout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned independent JSON Schema engine
+        working-directory: scratch/ccnc-stage6-holdout
+        run: npm install --ignore-scripts --no-audit --no-fund --save-exact ajv@8.17.1
+      - name: Retrieve original official conformance suites
+        working-directory: scratch/ccnc-stage6-holdout
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p upstream evidence
+          for name in additionalProperties unevaluatedProperties patternProperties oneOf anyOf dependentSchemas ref if-then-else prefixItems; do
+            curl --fail --location --retry 3 --silent --show-error "https://raw.githubusercontent.com/json-schema-org/JSON-Schema-Test-Suite/main/tests/draft2020-12/$name.json" --output "upstream/$name.json"
+          done
+          sha256sum upstream/*.json > evidence/upstream.sha256
+          git rev-parse HEAD > evidence/commit.txt
+          cp holdout_ajv.mjs evidence/holdout_executed.mjs
+          npm list --depth=0 > evidence/npm_versions.txt
+          cp package-lock.json evidence/package-lock.json
+      - name: Execute independent reference holdout
+        working-directory: scratch/ccnc-stage6-holdout
+        shell: bash
+        run: |
+          set -euo pipefail
+          node holdout_ajv.mjs | tee evidence/console.log
+      - name: Preserve holdout evidence, including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ccnc-stage6-jsonschema-official-holdout
+          path: |
+            scratch/ccnc-stage6-holdout/evidence/
+            scratch/ccnc-stage6-holdout/upstream/
+          retention-days: 30
