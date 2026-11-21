@@ -4,8 +4,10 @@ import path from 'node:path';
 import http from 'node:http';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
-import { Servient } from '@node-wot/core';
-import { HttpClientFactory } from '@node-wot/binding-http';
+import corePkg from '@node-wot/core';
+import httpPkg from '@node-wot/binding-http';
+const {Servient}=corePkg;
+const {HttpClientFactory}=httpPkg;
 
 const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ccnc-readonly-'));
 const file=path.join(dir,'hello.txt');fs.writeFileSync(file,'CCNC_REFERENCE_CONTENT\n');

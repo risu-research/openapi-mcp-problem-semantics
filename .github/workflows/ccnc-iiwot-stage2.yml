@@ -30,6 +30,7 @@ jobs:
           npm list --depth=0 > results/dependency_versions.txt
           sha256sum package-lock.json > results/npm-lock.sha256
           cp package-lock.json results/package-lock.json
+          set -o pipefail
           node probe.mjs 2>&1 | tee results/console.log
       - name: Preserve evidence even if runtime fails
         if: always()
