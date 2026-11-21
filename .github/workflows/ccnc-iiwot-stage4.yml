@@ -1,0 +1,47 @@
+name: CCNC Stage 4 external claude-mem MCP open-field probe
+on:
+  push:
+    branches:
+      - run/ccnc-stage4-external-claudemem-20261121
+    paths:
+      - scratch/ccnc-iiwot-stage4/**
+      - .github/workflows/ccnc-iiwot-stage4.yml
+permissions:
+  contents: read
+jobs:
+  external-claude-mem:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned external historical MCP package and test dependencies
+        working-directory: scratch/ccnc-iiwot-stage4
+        run: |
+          npm install --ignore-scripts --no-audit --no-fund --save-exact \
+            claude-mem@12.0.0 @modelcontextprotocol/sdk@1.32.2 \
+            @node-wot/core@0.9.2 @node-wot/binding-http@0.9.2 \
+            ajv@8.17.1
+      - name: Run isolated external MCP package against controlled local Worker
+        working-directory: scratch/ccnc-iiwot-stage4
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p results-stage4
+          npm list --depth=0 > results-stage4/versions.txt
+          cp package-lock.json results-stage4/package-lock.json
+          cp probe.mjs results-stage4/executed_probe.mjs
+          git rev-parse HEAD > results-stage4/commit.txt
+          sha256sum probe.mjs package-lock.json > results-stage4/inputs.sha256
+          node probe.mjs 2>&1 | tee results-stage4/console.log
+      - name: Preserve evidence on success or failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ccnc-stage4-external-claudemem
+          path: scratch/ccnc-iiwot-stage4/results-stage4
+          retention-days: 30
