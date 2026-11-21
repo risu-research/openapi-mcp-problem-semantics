@@ -43,7 +43,7 @@ try{
   const origin='http://127.0.0.1:'+server.address().port;
   const allowed=['type','description','minimum','maximum','minLength','maxLength','enum','format','default'];
   const p=Object.fromEntries(Object.entries(tool.inputSchema.properties||{}).map(([k,v])=>[k,Object.fromEntries(allowed.filter(s=>Object.hasOwn(v,s)).map(s=>[s,v[s]]))]));
-  result.td={'@context':['https://www.w3.org/2022/wot/td/v1.1',{'htv':'http://www.w3.org/2011/http#'}],id:'urn:risu:stage2:filesystem',title:'Filesystem tool bridge',securityDefinitions:{nosec_sc:{scheme:'nosec'}},security:'nosec_sc',actions:{readFile:{input:{type:'object',properties:p,required:tool.inputSchema.required||[]},forms:[{href:origin+'/action',op:'invokeaction',contentType:'application/json','htv:methodName':'POST'}]}}};
+  result.td={'@context':['https://www.w3.org/2022/wot/td/v1.1',{'htv':'http://www.w3.org/2011/http#'}],id:'urn:risu:stage2:filesystem',title:'Filesystem tool bridge',securityDefinitions:{nosec_sc:{scheme:'nosec'}},security:'nosec_sc',actions:{readFile:{input:{type:'object',properties:p,required:tool.inputSchema.required||[]},output:{type:'object',properties:{isError:{type:'boolean'},text:{type:'string'}},required:['isError','text']},forms:[{href:origin+'/action',op:'invokeaction',contentType:'application/json','htv:methodName':'POST'}]}}};
   const servient=new Servient();servient.addClientFactory(new HttpClientFactory());
   const WoT=await servient.start(),td=await WoT.requestThingDescription(origin+'/td'),thing=await WoT.consume(td);
   for(const [which,args] of [['described',{path:file}],['undeclared_extra',{path:file,ccnc_undeclared_probe:'extra'}]]){
